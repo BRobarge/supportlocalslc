@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Local SLC - Business Directory</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Header with Auto Height on Desktop to Avoid Cropping -->
+    <header class="shadow-md">
+        <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
+            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
+        </div>
+    </header>
+
+    <!-- Filter/Search Bar (Centered for Consistency) -->
+    <section class="container mx-auto p-4 flex flex-col md:flex-row gap-4">
+        <input id="search-input" type="text" placeholder="Search by business or category..." class="flex-1 p-2 border border-gray-300 rounded-md">
+        <select id="category-select" class="p-2 border border-gray-300 rounded-md">
+            <option value="">All Categories</option>
+            <!-- Categories will be added dynamically -->
+        </select>
+    </section>
+
+    <!-- Listings Grid (More Columns on Larger Screens) -->
+    <section class="container mx-auto p-4">
+        <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <!-- Listings will be added here dynamically -->
+        </div>
+    </section>
+
+    <!-- JavaScript to Load JSON, Populate Grid, and Handle Filtering -->
+    <script>
+        let allBusinesses = []; // Store original data for filtering
+
+        // Fetch the local JSON file
+        fetch('listings.json')
+            .then(response => response.json())
+            .then(data => {
+                allBusinesses = data;
+                populateCategories(data); // Add unique categories to dropdown
+                displayListings(data); // Initial display
+            })
+            .catch(error => console.error('Error loading listings:', error));
+
+        // Function to display listings in the grid
+        function displayListings(businesses) {
+            const grid = document.getElementById('listings-grid');
+            grid.innerHTML = ''; // Clear existing cards
+            businesses.forEach(business => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-lg shadow-md';
+                card.innerHTML = `
+                    <img src="${business.logo_url}" alt="${business.name} logo" class="w-full h-32 object-contain rounded-lg mb-4">
+                    <h2 class="text-xl font-semibold text-center">${business.name}</h2>
+                    <p class="text-gray-600 text-center">${business.category}</p>
+                    <p class="text-gray-500 text-center">${business.address}</p>
+                    <a href="${business.website}" class="block text-blue-500 hover:underline text-center">Visit Website</a>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Function to populate category dropdown with unique categories
+        function populateCategories(data) {
+            const select = document.getElementById('category-select');
+            const categories = [...new Set(data.map(b => b.category))]; // Get unique categories
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        // Event listeners for filtering
+        const searchInput = document.getElementById('search-input');
+        const categorySelect = document.getElementById('category-select');
+
+        searchInput.addEventListener('input', filterListings);
+        categorySelect.addEventListener('change', filterListings);
+
+        function filterListings() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCategory = categorySelect.value;
+
+            const filtered = allBusinesses.filter(business => {
+                const matchesSearch = business.name.toLowerCase().includes(searchTerm) || 
+                                      business.category.toLowerCase().includes(searchTerm);
+                const matchesCategory = !selectedCategory || business.category === selectedCategory;
+                return matchesSearch && matchesCategory;
+            });
+
+            displayListings(filtered);
+        }
+    </script>
+</body>
+</html>
