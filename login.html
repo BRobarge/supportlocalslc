@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up - SupportLocalSLC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <header class="shadow-md">
+        <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
+            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4">
+        <h2 class="text-xl font-semibold mb-4">Login or Sign Up to Claim/Edit Your Listing</h2>
+        <form id="auth-form" class="bg-white p-6 rounded shadow-md max-w-md mx-auto">
+            <input type="email" id="email" placeholder="Email" class="w-full p-2 mb-4 border rounded" required>
+            <input type="password" id="password" placeholder="Password" class="w-full p-2 mb-4 border rounded" required>
+            <button type="button" onclick="signUp()" class="bg-green-500 text-white p-2 rounded w-full mb-2">Sign Up</button>
+            <button type="button" onclick="login()" class="bg-blue-500 text-white p-2 rounded w-full">Login</button>
+        </form>
+        <p id="message" class="text-center mt-4"></p>
+    </main>
+
+    <script>
+        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        async function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) document.getElementById('message').innerText = 'Error: ' + error.message;
+            else document.getElementById('message').innerText = 'Sign up successful! Please login.';
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) document.getElementById('message').innerText = 'Error: ' + error.message;
+            else {
+                sessionStorage.setItem('access_token', data.session.access_token);
+                window.location.href = 'dashboard.html';
+            }
+        }
+    </script>
+</body>
+</html>

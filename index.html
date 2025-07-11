@@ -4,97 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support Local SLC - Business Directory</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <!-- Correct CDN -->
 </head>
 <body class="bg-gray-100 font-sans">
-    <!-- Header with Auto Height on Desktop to Avoid Cropping -->
     <header class="shadow-md">
         <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
             <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
         </div>
     </header>
 
-    <!-- Filter/Search Bar (Centered for Consistency) -->
     <section class="container mx-auto p-4 flex flex-col md:flex-row gap-4">
         <input id="search-input" type="text" placeholder="Search by business or category..." class="flex-1 p-2 border border-gray-300 rounded-md">
         <select id="category-select" class="p-2 border border-gray-300 rounded-md">
             <option value="">All Categories</option>
-            <!-- Categories will be added dynamically -->
         </select>
     </section>
 
-    <!-- Listings Grid (More Columns on Larger Screens) -->
     <section class="container mx-auto p-4">
         <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            <!-- Listings will be added here dynamically -->
         </div>
     </section>
 
-    <!-- JavaScript to Load JSON, Populate Grid, and Handle Filtering -->
     <script>
-        let allBusinesses = []; // Store original data for filtering
+    const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey); // Fixed: Use different var name to avoid TDZ
 
-        // Fetch the local JSON file
-        fetch('listings.json')
-            .then(response => response.json())
-            .then(data => {
-                allBusinesses = data;
-                populateCategories(data); // Add unique categories to dropdown
-                displayListings(data); // Initial display
-            })
-            .catch(error => console.error('Error loading listings:', error));
+    let allBusinesses = [];
 
-        // Function to display listings in the grid
-        function displayListings(businesses) {
-            const grid = document.getElementById('listings-grid');
-            grid.innerHTML = ''; // Clear existing cards
-            businesses.forEach(business => {
-                const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-lg shadow-md';
-                card.innerHTML = `
-                    <img src="${business.logo_url}" alt="${business.name} logo" class="w-full h-32 object-contain rounded-lg mb-4">
-                    <h2 class="text-xl font-semibold text-center">${business.name}</h2>
-                    <p class="text-gray-600 text-center">${business.category}</p>
-                    <p class="text-gray-500 text-center">${business.address}</p>
-                    <a href="${business.website}" class="block text-blue-500 hover:underline text-center">Visit Website</a>
-                `;
-                grid.appendChild(card);
-            });
+ async function loadBusinesses() {
+    const { data, error } = await supabaseClient.from('businesses').select('*');
+    if (error) console.error('Error loading businesses:', error);
+    else {
+        console.log('Fetched data:', data); // Keep for overview
+        console.log('Number of businesses:', data.length);
+        allBusinesses = data;
+        if (data.length > 0) {
+            console.log('First business details:', data[0]); // Keep
+            console.log('Full fetched data (JSON snapshot):', JSON.stringify(data, null, 2)); // NEW: Exact state of all businesses at fetch time
         }
+        if (data.length === 0) console.log('No businesses found - check rows/policy');
+        populateCategories(data);
+        displayListings(data);
+    }
+}
 
-        // Function to populate category dropdown with unique categories
-        function populateCategories(data) {
-            const select = document.getElementById('category-select');
-            const categories = [...new Set(data.map(b => b.category))]; // Get unique categories
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                select.appendChild(option);
-            });
-        }
+function displayListings(businesses) {
+    const grid = document.getElementById('listings-grid');
+    grid.innerHTML = '';
+    console.log('Starting to display', businesses.length, 'businesses');
+    businesses.forEach(business => {
+        console.log('Creating card for ID:', business.id || 'No ID', 'with name:', business.name || 'null/empty');
+        console.log('Business JSON snapshot:', JSON.stringify(business, null, 2)); // NEW: Exact state per business at render time
+        const card = document.createElement('div');
+        card.className = 'bg-white p-4 rounded-lg shadow-md cursor-pointer';
+        card.innerHTML = `
+            <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'} logo" class="w-full h-32 object-contain rounded-lg mb-4">
+            <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
+            <p class="text-gray-600 text-center">${business.categories ? business.categories.join(', ') : 'No Categories'}</p>
+            <p class="text-gray-500 text-center">${business.address || 'No Address'}</p>
+            <a href="${business.website || '#'}" class="block text-blue-500 hover:underline text-center">${business.website ? 'Visit Website' : 'No Website'}</a>
+        `;
+        card.addEventListener('click', () => {
+    const businessUrl = `/business.html?id=${business.id || '#'}`;
+    window.location.href = businessUrl;
+});
+        grid.appendChild(card);
+    });
+    console.log('Finished displaying; grid has', grid.children.length, 'cards');
+}
 
-        // Event listeners for filtering
-        const searchInput = document.getElementById('search-input');
-        const categorySelect = document.getElementById('category-select');
+    function populateCategories(data) {
+        const select = document.getElementById('category-select');
+        const allCats = data.flatMap(b => b.categories || []);
+        const categories = [...new Set(allCats)];
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            select.appendChild(option);
+        });
+    }
 
-        searchInput.addEventListener('input', filterListings);
-        categorySelect.addEventListener('change', filterListings);
+    const searchInput = document.getElementById('search-input');
+    const categorySelect = document.getElementById('category-select');
 
-        function filterListings() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const selectedCategory = categorySelect.value;
+    searchInput.addEventListener('input', filterListings);
+    categorySelect.addEventListener('change', filterListings);
 
-            const filtered = allBusinesses.filter(business => {
-                const matchesSearch = business.name.toLowerCase().includes(searchTerm) || 
-                                      business.category.toLowerCase().includes(searchTerm);
-                const matchesCategory = !selectedCategory || business.category === selectedCategory;
-                return matchesSearch && matchesCategory;
-            });
+    function filterListings() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categorySelect.value;
 
-            displayListings(filtered);
-        }
-    </script>
+        const filtered = allBusinesses.filter(business => {
+            const matchesSearch = business.name.toLowerCase().includes(searchTerm) ||
+                                  (business.categories || []).some(cat => cat.toLowerCase().includes(searchTerm));
+            const matchesCategory = !selectedCategory || (business.categories || []).includes(selectedCategory);
+            return matchesSearch && matchesCategory;
+        });
+        displayListings(filtered);
+    }
+
+    loadBusinesses();
+</script>
+
 </body>
 </html>
