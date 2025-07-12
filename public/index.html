@@ -95,7 +95,7 @@
             `;
             card.addEventListener('click', () => {
                 const businessUrl = `/business.html?id=${business.id || '#'}`;
-                window.location.href = businessUrl;
+                window.location.href = `business.html?id=${business.id || '#'}`;
             });
 
             grid.appendChild(card);
