@@ -62,20 +62,18 @@
             detailsDiv.innerHTML = `
                 <img src="${data.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${data.name || 'No Name'}" class="w-32 h-32 object-contain rounded-full mx-auto mb-4">
                 <h1 class="text-3xl font-bold text-center mb-2">${data.name || 'No Name'}</h1>
-                <p class="text-xl italic text-blue-600 text-center mb-4">${data.tagline || ''}</p>  <!-- New: Bigger italic tagline, text-2xl for size, gray for subtlety, centered. Falls back to empty if null. -->
+                <p class="text-xl italic text-gray-600 text-center mb-4">${data.tagline || ''}</p>
                 <div class="text-gray-600 text-center mb-4">
                     ${data.categories ? data.categories.map(cat => `<a href="index.html?category=${encodeURIComponent(cat)}" class="inline-block bg-blue-600 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${cat}</a>`).join('') : 'No Categories'}
                 </div>
                 <p class="mb-4">${data.description || 'No Description'}</p>
-                <div class="flex flex-row items-center justify-center gap-4 mb-4">
+                <div class="flex flex-wrap items-center justify-center gap-4 mb-4 overflow-x-auto">  <!-- Merged: All buttons in one div, flex-wrap for wrapping on mobile, overflow-x-auto for scroll if too wide, items-center for vertical align, justify-center to center them, gap-4 for spacing -->
                     ${data.website ? `<a href="${data.website}" class="bg-blue-500 text-white rounded px-6 py-3 flex items-center hover:bg-blue-600">
                         <i class="fas fa-globe mr-2"></i> Visit Website
                     </a>` : ''}
                     ${data.menu_url ? `<a href="${data.menu_url}" class="bg-blue-500 text-white rounded px-6 py-3 flex items-center hover:bg-blue-600">
                         <i class="fas fa-utensils mr-2"></i> View Menu
                     </a>` : ''}
-                </div>
-                <div class="flex flex-row items-center justify-center gap-4 mb-4 overflow-x-auto">
                     ${data.social_links ? Object.entries(data.social_links).map(([key, url]) => `<a href="${url}" class="bg-blue-500 text-white rounded px-6 py-3 flex items-center hover:bg-blue-600">
                         <i class="fab fa-${key} mr-2"></i> ${key.charAt(0).toUpperCase() + key.slice(1)}
                     </a>`).join('') : ''}
