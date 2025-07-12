@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support Local SLC - Business Directory</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <!-- Correct CDN -->
 </head>
 <body class="bg-gray-100 font-sans">
@@ -13,7 +14,20 @@
             <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
         </div>
     </header>
-
+        <nav class="w-full bg-blue-600 shadow-md flex justify-around items-center py-4">
+            <a href="index.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
+                <i class="fas fa-home text-3xl"></i>
+                <span class="text-base font-bold">Home</span>
+            </a>
+            <a href="login.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
+                <i class="fas fa-sign-in-alt text-3xl"></i>
+                <span class="text-base font-bold">Login</span>
+            </a>
+            <a href="dashboard.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
+                <i class="fas fa-user-cog text-3xl"></i>
+                <span class="text-base font-bold">Dashboard</span>
+            </a>
+        </nav>
     <section class="container mx-auto p-4 flex flex-col md:flex-row gap-4">
         <input id="search-input" type="text" placeholder="Search by business or category..." class="flex-1 p-2 border border-gray-300 rounded-md">
         <select id="category-select" class="p-2 border border-gray-300 rounded-md">
@@ -29,85 +43,136 @@
     <script>
     const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey); // Fixed: Use different var name to avoid TDZ
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
     let allBusinesses = [];
 
- async function loadBusinesses() {
-    const { data, error } = await supabaseClient.from('businesses').select('*');
-    if (error) console.error('Error loading businesses:', error);
-    else {
-        console.log('Fetched data:', data); // Keep for overview
-        console.log('Number of businesses:', data.length);
-        allBusinesses = data;
-        if (data.length > 0) {
-            console.log('First business details:', data[0]); // Keep
-            console.log('Full fetched data (JSON snapshot):', JSON.stringify(data, null, 2)); // NEW: Exact state of all businesses at fetch time
-        }
-        if (data.length === 0) console.log('No businesses found - check rows/policy');
-        populateCategories(data);
-        displayListings(data);
-    }
-}
+    const searchInput = document.getElementById('search-input');
+    const categorySelect = document.getElementById('category-select');
 
-function displayListings(businesses) {
-    const grid = document.getElementById('listings-grid');
-    grid.innerHTML = '';
-    console.log('Starting to display', businesses.length, 'businesses');
-    businesses.forEach(business => {
-        console.log('Creating card for ID:', business.id || 'No ID', 'with name:', business.name || 'null/empty');
-        console.log('Business JSON snapshot:', JSON.stringify(business, null, 2)); // NEW: Exact state per business at render time
-        const card = document.createElement('div');
-        card.className = 'bg-white p-4 rounded-lg shadow-md cursor-pointer';
-        card.innerHTML = `
-            <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'} logo" class="w-full h-32 object-contain rounded-lg mb-4">
-            <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
-            <p class="text-gray-600 text-center">${business.categories ? business.categories.join(', ') : 'No Categories'}</p>
-            <p class="text-gray-500 text-center">${business.address || 'No Address'}</p>
-            <a href="${business.website || '#'}" class="block text-blue-500 hover:underline text-center">${business.website ? 'Visit Website' : 'No Website'}</a>
-        `;
-        card.addEventListener('click', () => {
-    const businessUrl = `/business.html?id=${business.id || '#'}`;
-    window.location.href = businessUrl;
-});
-        grid.appendChild(card);
-    });
-    console.log('Finished displaying; grid has', grid.children.length, 'cards');
-}
+    async function loadBusinesses() {
+        const { data, error } = await supabaseClient.from('businesses').select('*');
+        if (error) {
+            console.error('Error loading businesses:', error);
+            return;
+        }
+
+        allBusinesses = data;
+        populateCategories(data);
+    }
 
     function populateCategories(data) {
         const select = document.getElementById('category-select');
         const allCats = data.flatMap(b => b.categories || []);
         const categories = [...new Set(allCats)];
+
         categories.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat;
             option.textContent = cat;
             select.appendChild(option);
         });
+
+        console.log("✅ Categories populated");
+        select.dispatchEvent(new Event('optionsLoaded')); // signal ready
     }
 
-    const searchInput = document.getElementById('search-input');
-    const categorySelect = document.getElementById('category-select');
+    function displayListings(businesses) {
+        const grid = document.getElementById('listings-grid');
+        grid.innerHTML = '';
+
+        businesses.forEach(business => {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-4 rounded-lg shadow-md cursor-pointer';
+            card.innerHTML = `
+                <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'} logo" class="w-full h-32 object-contain rounded-lg mb-4">
+                <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
+                <div class="flex justify-center flex-wrap mt-2 gap-2">
+                    ${business.categories ? business.categories.map(cat => `<span onclick="filterToCategory('${cat}'); event.stopPropagation();" class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-300 mr-2 mb-2">${cat}</span>`).join('') : ''}
+                </div>
+                <p class="text-gray-500 text-center">${business.address || 'No Address'}</p>
+                <a href="${business.website || '#'}" class="block text-blue-500 hover:underline text-center">${business.website ? 'Visit Website' : 'No Website'}</a>
+            `;
+            card.addEventListener('click', () => {
+                const businessUrl = `/business.html?id=${business.id || '#'}`;
+                window.location.href = businessUrl;
+            });
+
+            grid.appendChild(card);
+        });
+    }
+
+        function filterListings() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categorySelect.value;
+        console.log('Starting filter with selectedCategory:', selectedCategory);
+        const filtered = allBusinesses.filter(business => {
+            const matchesSearch = business.name.toLowerCase().includes(searchTerm) ||
+                                (business.categories || []).some(cat => cat.toLowerCase().includes(searchTerm));
+            const matchesCategory = !selectedCategory || (business.categories || []).includes(selectedCategory);
+            console.log(`Business: ${business.name || 'No Name'}, Categories: ${JSON.stringify(business.categories)}, Matches Category: ${matchesCategory}`);
+            return matchesSearch && matchesCategory;
+        });
+        console.log('Filtered businesses count:', filtered.length);
+        displayListings(filtered);
+    }
+
+    function filterToCategory(cat) {
+        categorySelect.value = cat;
+        filterListings();
+    }
 
     searchInput.addEventListener('input', filterListings);
     categorySelect.addEventListener('change', filterListings);
 
-    function filterListings() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedCategory = categorySelect.value;
+    // Handle ?category= param from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialCategory = urlParams.get('category');
 
-        const filtered = allBusinesses.filter(business => {
-            const matchesSearch = business.name.toLowerCase().includes(searchTerm) ||
-                                  (business.categories || []).some(cat => cat.toLowerCase().includes(searchTerm));
-            const matchesCategory = !selectedCategory || (business.categories || []).includes(selectedCategory);
-            return matchesSearch && matchesCategory;
+    if (initialCategory) {
+        categorySelect.addEventListener('optionsLoaded', () => {
+            console.log('🎯 Event received — filtering using:', initialCategory);
+            categorySelect.value = initialCategory;
+            filterListings();
         });
-        displayListings(filtered);
+    }
+function maybeTriggerInitialFilter() {
+    if (!initialCategory) {
+        // No category filter? Just show everything.
+        displayListings(allBusinesses);
+        return;
     }
 
-    loadBusinesses();
+    let triggered = false;
+
+    const tryFilter = () => {
+        if (triggered) return;
+        triggered = true;
+        console.log('🎯 Triggering filter:', initialCategory);
+        categorySelect.value = initialCategory;
+        filterListings();
+    };
+
+    // Listen for when the dropdown options finish loading
+    categorySelect.addEventListener('optionsLoaded', tryFilter);
+
+    // Fallback trigger in case the event is missed (timing issue)
+    setTimeout(tryFilter, 300);
+}
+
+
+
+    loadBusinesses().then(() => {
+    console.log('Load complete, allBusinesses length:', allBusinesses.length);
+    if (allBusinesses.length > 0) {
+        filterListings();
+    } else {
+        console.log('No businesses loaded—check Supabase');
+    }
+});; // still call it
+
 </script>
+
 
 </body>
 </html>

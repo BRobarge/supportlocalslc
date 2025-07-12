@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Business Details - SupportLocalSLC</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -13,11 +14,24 @@
             <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
         </div>
     </header>
-
+        <nav class="w-full bg-blue-600 shadow-md flex justify-around items-center py-4">
+                    <a href="index.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
+                        <i class="fas fa-home text-3xl"></i>
+                        <span class="text-base font-bold">Home</span>
+                    </a>
+                    <a href="login.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
+                        <i class="fas fa-sign-in-alt text-3xl"></i>
+                        <span class="text-base font-bold">Login</span>
+                    </a>
+                    <a href="dashboard.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
+                        <i class="fas fa-user-cog text-3xl"></i>
+                        <span class="text-base font-bold">Dashboard</span>
+                    </a>
+                </nav>
     <main class="container mx-auto p-4">
         <div id="business-details" class="bg-white p-6 rounded shadow-md"></div>
     </main>
-
+       
 <script>
     const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
@@ -44,9 +58,11 @@
         } else {
             detailsDiv.innerHTML = `
                 <img src="${data.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${data.name || 'No Name'}" class="w-32 h-32 object-contain rounded-full mx-auto mb-4">
-                <h1 class="text-2xl font-bold text-center mb-2">${data.name || 'No Name'}</h1>
-                <p class="text-gray-600 text-center mb-4">${data.categories ? data.categories.join(', ') : 'No Categories'}</p>
-                <p class="text-center mb-4">${data.address || 'No Address'}</p>
+                <h1 class="text-3xl font-bold text-center mb-2">${data.name || 'No Name'}</h1>
+                <div class="text-gray-600 text-center mb-4">
+                    ${data.categories ? data.categories.map(cat => `<a href="index.html?category=${encodeURIComponent(cat)}" class="inline-block bg-blue-600 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${cat}</a>`).join('') : 'No Categories'}
+                </div>
+                <p class="text-center italic mb-4">${data.tagline || 'No Tagline'}</p>
                 <p class="mb-4">${data.description || 'No Description'}</p>
                 <a href="${data.website || '#'}" class="block text-blue-500 hover:underline text-center mb-4">${data.website ? 'Visit Website' : 'No Website'}</a>
                 <a href="${data.menu_url || '#'}" class="block text-blue-500 hover:underline text-center mb-4">${data.menu_url ? 'View Menu' : 'No Menu'}</a>
@@ -55,6 +71,7 @@
                 </div>
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3025.306!2d${data.longitude || ''}!3d${data.latitude || ''}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z${data.latitude || ''}N%20${Math.abs(data.longitude) || ''}W!5e0!3m2!1sen!2sus!4v1628790000000" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" class="mb-4"></iframe>
                 <h2 class="text-xl font-semibold mb-2">Photos</h2>
+                
                 <div class="grid grid-cols-3 gap-2">
                     ${ (data.photos || []).map(photo => `<img src="${photo}" alt="Photo" class="w-full h-32 object-cover rounded cursor-pointer" onclick="openPhotoModal('${photo}')">`).join('') || 'No Photos' }
                 </div>
