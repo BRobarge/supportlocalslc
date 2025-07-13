@@ -45,31 +45,36 @@
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
     
-    async function updateNavAuth() {
-            const access_token = sessionStorage.getItem('access_token');
-            const authLink = document.getElementById('auth-link');
-            if (!authLink) return; // Skip if no nav (some pages might not have it)
-
-            if (access_token) {
-                // Logged in: Change to Logout
-                authLink.href = '#'; // No redirect, just logout on click
-                authLink.onclick = async function(e) {
-                    e.preventDefault();
-                    await supabaseClient.auth.signOut();
-                    sessionStorage.removeItem('access_token');
-                    window.location.href = 'login.html'; // Or 'index.html' if preferred
-                };
-                authLink.querySelector('i').className = 'fas fa-sign-out-alt text-3xl'; // Swap icon to logout
-                authLink.querySelector('span').textContent = 'Logout';
-            } else {
-                // Not logged in: Stay as Login
-                authLink.href = 'login.html';
-                authLink.onclick = null; // Remove any logout handler
-                authLink.querySelector('i').className = 'fas fa-sign-in-alt text-3xl';
-                authLink.querySelector('span').textContent = 'Login';
-            }
+   async function updateNavAuth() {
+        const storedSession = sessionStorage.getItem('supabase_session');
+        const authLink = document.getElementById('auth-link');
+        if (!authLink) {
+            console.log('No auth link found');
+            return;
         }
-
+        const iconElement = authLink.querySelector('svg, i');
+        const textSpan = authLink.querySelector('span');
+        console.log('Stored session:', storedSession ? 'Yes' : 'No'); // Debug
+        if (storedSession) {
+            authLink.href = '#';
+            authLink.onclick = async function (e) {
+                e.preventDefault();
+                await supabaseClient.auth.signOut();
+                sessionStorage.removeItem('supabase_session');
+                console.log('Logged out');
+                window.location.href = 'login.html';
+            };
+            if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
+            if (textSpan) textSpan.textContent = 'Logout';
+            console.log('Swapped to Logout');
+        } else {
+            authLink.href = 'login.html';
+            authLink.onclick = null;
+            if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
+            if (textSpan) textSpan.textContent = 'Login';
+            console.log('Swapped to Login');
+        }
+    }
     let allBusinesses = [];
 
     const searchInput = document.getElementById('search-input');

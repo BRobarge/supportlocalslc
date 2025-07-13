@@ -79,333 +79,380 @@
     
     <script>
         const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+            const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-        async function updateNavAuth() {
-            const access_token = sessionStorage.getItem('access_token');
-            const authLink = document.getElementById('auth-link');
-            if (!authLink) return; // Skip if no nav (some pages might not have it)
+            let currentUser;
+            let predefinedCategories = ['Restaurant', 'Retail', 'Service', 'Entertainment', 'Health', 'Education', 'Other'];
 
-            if (access_token) {
-                // Logged in: Change to Logout
-                authLink.href = '#'; // No redirect, just logout on click
-                authLink.onclick = async function(e) {
-                    e.preventDefault();
-                    await supabaseClient.auth.signOut();
-                    sessionStorage.removeItem('access_token');
-                    window.location.href = 'login.html'; // Or 'index.html' if preferred
-                };
-                authLink.querySelector('i').className = 'fas fa-sign-out-alt text-3xl'; // Swap icon to logout
-                authLink.querySelector('span').textContent = 'Logout';
-            } else {
-                // Not logged in: Stay as Login
-                authLink.href = 'login.html';
-                authLink.onclick = null; // Remove any logout handler
-                authLink.querySelector('i').className = 'fas fa-sign-in-alt text-3xl';
-                authLink.querySelector('span').textContent = 'Login';
-            }
-        }
+            // Hide edit form on load (prevents it showing by mistake)
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('edit-form').style.display = 'none';
+            });
 
-        let currentUser;
-        let predefinedCategories = ['Restaurant', 'Retail', 'Service', 'Entertainment', 'Health', 'Education', 'Other'];
-
-        // Hide form on load (using style instead of class for reliability)
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('edit-form').style.display = 'none';
-        });
-
-        async function initDashboard() {
-                // Restore session from login (key fix for updates/RLS)
-                const access_token = sessionStorage.getItem('access_token');
-                if (access_token) {
-                    await supabaseClient.auth.setSession({ access_token });
+            // Dynamic nav swap (Login to Logout based on session)
+            async function updateNavAuth() {
+                const storedSession = sessionStorage.getItem('supabase_session');
+                const authLink = document.getElementById('auth-link');
+                if (!authLink) {
+                    console.log('No auth link found');
+                    return;
                 }
-                const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-                if (userError || !user) {
-                    console.error('Auth error:', userError);
+                const iconElement = authLink.querySelector('svg, i');
+                const textSpan = authLink.querySelector('span');
+                console.log('Stored session:', storedSession ? 'Yes' : 'No'); // Debug
+                if (storedSession) {
+                    authLink.href = '#';
+                    authLink.onclick = async function (e) {
+                        e.preventDefault();
+                        await supabaseClient.auth.signOut();
+                        sessionStorage.removeItem('supabase_session');
+                        console.log('Logged out');
+                        window.location.href = 'login.html';
+                    };
+                    if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
+                    if (textSpan) textSpan.textContent = 'Logout';
+                    console.log('Swapped to Logout');
+                } else {
+                    authLink.href = 'login.html';
+                    authLink.onclick = null;
+                    if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
+                    if (textSpan) textSpan.textContent = 'Login';
+                    console.log('Swapped to Login');
+                }
+            }
+
+            // Fill categories dropdown for edit form
+            function populateCategoriesSelect() {
+                const select = document.getElementById('categories');
+                predefinedCategories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    select.appendChild(option);
+                });
+            }
+
+            // Init dashboard (restore session, check auth, load stuff)
+            async function initDashboard() {
+                const storedSession = sessionStorage.getItem('supabase_session');
+                if (storedSession) {
+                    const session = JSON.parse(storedSession);
+                    const { error } = await supabaseClient.auth.setSession(session);
+                    if (error) console.error('Session set error:', error);
+                }
+                const { data, error: userError } = await supabaseClient.auth.getUser();
+                if (userError || !data || !data.user) {
+                    console.error('Auth error:', userError || 'No user data');
                     window.location.href = 'login.html';
                     return;
                 }
-                currentUser = user;
-                updateNavAuth(); // <-- Right here! Updates nav after user is confirmed
-                populateCategoriesSelect();
-                loadOwnedBusinesses();
-                document.getElementById('search-business').addEventListener('input', searchBusinesses);
+                currentUser = data.user;
+                updateNavAuth(); // Swap nav to Logout
+                populateCategoriesSelect(); // Load categories for edit
+                loadOwnedBusinesses(); // Load user's businesses
+                document.getElementById('search-business').addEventListener('input', searchBusinesses); // Add search listener
             }
 
-        function populateCategoriesSelect() {
-            const select = document.getElementById('categories');
-            predefinedCategories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                select.appendChild(option);
-            });
-        }
-
-        async function loadOwnedBusinesses() {
-            const { data, error } = await supabaseClient.from('businesses').select('*').eq('owner_id', currentUser.id);
-            if (error) {
-                console.error('Error loading owned:', error);
-                return;
-            }
-            console.log('Loaded businesses:', data); // Debug: Check in console what data comes back
-            const listDiv = document.getElementById('owned-list');
-            listDiv.innerHTML = '';
-            if (!data || data.length === 0) {
-                listDiv.innerHTML = '<p>No businesses yet—claim or add one!</p>';
-                return;
-            }
-            data.forEach(business => {
-                const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-lg shadow-md';
-                card.innerHTML = '<h3 class="text-lg font-bold">' + (business.name || 'No Name') + '</h3>' +
-                    '<p>' + (business.address || 'No Address') + '</p>' +
-                    '<p>Status: ' + (business.claim_status || 'unclaimed') + '</p>';
-                if (business.claim_status === 'approved') {
-                    const editBtn = document.createElement('button');
-                    editBtn.textContent = 'Edit';
-                    editBtn.className = 'bg-blue-500 text-white p-2 rounded mt-2';
-                    editBtn.onclick = () => showEditForm(business);
-                    card.appendChild(editBtn);
-                } else if (business.claim_status === 'pending') {
-                    card.innerHTML += '<p class="text-yellow-500">Pending approval</p>';
-                }
-                listDiv.appendChild(card);
-            });
-        }
-
-        function toggleSearch() {
-            document.getElementById('search-section').classList.toggle('hidden');
-        }
-
-        async function searchBusinesses(event) {
-            const query = event.target.value.toLowerCase();
-            if (query.length < 3) {
-                document.getElementById('search-results').innerHTML = '';
-                return;
-            }
-            const { data, error } = await supabaseClient.from('businesses').select('*').ilike('name', `%${query}%`).eq('claim_status', 'unclaimed');
-            if (error) console.error('Search error:', error);
-            const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = '';
-            data.forEach(business => {
-                const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-lg shadow-md';
-                card.innerHTML = '<h3 class="text-lg font-bold">' + (business.name || 'No Name') + '</h3>' +
-                    '<p>' + (business.address || 'No Address') + '</p>';
-                const requestBtn = document.createElement('button');
-                requestBtn.textContent = 'Request Claim';
-                requestBtn.className = 'bg-green-500 text-white p-2 rounded mt-2';
-                requestBtn.onclick = () => requestClaim(business.id);
-                card.appendChild(requestBtn);
-                resultsDiv.appendChild(card);
-            });
-        }
-
-        async function claimWithCode() {
-            const code = document.getElementById('claim-code').value.trim();
-            if (!code) {
-                alert('Enter a code');
-                return;
-            }
-            // Check user's current claim count for limit
-            const { count, error: countError } = await supabaseClient.from('businesses').select('id', { count: 'exact' }).eq('owner_id', currentUser.id);
-            if (countError) {
-                alert('Error checking claims: ' + countError.message);
-                return;
-            }
-            if (count > 2) {
-                alert('You have reached the claim limit (max 2 for free users). Pending review.');
-                // Set to pending instead of auto-approve
-                const { data, error } = await supabaseClient.from('businesses').select('*').eq('claim_code', code).eq('claim_status', 'unclaimed').single();
-                if (error || !data) {
-                    alert('Invalid code or already claimed');
+            // Load user's claimed businesses from Supabase
+            async function loadOwnedBusinesses() {
+                const { data, error } = await supabaseClient.from('businesses').select('*').eq('owner_id', currentUser.id);
+                if (error) {
+                    console.error('Error loading owned:', error);
                     return;
                 }
-                const update = { owner_id: currentUser.id, claim_status: 'pending', claim_code: null };
-                const { error: updateError } = await supabaseClient.from('businesses').update(update).eq('id', data.id);
-                if (updateError) {
-                    alert('Claim error: ' + updateError.message);
-                } else {
-                    alert('Claim requested and pending review.');
-                    loadOwnedBusinesses();
-                    sendGHLNotification('New pending claim over limit');
+                console.log('Loaded businesses:', data);
+                const listDiv = document.getElementById('owned-list');
+                listDiv.innerHTML = '';
+                if (!data || data.length === 0) {
+                    listDiv.innerHTML = '<p>No businesses yet—claim or add one!</p>';
+                    return;
                 }
-                return;
+                data.forEach(business => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-4 rounded-lg shadow-md';
+                    card.innerHTML = '<h3 class="text-lg font-bold">' + (business.name || 'No Name') + '</h3>' +
+                        '<p>' + (business.address || 'No Address') + '</p>' +
+                        '<p>Status: ' + (business.claim_status || 'unclaimed') + '</p>';
+                    if (business.claim_status === 'approved') {
+                        const editBtn = document.createElement('button');
+                        editBtn.textContent = 'Edit';
+                        editBtn.className = 'bg-blue-500 text-white p-2 rounded mt-2';
+                        editBtn.onclick = () => showEditForm(business);
+                        card.appendChild(editBtn);
+                    } else if (business.claim_status === 'pending') {
+                        card.innerHTML += '<p class="text-yellow-500">Pending approval</p>';
+                    }
+                    listDiv.appendChild(card);
+                });
             }
-            // Normal auto-approve for pre-added codes
-            const { data, error } = await supabaseClient.from('businesses').select('*').eq('claim_code', code).eq('claim_status', 'unclaimed').single();
-            if (error || !data) {
-                alert('Invalid code or already claimed');
-                return;
-            }
-            const update = { owner_id: currentUser.id, claim_status: 'approved', claim_code: null };
-            const { error: updateError } = await supabaseClient.from('businesses').update(update).eq('id', data.id);
-            if (updateError) {
-                alert('Claim error: ' + updateError.message);
-            } else {
-                alert('Claimed and approved! Edit below.');
-                loadOwnedBusinesses();
-                sendGHLNotification('New auto-approved claim');
-            }
-        }
 
-        async function requestClaim(id) {
-            // Similar limit check for search-based claims
-            const { count, error: countError } = await supabaseClient.from('businesses').select('id', { count: 'exact' }).eq('owner_id', currentUser.id);
-            if (countError) {
-                alert('Error checking claims: ' + countError.message);
-                return;
+            // Toggle search section visibility
+            function toggleSearch() {
+                document.getElementById('search-section').classList.toggle('hidden');
             }
-            if (count > 2) {
-                alert('You have reached the claim limit (max 2 for free users). Contact support.');
-                return;
-            }
-            const { error } = await supabaseClient.from('businesses').update({ owner_id: currentUser.id, claim_status: 'pending' }).eq('id', id);
-            if (error) {
-                alert('Request error: ' + error.message);
-            } else {
-                alert('Claim requested—waiting for approval.');
-                loadOwnedBusinesses();
-                sendGHLNotification('New pending claim request');
-            }
-        }
 
-        function showEditForm(business) {
-            if (business.claim_status !== 'approved') {
-                alert('Can\'t edit—pending approval');
-                return;
+            // Search for unclaimed businesses
+            async function searchBusinesses(event) {
+                const query = event.target.value.toLowerCase();
+                if (query.length < 3) {
+                    document.getElementById('search-results').innerHTML = '';
+                    return;
+                }
+                const { data, error } = await supabaseClient.from('businesses').select('*').ilike('name', `%${query}%`).eq('claim_status', 'unclaimed');
+                if (error) console.error('Search error:', error);
+                const resultsDiv = document.getElementById('search-results');
+                resultsDiv.innerHTML = '';
+                data.forEach(business => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-4 rounded-lg shadow-md';
+                    card.innerHTML = '<h3 class="text-lg font-bold">' + (business.name || 'No Name') + '</h3>' +
+                        '<p>' + (business.address || 'No Address') + '</p>';
+                    const requestBtn = document.createElement('button');
+                    requestBtn.textContent = 'Request Claim';
+                    requestBtn.className = 'bg-green-500 text-white p-2 rounded mt-2';
+                    requestBtn.onclick = () => requestClaim(business.id);
+                    card.appendChild(requestBtn);
+                    resultsDiv.appendChild(card);
+                });
             }
-            document.getElementById('edit-id').value = business.id;
-            document.getElementById('name').value = business.name || '';
-            document.getElementById('tagline').value = business.tagline || '';
-            document.getElementById('description').value = business.description || '';
-            document.getElementById('address').value = business.address || '';
-            document.getElementById('website').value = business.website || '';
-            document.getElementById('menu_url').value = business.menu_url || '';
-            document.getElementById('facebook').value = business.social_links ? business.social_links.facebook : '';
-            document.getElementById('instagram').value = business.social_links ? business.social_links.instagram : '';
-            document.getElementById('twitter').value = business.social_links ? business.social_links.twitter : '';
-            const categoriesSelect = document.getElementById('categories');
-            Array.from(categoriesSelect.options).forEach(option => {
-                option.selected = (business.categories || []).includes(option.value);
-            });
-            document.getElementById('edit-form').style.display = 'block';
-        }
-
-        async function saveBusiness() {
-            const id = document.getElementById('edit-id').value;
-            const { data: biz, error: bizError } = await supabaseClient.from('businesses').select('claim_status').eq('id', id).single();
-            if (bizError || biz.claim_status !== 'approved') {
-                alert('Can\'t save—pending approval or error fetching status');
-                return;
-            }
-            // Fetch user membership (assumes 'profiles' table with 'id' matching user.id and 'membership_level' column)
-            const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('membership_level').eq('id', currentUser.id).single();
-            const membership = profile ? profile.membership_level : 'free'; // Default to free
-            if (profileError) console.error('Profile error:', profileError);
-            const name = document.getElementById('name').value;
-            const tagline = document.getElementById('tagline').value;
-            const description = document.getElementById('description').value;
-            let address = document.getElementById('address').value;
-            const website = document.getElementById('website').value;
-            const menu_url = document.getElementById('menu_url').value;
-            const social_links = {
-                facebook: document.getElementById('facebook').value,
-                instagram: document.getElementById('instagram').value,
-                twitter: document.getElementById('twitter').value
-            };
-            const categories = Array.from(document.getElementById('categories').selectedOptions).map(opt => opt.value);
-            // Enforce category limit based on membership
-            if (membership === 'free' && categories.length > 3) {
-                alert('Free membership limited to max 3 categories. Upgrade for more!');
-                return;
-            }
-            let latitude = null;
-            let longitude = null;
-            if (address) {
+            async function sendGHLNotification(eventType, details, email = currentUser.email) {
                 try {
-                    const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`);
-                    const data = await res.json();
-                    if (data.status === 'OK' && data.results.length > 0) {
-                        latitude = data.results[0].geometry.location.lat;
-                        longitude = data.results[0].geometry.location.lng;
+                    const response = await fetch('https://services.leadconnectorhq.com/hooks/miD90jDw7w2L2p1FaEpg/webhook-trigger/7b238155-630a-4776-9f3d-45a2757e8644', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ event: eventType, email, details, type: 'business' })  // Add type for tagging
+                    });
+                    if (response.ok) {
+                        console.log('GHL notification sent for', eventType);
                     } else {
-                        alert(`Could not geocode address: ${data.error_message || 'Try adding city/state.'}`);
-                        return;
+                        console.error('GHL notify failed:', response.status);
                     }
                 } catch (err) {
-                    alert('Geocoding error: ' + err.message);
-                    return;
+                    console.error('GHL notify error:', err);
                 }
             }
-            let logo_url = null;
-            const logoFile = document.getElementById('logo-upload').files[0];
-            if (logoFile) {
-                const { data, error } = await supabaseClient.storage.from('business-logos').upload(`${currentUser.id}/${logoFile.name}`, logoFile);
-                if (error) {
-                    alert('Logo upload error: ' + error.message);
-                    return;
-                }
-                logo_url = `${supabaseUrl}/storage/v1/object/public/business-logos/${data.path}`;
-            }
-            let photos = [];
-            const { data: existing, error: existingError } = await supabaseClient.from('businesses').select('photos').eq('id', id).single();
-            if (existingError) console.error('Existing photos error:', existingError);
-            photos = existing.photos || [];
-            const photoFiles = document.getElementById('photos-upload').files;
-            for (let file of photoFiles) {
-                const { data, error } = await supabaseClient.storage.from('business-photos').upload(`${currentUser.id}/${file.name}`, file);
-                if (error) {
-                    alert('Photo upload error: ' + error.message);
-                    return;
-                }
-                photos.push(`${supabaseUrl}/storage/v1/object/public/business-photos/${data.path}`);
-            }
-            const updateData = {
-                name,
-                tagline,
-                description,
-                address,
-                website,
-                menu_url,
-                social_links,
-                categories,
-                latitude,
-                longitude,
-                photos
-            };
-            if (logo_url) updateData.logo_url = logo_url;
-            const { error } = await supabaseClient.from('businesses').update(updateData).eq('id', id).eq('owner_id', currentUser.id);
-            if (error) {
-                alert('Save error: ' + error.message);
-            } else {
-                cancelEdit();
-                loadOwnedBusinesses();
-            }
-        }
+                    
+            // Claim with code (limit check, update Supabase)
+                async function claimWithCode() {
+                        const code = document.getElementById('claim-code').value.trim();
+                        if (!code) {
+                            alert('Enter a code');
+                            return;
+                        }
+                        // Check count
+                        const { count, error: countError } = await supabaseClient.from('businesses').select('id', { count: 'exact' }).eq('owner_id', currentUser.id);
+                        if (countError) {
+                            alert('Error checking claims: ' + countError.message);
+                            return;
+                        }
+                        const isPreAdded = true; // Assume pre-added for code (expand to check DB flag in Phase 2)
+                        let status = 'pending';
+                        if (count <= 2 && isPreAdded) status = 'approved'; // Auto-approve if under limit and pre-added
+                        const { data: biz, error } = await supabaseClient.from('businesses').select('*').eq('claim_code', code).eq('claim_status', 'unclaimed').maybeSingle();
+                        if (error || !biz) {
+                            alert('Invalid code or already claimed');
+                            return;
+                        }
+                        const update = { owner_id: currentUser.id, claim_status: status, claim_code: null };
+                        const { data: updateData, error: updateError } = await supabaseClient.from('businesses').update(update).eq('id', biz.id).select();
+                        console.log('Update result:', updateData, updateError);
+                        if (updateError) {
+                            alert('Claim error: ' + updateError.message);
+                        } else if (!updateData.length) {
+                            alert('Claim failed - no rows updated (check RLS)');
+                        } else {
+                            alert(`Claimed! Status: ${status.toUpperCase()}`);
+                            loadOwnedBusinesses();
+                            sendGHLNotification('claim_event', `New claim: ${status} for biz ID ${biz.id}, user: ${currentUser.id}`);
+                        }
+                    }
 
-        function cancelEdit() {
-            document.getElementById('edit-form').style.display = 'none';
-        }
+                async function requestClaim(id) {
+                    const { count, error: countError } = await supabaseClient.from('businesses').select('id', { count: 'exact' }).eq('owner_id', currentUser.id);
+                    if (countError) {
+                        alert('Error checking claims: ' + countError.message);
+                        return;
+                    }
+                    if (count > 2) {
+                        alert('Limit reached (max 3 free). Contact support for review.');
+                        return;
+                    }
+                    const update = { owner_id: currentUser.id, claim_status: 'pending' };
+                    const { data: updateData, error } = await supabaseClient.from('businesses').update(update).eq('id', id).select();
+                    console.log('Update result:', updateData, error);
+                    if (error) {
+                        alert('Request error: ' + error.message);
+                    } else if (!updateData.length) {
+                        alert('Request failed - no rows updated (check RLS)');
+                    } else {
+                        alert('Claim requested—waiting for approval.');
+                        loadOwnedBusinesses();
+                        sendGHLNotification(`New pending claim request for biz ID ${id}`); // Triggers follow-up
+                   
+                }
+            }
+            // Request claim via search (limit check, update Supabase)
+            async function requestClaim(id) {
+                    const { count, error: countError } = await supabaseClient.from('businesses').select('id', { count: 'exact' }).eq('owner_id', currentUser.id);
+                    if (countError) {
+                        alert('Error checking claims: ' + countError.message);
+                        return;
+                    }
+                    if (count > 2) {
+                        alert('You have reached the claim limit (max 2 for free users). Contact support.');
+                        return;
+                    }
+                    const update = { owner_id: currentUser.id, claim_status: 'pending' };
+                    const { data: updateData, error } = await supabaseClient.from('businesses').update(update).eq('id', id).select(); // Add .select() for returned row
+                    console.log('Request update result:', updateData, error); // Better debug
+                    if (error) {
+                        alert('Request error: ' + error.message);
+                    } else if (!updateData || updateData.length === 0) {
+                        alert('Request failed - no rows updated (check RLS in Supabase)');
+                    } else {
+                        alert('Claim requested—waiting for approval.');
+                        loadOwnedBusinesses();
+                        // sendGHLNotification('New pending claim request'); // For Phase 2
+                    }
+                }
 
-        // Stub for GHL notification (replace 'YOUR_GHL_WEBHOOK_URL' with actual, e.g., from GoHighLevel)
-        async function sendGHLNotification(message) {
-            try {
-                await fetch('YOUR_GHL_WEBHOOK_URL', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event: 'claim_event', user_id: currentUser.id, details: message })
+            // Show edit form for approved business
+            function showEditForm(business) {
+                if (business.claim_status !== 'approved') {
+                    alert('Can\'t edit—pending approval');
+                    return;
+                }
+                document.getElementById('edit-id').value = business.id;
+                document.getElementById('name').value = business.name || '';
+                document.getElementById('tagline').value = business.tagline || '';
+                document.getElementById('description').value = business.description || '';
+                document.getElementById('address').value = business.address || '';
+                document.getElementById('website').value = business.website || '';
+                document.getElementById('menu_url').value = business.menu_url || '';
+                document.getElementById('facebook').value = business.social_links ? business.social_links.facebook : '';
+                document.getElementById('instagram').value = business.social_links ? business.social_links.instagram : '';
+                document.getElementById('twitter').value = business.social_links ? business.social_links.twitter : '';
+                const categoriesSelect = document.getElementById('categories');
+                Array.from(categoriesSelect.options).forEach(option => {
+                    option.selected = (business.categories || []).includes(option.value);
                 });
-            } catch (err) {
-                console.error('GHL notification error:', err);
+                document.getElementById('edit-form').style.display = 'block';
             }
-        }
 
-        initDashboard();
-    
+            // Save edited business to Supabase
+            async function saveBusiness() {
+                const id = document.getElementById('edit-id').value;
+                const { data: biz, error: bizError } = await supabaseClient.from('businesses').select('claim_status').eq('id', id).single();
+                if (bizError || biz.claim_status !== 'approved') {
+                    alert('Can\'t save—pending approval or error fetching status');
+                    return;
+                }
+                const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('membership_level').eq('id', currentUser.id).single();
+                const membership = profile ? profile.membership_level : 'free';
+                if (profileError) console.error('Profile error:', profileError);
+                const name = document.getElementById('name').value;
+                const tagline = document.getElementById('tagline').value;
+                const description = document.getElementById('description').value;
+                let address = document.getElementById('address').value;
+                const website = document.getElementById('website').value;
+                const menu_url = document.getElementById('menu_url').value;
+                const social_links = {
+                    facebook: document.getElementById('facebook').value,
+                    instagram: document.getElementById('instagram').value,
+                    twitter: document.getElementById('twitter').value
+                };
+                const categories = Array.from(document.getElementById('categories').selectedOptions).map(opt => opt.value);
+                if (membership === 'free' && categories.length > 3) {
+                    alert('Free membership limited to max 3 categories. Upgrade for more!');
+                    return;
+                }
+                let latitude = null;
+                let longitude = null;
+                if (address) {
+                    try {
+                        const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`);
+                        const data = await res.json();
+                        if (data.status === 'OK' && data.results.length > 0) {
+                            latitude = data.results[0].geometry.location.lat;
+                            longitude = data.results[0].geometry.location.lng;
+                        } else {
+                            alert(`Could not geocode address: ${data.error_message || 'Try adding city/state.'}`);
+                            return;
+                        }
+                    } catch (err) {
+                        alert('Geocoding error: ' + err.message);
+                        return;
+                    }
+                }
+                let logo_url = null;
+                const logoFile = document.getElementById('logo-upload').files[0];
+                if (logoFile) {
+                    const { data, error } = await supabaseClient.storage.from('business-logos').upload(`${currentUser.id}/${logoFile.name}`, logoFile);
+                    if (error) {
+                        alert('Logo upload error: ' + error.message);
+                        return;
+                    }
+                    logo_url = `${supabaseUrl}/storage/v1/object/public/business-logos/${data.path}`;
+                }
+                let photos = [];
+                const { data: existing, error: existingError } = await supabaseClient.from('businesses').select('photos').eq('id', id).single();
+                if (existingError) console.error('Existing photos error:', existingError);
+                photos = existing.photos || [];
+                const photoFiles = document.getElementById('photos-upload').files;
+                for (let file of photoFiles) {
+                    const { data, error } = await supabaseClient.storage.from('business-photos').upload(`${currentUser.id}/${file.name}`, file);
+                    if (error) {
+                        alert('Photo upload error: ' + error.message);
+                        return;
+                    }
+                    photos.push(`${supabaseUrl}/storage/v1/object/public/business-photos/${data.path}`);
+                }
+                const updateData = {
+                    name,
+                    tagline,
+                    description,
+                    address,
+                    website,
+                    menu_url,
+                    social_links,
+                    categories,
+                    latitude,
+                    longitude,
+                    photos
+                };
+                if (logo_url) updateData.logo_url = logo_url;
+                const { error } = await supabaseClient.from('businesses').update(updateData).eq('id', id).eq('owner_id', currentUser.id);
+                if (error) {
+                    alert('Save error: ' + error.message);
+                } else {
+                    cancelEdit();
+                    loadOwnedBusinesses();
+                }
+            }
+
+            // Cancel edit (hide form)
+            function cancelEdit() {
+                document.getElementById('edit-form').style.display = 'none';
+            }
+
+           async function syncUserToGHL(email, type = 'customer') {
+    try {
+        await fetch('https://services.leadconnectorhq.com/hooks/miD90jDw7w2L2p1FaEpg/webhook-trigger/7b238155-630a-4776-9f3d-45a2757e8644', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event: 'new_user', email, type })
+        });
+        console.log('User synced to GHL with type:', type);
+    } catch (err) {
+        console.error('GHL sync error:', err);
+    }
+}
+
+            // Start dashboard on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                initDashboard();
+            });
     </script>
 </body>
 </html>
