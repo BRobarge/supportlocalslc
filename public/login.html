@@ -14,37 +14,40 @@
             <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
         </div>
     </header>
-         <nav class="w-full bg-blue-600 shadow-md flex justify-around items-center py-4">
-            <a href="index.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
-                <i class="fas fa-home text-3xl"></i>
-                <span class="text-base font-bold">Home</span>
-            </a>
-            <a id="auth-link" href="login.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
-                <i class="fas fa-sign-in-alt text-3xl"></i>
-                <span class="text-base font-bold">Login</span>
-            </a>
-            <a href="dashboard.html" class="text-white hover:text-yellow-300 flex flex-col items-center">
-                <i class="fas fa-user-cog text-3xl"></i>
-                <span class="text-base font-bold">Dashboard</span>
-            </a>
-        </nav>
+            <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
+                <a href="index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+                    <i class="fas fa-home text-2xl"></i>
+                    <span class="text-sm font-semibold">Home</span>
+                </a>
+                <a id="auth-link" href="login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+                    <i class="fas fa-sign-in-alt text-2xl"></i>
+                    <span class="text-sm font-semibold">Login</span>
+                </a>
+                <a href="dashboard.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+                    <i class="fas fa-user-cog text-2xl"></i>
+                    <span class="text-sm font-semibold">Dashboard</span>
+                </a>
+            </nav>
     <main class="container mx-auto p-4">
-        <h2 class="text-xl font-semibold mb-4">Login or Sign Up to Claim/Edit Your Listing</h2>
+        <h2 id="auth-title" class="text-xl font-semibold mb-4">Login to Claim/Edit Your Listing</h2>
         <form id="auth-form" class="bg-white p-6 rounded shadow-md max-w-md mx-auto">
             <input type="email" id="email" placeholder="Email" class="w-full p-2 mb-4 border rounded" required>
             <input type="password" id="password" placeholder="Password" class="w-full p-2 mb-4 border rounded" required>
-            <button type="button" onclick="signUp()" class="bg-green-500 text-white p-2 rounded w-full mb-2">Sign Up</button>
-            <button type="button" onclick="login()" class="bg-blue-500 text-white p-2 rounded w-full">Login</button>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded w-full mb-2">Login</button>
         </form>
+        <button id="toggle-auth" class="text-blue-500 underline text-center w-full block mt-4">Don't have an account? Sign
+            Up</button>
         <p id="message" class="text-center mt-4"></p>
     </main>
 
     <script>
         const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-        
-        async function syncUserToGHL(email, type = 'customer') {
+            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+            const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+            let isLoginMode = true;
+
+            async function syncUserToGHL(email, type = 'customer') {
                 try {
                     const response = await fetch('https://services.leadconnectorhq.com/hooks/miD90jDw7w2L2p1FaEpg/webhook-trigger/7b238155-630a-4776-9f3d-45a2757e8644', {
                         method: 'POST',
@@ -60,70 +63,73 @@
                     console.error('GHL sync error:', err);
                 }
             }
-        async function updateNavAuth() {
+
+            async function handleAuth(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                let data, error;
+                if (isLoginMode) {
+                    ({ data, error } = await supabaseClient.auth.signInWithPassword({ email, password }));
+                    if (error) {
+                        document.getElementById('message').innerText = 'Error: ' + error.message;
+                        return;
+                    }
+                    sessionStorage.setItem('supabase_session', JSON.stringify(data.session));
+                    syncUserToGHL(email, 'customer');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
+                    if (error) {
+                        document.getElementById('message').innerText = 'Error: ' + error.message;
+                        return;
+                    }
+                    const { error: profileError } = await supabaseClient.from('profiles').insert({
+                        id: data.user.id,
+                        membership_level: 'free'
+                    });
+                    if (profileError) console.error('Profile insert error:', profileError);
+                    document.getElementById('message').innerText = 'Sign up successful! Please login.';
+                    syncUserToGHL(email, 'customer');
+                    toggleMode(); // Switch back to login after signup
+                }
+            }
+
+            function toggleMode() {
+                isLoginMode = !isLoginMode;
+                document.getElementById('auth-title').innerText = isLoginMode ? 'Login to Claim/Edit Your Listing' : 'Sign Up for an Account';
+                document.getElementById('auth-form').querySelector('button').textContent = isLoginMode ? 'Login' : 'Sign Up';
+                document.getElementById('toggle-auth').textContent = isLoginMode ? "Don't have an account? Sign Up" : 'Already have an account? Login';
+                document.getElementById('message').innerText = '';
+            }
+
+            async function updateNavAuth() {
                 const storedSession = sessionStorage.getItem('supabase_session');
                 const authLink = document.getElementById('auth-link');
-                if (!authLink) {
-                    console.log('No auth link found');
-                    return;
-                }
+                if (!authLink) return;
                 const iconElement = authLink.querySelector('svg, i');
                 const textSpan = authLink.querySelector('span');
-                console.log('Stored session:', storedSession ? 'Yes' : 'No'); // Debug
                 if (storedSession) {
                     authLink.href = '#';
-                    authLink.onclick = async function (e) {
+                    authLink.onclick = async (e) => {
                         e.preventDefault();
                         await supabaseClient.auth.signOut();
                         sessionStorage.removeItem('supabase_session');
-                        console.log('Logged out');
                         window.location.href = 'login.html';
                     };
                     if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
                     if (textSpan) textSpan.textContent = 'Logout';
-                    console.log('Swapped to Logout');
                 } else {
                     authLink.href = 'login.html';
                     authLink.onclick = null;
                     if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
                     if (textSpan) textSpan.textContent = 'Login';
-                    console.log('Swapped to Login');
                 }
             }
 
-        async function signUp() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                if (error) {
-                    document.getElementById('message').innerText = 'Error: ' + error.message;
-                    return;
-                }
-                // Create profile
-                const { error: profileError } = await supabaseClient.from('profiles').insert({
-                    id: data.user.id,
-                    membership_level: 'free'  // Default; update via Stripe later
-                });
-                if (profileError) console.error('Profile insert error:', profileError);
-                document.getElementById('message').innerText = 'Sign up successful! Please login.';
-                syncUserToGHL(email, 'customer');
-            }
-
-        async function login() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) {
-                    document.getElementById('message').innerText = 'Error: ' + error.message;
-                } else {
-                    sessionStorage.setItem('supabase_session', JSON.stringify(data.session)); // Full session for persist
-                     syncUserToGHL(email, 'customer'); // Sync on login too (update if exists)
-                    console.log('Session saved:', data.session); // Debug log
-                    window.location.href = 'dashboard.html';
-                }
-            }
-
-        updateNavAuth();
+            document.getElementById('auth-form').addEventListener('submit', handleAuth);
+            document.getElementById('toggle-auth').addEventListener('click', toggleMode);
+            updateNavAuth();
     </script>
 </body>
 </html>
