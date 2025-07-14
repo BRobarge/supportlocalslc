@@ -91,7 +91,7 @@
                 } else {
                     const membership = data.profiles ? data.profiles.membership_level : 'free'; // Default to free if unclaimed
                     detailsDiv.innerHTML = `
-                        <img src="${data.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${data.name || 'No Name'}" class="max-w-96 max-h-96 object-contain rounded-full mx-auto mb-4">
+                        <img src="${data.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${data.name || 'No Name'}" class="max-w-full sm:max-w-80 max-h-80 object-contain rounded-full mx-auto mb-4">
                         <h1 class="text-3xl font-bold text-center mb-2">${data.name || 'No Name'}</h1>
                         <p class="text-xl italic text-gray-600 text-center mb-4">${data.tagline || ''}</p>
                         <div class="text-gray-600 text-center mb-4">
