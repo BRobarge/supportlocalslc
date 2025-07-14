@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100 font-sans pb-20">
+<body class="bg-gray-100 font-sans pb-40">
     <header class="shadow-md">
         <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
             <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
@@ -91,7 +91,7 @@
                 } else {
                     const membership = data.profiles ? data.profiles.membership_level : 'free'; // Default to free if unclaimed
                     detailsDiv.innerHTML = `
-                       <img src="${data.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${data.name || 'No Name'}" class="max-w-96 max-h-96 object-contain rounded-full mx-auto mb-4">
+                       <img src="${data.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${data.name || 'No Name'}" class="max-w-80 max-h-80 object-contain rounded-full mx-auto mb-4">
                         <h1 class="text-3xl font-bold text-center mb-2">${data.name || 'No Name'}</h1>
                         <p class="text-xl italic text-gray-600 text-center mb-4">${data.tagline || ''}</p>
                         <div class="text-gray-600 text-center mb-4">
