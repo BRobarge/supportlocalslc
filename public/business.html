@@ -90,6 +90,7 @@
                     detailsDiv.innerHTML = `<p class="text-center">Business not found.</p>`;
                 } else {
                     const membership = data.profiles ? data.profiles.membership_level : 'free'; // Default to free if unclaimed
+                    console.log('Membership on this device:', membership);
                     detailsDiv.innerHTML = `
                         <img src="${data.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${data.name || 'No Name'}" class="max-w-full sm:max-w-80 max-h-80 object-contain rounded-full mx-auto mb-4">
                         <h1 class="text-3xl font-bold text-center mb-2">${data.name || 'No Name'}</h1>
@@ -99,7 +100,7 @@
                         </div>
                         <p class="mb-4">${data.description || 'No Description'}</p>
                         ${membership !== 'free' ? `
-                        <div class="flex flex-wrap items-center justify-center gap-4 mb-4">
+                        <div class="flex flex-wrap items-center justify-center gap-4 mb-4 max-w-full">
                             ${data.website ? `<a href="${data.website}" target="_blank" class="bg-blue-800 text-yellow-300 rounded px-6 py-3 flex items-center hover:bg-blue-900 block w-full sm:w-auto text-center">
                                 <i class="fas fa-globe mr-2"></i> Visit Website
                             </a>` : ''}
