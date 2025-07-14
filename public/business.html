@@ -99,14 +99,14 @@
                         </div>
                         <p class="mb-4">${data.description || 'No Description'}</p>
                         ${membership !== 'free' ? `
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4 justify-center max-w-full">
-                            ${data.website ? `<a href="${data.website}" target="_blank" class="bg-blue-800 text-yellow-300 rounded px-6 py-3 flex items-center hover:bg-blue-900">
+                        <div class="flex flex-row flex-wrap items-center justify-center gap-4 mb-4 overflow-x-auto min-w-full">
+                            ${data.website ? `<a href="${data.website}" target="_blank" class="bg-blue-800 text-yellow-300 rounded px-6 py-3 flex items-center hover:bg-blue-900 min-w-[200px]">
                                 <i class="fas fa-globe mr-2"></i> Visit Website
                             </a>` : ''}
-                            ${data.menu_url ? `<a href="${data.menu_url}" target="_blank" class="bg-blue-800 text-yellow-300 rounded px-6 py-3 flex items-center hover:bg-blue-900">
+                            ${data.menu_url ? `<a href="${data.menu_url}" target="_blank" class="bg-blue-800 text-yellow-300 rounded px-6 py-3 flex items-center hover:bg-blue-900 min-w-[200px]">
                                 <i class="fas fa-utensils mr-2"></i> View Menu
                             </a>` : ''}
-                            ${data.social_links ? Object.entries(data.social_links).map(([key, url]) => `<a href="${url}" target="_blank" class="bg-blue-800 text-yellow-300 rounded px-6 py-3 flex items-center hover:bg-blue-900">
+                            ${data.social_links ? Object.entries(data.social_links).map(([key, url]) => `<a href="${url}" target="_blank" class="bg-blue-800 text-yellow-300 rounded px-6 py-3 flex items-center hover:bg-blue-900 min-w-[200px]">
                                 <i class="fab fa-${key} mr-2"></i> ${key.charAt(0).toUpperCase() + key.slice(1)}
                             </a>`).join('') : ''}
                         </div>` : ''}
