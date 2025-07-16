@@ -486,117 +486,132 @@
 
             // Save business
             async function saveBusiness() {
-                const id = document.getElementById('edit-id').value;
-                const { data: biz, error: bizError } = await supabaseClient.from('businesses').select('claim_status').eq('id', id).single();
-                if (bizError || biz.claim_status !== 'approved') {
-                    alert('Can\'t save—pending approval or error fetching status');
-                    return;
-                }
-                const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('membership_level').eq('id', currentUser.id).single();
-                const membership = profile ? profile.membership_level : 'free';
-                const limits = tierLimits[membership] || tierLimits['free'];
-                const name = document.getElementById('name').value;
-                const tagline = document.getElementById('tagline').value;
-                const description = document.getElementById('description').value;
-                let address = document.getElementById('address').value;
-                const website = document.getElementById('website').value;
-                const menu_url = document.getElementById('menu_url').value;
-                const social_links = {};
-                document.querySelectorAll('#social-fields div').forEach(div => {
-                    const site = div.querySelector('input:first-child').value.trim().toLowerCase();
-                    let url = div.querySelector('input[type="url"]').value.trim();
-                    if (site && url) {
-                        if (!url.startsWith('http')) url = `https://${url}`;
-                        social_links[site] = url;
+                    const id = document.getElementById('edit-id').value;
+                    const { data: biz, error: bizError } = await supabaseClient.from('businesses').select('claim_status').eq('id', id).single();
+                    if (bizError || biz.claim_status !== 'approved') {
+                        alert('Can\'t save—pending approval or error fetching status');
+                        return;
                     }
-                });
-                const categories = Array.from(document.querySelectorAll('#category-container input.tag-checkbox:checked')).map(cb => cb.value);
-                const subs = Array.from(document.querySelectorAll('#category-container input.sub-checkbox:checked')).map(cb => cb.value);
-                const mains = new Set(subs.map(sub => sub.split(' > ')[0]));
-                if (subs.length > 0 && mains.size !== 1) {
-                    alert('All subs must be under the same main category.');
-                    return;
-                }
-                if (subs.length > limits.subs) {
-                    alert(`Limited to max ${limits.subs} subs on ${membership} tier.`);
-                    return;
-                }
-                if (categories.length > limits.tags) {
-                    alert(`Limited to max ${limits.tags} tags on ${membership} tier.`);
-                    return;
-                }
-                let latitude = null;
-                let longitude = null;
-                if (address) {
-                    try {
-                        const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`);
-                        const data = await res.json();
-                        if (data.status === 'OK' && data.results.length > 0) {
-                            latitude = data.results[0].geometry.location.lat;
-                            longitude = data.results[0].geometry.location.lng;
-                        } else {
-                            alert(`Could not geocode address: ${data.error_message || 'Try adding city/state.'}`);
+                    const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('membership_level').eq('id', currentUser.id).single();
+                    const membership = profile ? profile.membership_level : 'free';
+                    const limits = tierLimits[membership] || tierLimits['free'];
+                    const name = document.getElementById('name').value;
+                    const tagline = document.getElementById('tagline').value;
+                    const description = document.getElementById('description').value;
+                    let address = document.getElementById('address').value;
+                    const website = document.getElementById('website').value;
+                    const menu_url = document.getElementById('menu_url').value;
+                    const social_links = {};
+                    document.querySelectorAll('#social-fields div').forEach(div => {
+                        const site = div.querySelector('input:first-child').value.trim().toLowerCase();
+                        let url = div.querySelector('input[type="url"]').value.trim();
+                        if (site && url) {
+                            if (!url.startsWith('http')) url = `https://${url}`;
+                            social_links[site] = url;
+                        }
+                    });
+
+                    // Updated category collection
+                    const selectedSubCbs = document.querySelectorAll('#category-container input.sub-checkbox:checked');
+                    const subs = Array.from(selectedSubCbs).map(cb => cb.value);
+                    const mains = new Set(subs.map(sub => sub.split(' > ')[0]));
+                    if (subs.length > 0 && mains.size !== 1) {
+                        alert('All subs must be under the same main category.');
+                        return;
+                    }
+                    const selectedTagCbs = document.querySelectorAll('#category-container input.tag-checkbox:checked');
+                    const selectedTagsCount = selectedTagCbs.length;
+                    if (subs.length > limits.subs) {
+                        alert(`Limited to max ${limits.subs} subs on ${membership} tier.`);
+                        return;
+                    }
+                    if (selectedTagsCount > limits.tags) {
+                        alert(`Limited to max ${limits.tags} tags on ${membership} tier.`);
+                        return;
+                    }
+                    let categories = [];
+                    Array.from(selectedTagCbs).forEach(cb => {
+                        categories.push(cb.value);
+                    });
+                    selectedSubCbs.forEach(subCb => {
+                        const li = subCb.closest('li');
+                        const checkedTagsInSub = li.querySelectorAll('input.tag-checkbox:checked');
+                        if (checkedTagsInSub.length === 0) {
+                            categories.push(subCb.value);
+                        }
+                    });
+
+                    let latitude = null;
+                    let longitude = null;
+                    if (address) {
+                        try {
+                            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`);
+                            const data = await res.json();
+                            if (data.status === 'OK' && data.results.length > 0) {
+                                latitude = data.results[0].geometry.location.lat;
+                                longitude = data.results[0].geometry.location.lng;
+                            } else {
+                                alert(`Could not geocode address: ${data.error_message || 'Try adding city/state.'}`);
+                                return;
+                            }
+                        } catch (err) {
+                            alert('Geocoding error: ' + err.message);
                             return;
                         }
-                    } catch (err) {
-                        alert('Geocoding error: ' + err.message);
-                        return;
                     }
-                }
-                let logo_url = null;
-                const logoFile = document.getElementById('logo-upload').files[0];
-                if (logoFile) {
-                    alert('Uploading logo...');
-                    const { data, error } = await supabaseClient.storage.from('business-logos').upload(`${currentUser.id}/${logoFile.name}`, logoFile);
+                    let logo_url = null;
+                    const logoFile = document.getElementById('logo-upload').files[0];
+                    if (logoFile) {
+                        alert('Uploading logo...');
+                        const { data, error } = await supabaseClient.storage.from('business-logos').upload(`${currentUser.id}/${logoFile.name}`, logoFile);
+                        if (error) {
+                            alert('Logo upload error: ' + error.message);
+                            return;
+                        }
+                        logo_url = `${supabaseUrl}/storage/v1/object/public/business-logos/${data.path}`;
+                        console.log('Logo uploaded successfully');
+                    }
+                    let photos = [];
+                    const { data: existing, error: existingError } = await supabaseClient.from('businesses').select('photos').eq('id', id).single();
+                    if (existingError) console.error('Existing photos error:', existingError);
+                    photos = existing.photos || [];
+                    const photoFiles = document.getElementById('photos-upload').files;
+                    if (photoFiles.length > 0) {
+                        alert('Uploading photos...');
+                    }
+                    for (let file of photoFiles) {
+                        const { data, error } = await supabaseClient.storage.from('business-photos').upload(`${currentUser.id}/${file.name}`, file);
+                        if (error) {
+                            alert('Photo upload error: ' + error.message);
+                            return;
+                        }
+                        photos.push(`${supabaseUrl}/storage/v1/object/public/business-photos/${data.path}`);
+                    }
+                    if (photoFiles.length > 0) {
+                        console.log('Photos uploaded successfully');
+                    }
+                    const updateData = {
+                        name,
+                        tagline,
+                        description,
+                        address,
+                        website,
+                        menu_url,
+                        social_links,
+                        categories,
+                        latitude,
+                        longitude,
+                        photos
+                    };
+                    if (logo_url) updateData.logo_url = logo_url;
+                    const { error } = await supabaseClient.from('businesses').update(updateData).eq('id', id).eq('owner_id', currentUser.id);
                     if (error) {
-                        alert('Logo upload error: ' + error.message);
-                        return;
+                        alert('Save error: ' + error.message);
+                    } else {
+                        cancelEdit();
+                        loadOwnedBusinesses();
                     }
-                    logo_url = `${supabaseUrl}/storage/v1/object/public/business-logos/${data.path}`;
-                    console.log('Logo uploaded successfully');
                 }
-                let photos = [];
-                const { data: existing, error: existingError } = await supabaseClient.from('businesses').select('photos').eq('id', id).single();
-                if (existingError) console.error('Existing photos error:', existingError);
-                photos = existing.photos || [];
-                const photoFiles = document.getElementById('photos-upload').files;
-                if (photoFiles.length > 0) {
-                    alert('Uploading photos...');
-                }
-                for (let file of photoFiles) {
-                    const { data, error } = await supabaseClient.storage.from('business-photos').upload(`${currentUser.id}/${file.name}`, file);
-                    if (error) {
-                        alert('Photo upload error: ' + error.message);
-                        return;
-                    }
-                    photos.push(`${supabaseUrl}/storage/v1/object/public/business-photos/${data.path}`);
-                }
-                if (photoFiles.length > 0) {
-                    console.log('Photos uploaded successfully');
-                }
-                const updateData = {
-                    name,
-                    tagline,
-                    description,
-                    address,
-                    website,
-                    menu_url,
-                    social_links,
-                    categories,
-                    latitude,
-                    longitude,
-                    photos
-                };
-                if (logo_url) updateData.logo_url = logo_url;
-                const { error } = await supabaseClient.from('businesses').update(updateData).eq('id', id).eq('owner_id', currentUser.id);
-                if (error) {
-                    alert('Save error: ' + error.message);
-                } else {
-                    cancelEdit();
-                    loadOwnedBusinesses();
-                }
-            }
-
             // Cancel edit
             function cancelEdit() {
                 document.getElementById('edit-modal').style.display = 'none';
