@@ -96,7 +96,7 @@
                         <h1 class="text-3xl font-bold text-center mb-2">${data.name || 'No Name'}</h1>
                         <p class="text-xl italic text-gray-600 text-center mb-4">${data.tagline || ''}</p>
                         <div class="text-gray-600 text-center mb-4">
-                            ${data.categories ? data.categories.map(cat => `<a href="index.html?category=${encodeURIComponent(cat)}" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${cat.split(' > ').pop()}</a>`).join('') : 'No Categories'}
+                           ${data.categories ? data.categories.map(cat => `<a href="index.html?category=${encodeURIComponent(cat)}" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${cat.split(' > ').pop()}</a>`).join('') : 'No Categories'}
                         </div>
                         <p class="mb-4">${data.description || 'No Description'}</p>
                         ${membership !== 'free' ? `

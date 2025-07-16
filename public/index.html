@@ -94,65 +94,85 @@
     }
 
     function populateCategories(data) {
-        const select = document.getElementById('category-select');
-        const allCats = data.flatMap(b => b.categories || []);
-        const categories = [...new Set(allCats)];
-
-        categories.forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat;
-            option.textContent = cat;
-            select.appendChild(option);
-        });
-
-        console.log("✅ Categories populated");
-        select.dispatchEvent(new Event('optionsLoaded')); // signal ready
-    }
+            const select = document.getElementById('category-select');
+            const grouped = {};
+            data.flatMap(b => b.categories || []).forEach(cat => {
+                const parts = cat.split(' > ');
+                const main = parts[0];
+                const sub = parts[1];
+                if (main && sub) {
+                    if (!grouped[main]) grouped[main] = new Set();
+                    grouped[main].add(sub);
+                }
+            });
+            Object.entries(grouped).forEach(([main, subsSet]) => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = main;
+                Array.from(subsSet).sort().forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub;
+                    option.textContent = sub;
+                    optgroup.appendChild(option);
+                });
+                select.appendChild(optgroup);
+            });
+            console.log("✅ Categories populated");
+            select.dispatchEvent(new Event('optionsLoaded'));
+        }
 
     function displayListings(businesses) {
-    const grid = document.getElementById('listings-grid');
-    grid.innerHTML = '';
-
-    businesses.forEach(business => {
-        const card = document.createElement('div');
-        card.className = 'bg-white p-4 rounded-lg shadow-md cursor-pointer';
-        console.log(`Business: ${business.name}, Membership: ${business.profiles ? business.profiles.membership_level : 'none/unclaimed'}`);
-        card.innerHTML = `
-                <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'} logo" class="w-full h-32 object-contain rounded-lg mb-4">
-                <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
-                <div class="flex justify-center flex-wrap mt-2 gap-2">
-                  ${business.categories ? business.categories.map(cat => `<span onclick="filterToCategory('${cat}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${cat.split(' > ').pop()}</span>`).join('') : ''}
-                </div>
-                <p class="text-gray-500 text-center">${business.address || 'No Address'}</p>
-                ${business.profiles && business.profiles.membership_level !== 'free' ? `<a href="${business.website || '#'}" class="block text-blue-500 hover:underline text-center">${business.website ? 'Visit Website' : 'No Website'}</a>` : ''}
-            `;
-        card.addEventListener('click', () => {
-            window.location.href = `business.html?id=${business.id || '#'}`;
-        });
-
-        grid.appendChild(card);
-    });
-}
+            const grid = document.getElementById('listings-grid');
+            grid.innerHTML = '';
+            businesses.forEach(business => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-lg shadow-md cursor-pointer';
+                const mains = new Set();
+                const subs = new Set();
+                const tags = new Set();
+                (business.categories || []).forEach(cat => {
+                    const parts = cat.split(' > ');
+                    if (parts[0]) mains.add(parts[0]);
+                    if (parts[1]) subs.add(parts[1]);
+                    if (parts[2]) tags.add(parts[2]);
+                });
+                const mainBadges = Array.from(mains).map(m => `<span onclick="filterToCategory('${m}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${m}</span>`).join('');
+                const subBadges = Array.from(subs).map(s => `<span onclick="filterToCategory('${s}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${s}</span>`).join('');
+                const tagBadges = Array.from(tags).map(t => `<span onclick="filterToCategory('${t}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${t}</span>`).join('');
+                card.innerHTML = `
+            <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'} logo" class="w-full h-32 object-contain rounded-lg mb-4">
+            <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
+            <div class="flex justify-center flex-wrap mt-2 gap-2">
+                ${mainBadges + subBadges + tagBadges}
+            </div>
+            <p class="text-gray-500 text-center">${business.address || 'No Address'}</p>
+            ${business.profiles && business.profiles.membership_level !== 'free' ? `<a href="${business.website || '#'}" class="block text-blue-500 hover:underline text-center">${business.website ? 'Visit Website' : 'No Website'}</a>` : ''}
+        `;
+                card.addEventListener('click', () => {
+                    window.location.href = `business.html?id=${business.id || '#'}`;
+                });
+                grid.appendChild(card);
+            });
+        }
 
         function filterListings() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedCategory = categorySelect.value;
-        console.log('Starting filter with selectedCategory:', selectedCategory);
-        const filtered = allBusinesses.filter(business => {
-            const matchesSearch = business.name.toLowerCase().includes(searchTerm) ||
-                                (business.categories || []).some(cat => cat.toLowerCase().includes(searchTerm));
-            const matchesCategory = !selectedCategory || (business.categories || []).includes(selectedCategory);
-            console.log(`Business: ${business.name || 'No Name'}, Categories: ${JSON.stringify(business.categories)}, Matches Category: ${matchesCategory}`);
-            return matchesSearch && matchesCategory;
-        });
-        console.log('Filtered businesses count:', filtered.length);
-        displayListings(filtered);
-    }
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedCategory = categorySelect.value;
+                console.log('Starting filter with selectedCategory:', selectedCategory);
+                const filtered = allBusinesses.filter(business => {
+                    const matchesSearch = business.name.toLowerCase().includes(searchTerm) ||
+                        (business.categories || []).some(cat => cat.toLowerCase().includes(searchTerm));
+                    const matchesCategory = !selectedCategory || (business.categories || []).some(cat => cat.includes(selectedCategory));
+                    console.log(`Business: ${business.name || 'No Name'}, Categories: ${JSON.stringify(business.categories)}, Matches Category: ${matchesCategory}`);
+                    return matchesSearch && matchesCategory;
+                });
+                console.log('Filtered businesses count:', filtered.length);
+                displayListings(filtered);
+            }
 
     function filterToCategory(cat) {
-        categorySelect.value = cat;
-        filterListings();
-    }
+            categorySelect.value = cat;
+            filterListings();
+        }
 
     searchInput.addEventListener('input', filterListings);
     categorySelect.addEventListener('change', filterListings);
