@@ -42,191 +42,201 @@
         </div>
     </section>
 
-    <script>
-        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+<script>
+    const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-        async function updateNavAuth() {
-            // (keep existing code)
+    async function updateNavAuth() {
+        const storedSession = sessionStorage.getItem('supabase_session');
+        const authLink = document.getElementById('auth-link');
+        if (!authLink) return;
+        const iconElement = authLink.querySelector('svg, i');
+        const textSpan = authLink.querySelector('span');
+        if (storedSession) {
+            authLink.href = '#';
+            authLink.onclick = async (e) => {
+                e.preventDefault();
+                await supabaseClient.auth.signOut();
+                sessionStorage.removeItem('supabase_session');
+                window.location.href = 'login.html';
+            };
+            if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
+            if (textSpan) textSpan.textContent = 'Logout';
+        } else {
+            authLink.href = 'login.html';
+            authLink.onclick = null;
+            if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
+            if (textSpan) textSpan.textContent = 'Login';
         }
+    }
 
-        let allBusinesses = [];
-        let filterPath = []; // e.g., ['Food & Drink', 'Restaurants', 'Mexican']
+    let allBusinesses = [];
+    let filterPath = []; // e.g., ['Food & Drink', 'Restaurants', 'Mexican']
 
-        const searchInput = document.getElementById('search-input');
-        const categorySelect = document.getElementById('category-select');
-        const filterBar = document.createElement('div');
-        filterBar.id = 'filter-bar';
-        filterBar.className = 'text-center mb-4';
-        document.querySelector('section.container.mx-auto.p-4.flex.flex-col.md\\:flex-row.gap-4').appendChild(filterBar);
+    const searchInput = document.getElementById('search-input');
+    const categorySelect = document.getElementById('category-select');
+    const filterBar = document.createElement('div');
+    filterBar.id = 'filter-bar';
+    filterBar.className = 'text-center mb-4';
+    document.querySelector('section.container.mx-auto.p-4.flex.flex-col.md\\:flex-row.gap-4').appendChild(filterBar);
 
-        async function loadBusinesses() {
-            const { data, error } = await supabaseClient.from('businesses').select('*, profiles!businesses_owner_id_fkey(membership_level)');
-            if (error) {
-                console.error('Error loading businesses:', error);
-                return;
-            }
-            allBusinesses = data;
-            filterListings(); // Initial filter and populate
+    async function loadBusinesses() {
+        const { data, error } = await supabaseClient.from('businesses').select('*, profiles!businesses_owner_id_fkey(membership_level)');
+        if (error) {
+            console.error('Error loading businesses:', error);
+            return;
         }
+        allBusinesses = data;
+        filterListings(); // Initial filter and populate
+    }
 
-        function repopulateCategories(filtered) {
-            categorySelect.innerHTML = '<option value="">All Categories</option>';
-            const levels = { mains: new Set(), subs: new Set(), tags: new Set() };
+    function repopulateCategories(filtered) {
+        categorySelect.innerHTML = '<option value="">All Categories</option>';
+        const levels = { mains: new Set(), subs: new Set(), tags: new Set() };
+        filtered.flatMap(b => b.categories || []).forEach(cat => {
+            const parts = cat.split(' > ');
+            if (parts[0]) levels.mains.add(parts[0]);
+            if (parts[1]) levels.subs.add(parts[1]);
+            if (parts[2]) levels.tags.add(parts[2]);
+        });
+
+        let optionsSet = new Set();
+        if (filterPath.length === 0) {
+            optionsSet = levels.mains;
+        } else if (filterPath.length === 1) {
+            // Subs under current main
+            const currentMain = filterPath[0];
             filtered.flatMap(b => b.categories || []).forEach(cat => {
                 const parts = cat.split(' > ');
-                if (parts[0]) levels.mains.add(parts[0]);
+                if (parts[0] === currentMain && parts[1]) optionsSet.add(parts[1]);
+            });
+        } else if (filterPath.length === 2) {
+            // Tags under current sub
+            const currentSub = filterPath[1];
+            filtered.flatMap(b => b.categories || []).forEach(cat => {
+                const parts = cat.split(' > ');
+                if (parts[1] === currentSub && parts[2]) optionsSet.add(parts[2]);
+            });
+        }
+
+        Array.from(optionsSet).sort().forEach(optionName => {
+            const option = document.createElement('option');
+            option.value = optionName;
+            option.textContent = optionName;
+            categorySelect.appendChild(option);
+        });
+        console.log("✅ Dropdown repopulated for level", filterPath.length);
+    }
+
+    function displayListings(businesses) {
+        const grid = document.getElementById('listings-grid');
+        grid.innerHTML = '';
+        businesses.forEach(business => {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-4 rounded-lg shadow-md cursor-pointer';
+            const levels = { mains: new Set(), subs: new Set(), tags: new Set() };
+            (business.categories || []).forEach(cat => {
+                const parts = cat.split(' > ');
+                levels.mains.add(parts[0]);
                 if (parts[1]) levels.subs.add(parts[1]);
                 if (parts[2]) levels.tags.add(parts[2]);
             });
-
+            let badges = '';
             if (filterPath.length === 0) {
-                // Show unique mains
-                Array.from(levels.mains).sort().forEach(main => {
-                    const option = document.createElement('option');
-                    option.value = main;
-                    option.textContent = main;
-                    categorySelect.appendChild(option);
-                });
+                badges = Array.from(levels.mains).map(m => `<span onclick="advanceFilter('${m}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${m}</span>`).join('');
             } else if (filterPath.length === 1) {
-                const currentMain = filterPath[0];
-                const relevantSubs = new Set();
-                filtered.flatMap(b => b.categories || []).forEach(cat => {
-                    const parts = cat.split(' > ');
-                    if (parts[0] === currentMain && parts[1]) relevantSubs.add(parts[1]);
-                });
-                Array.from(relevantSubs).sort().forEach(sub => {
-                    const option = document.createElement('option');
-                    option.value = sub;
-                    option.textContent = sub;
-                    categorySelect.appendChild(option);
-                });
+                badges = Array.from(levels.subs).map(s => `<span onclick="advanceFilter('${s}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${s}</span>`).join('');
             } else if (filterPath.length === 2) {
-                const currentSub = filterPath[1];
-                const relevantTags = new Set();
-                filtered.flatMap(b => b.categories || []).forEach(cat => {
-                    const parts = cat.split(' > ');
-                    if (parts[1] === currentSub && parts[2]) relevantTags.add(parts[2]);
-                });
-                Array.from(relevantTags).sort().forEach(tag => {
-                    const option = document.createElement('option');
-                    option.value = tag;
-                    option.textContent = tag;
-                    categorySelect.appendChild(option);
-                });
+                badges = Array.from(levels.tags).map(t => `<span onclick="advanceFilter('${t}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${t}</span>`).join('');
             }
-            console.log("✅ Dropdown repopulated for level", filterPath.length);
-        }
-
-        function displayListings(businesses) {
-            const grid = document.getElementById('listings-grid');
-            grid.innerHTML = '';
-            businesses.forEach(business => {
-                const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-lg shadow-md cursor-pointer';
-                const levels = { mains: new Set(), subs: new Set(), tags: new Set() };
-                (business.categories || []).forEach(cat => {
-                    const parts = cat.split(' > ');
-                    levels.mains.add(parts[0]);
-                    if (parts[1]) levels.subs.add(parts[1]);
-                    if (parts[2]) levels.tags.add(parts[2]);
-                });
-                let badges = '';
-                if (filterPath.length === 0) {
-                    badges = Array.from(levels.mains).map(m => `<span onclick="advanceFilter('${m}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${m}</span>`).join('');
-                } else if (filterPath.length === 1) {
-                    badges = Array.from(levels.subs).map(s => `<span onclick="advanceFilter('${s}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${s}</span>`).join('');
-                } else if (filterPath.length === 2) {
-                    badges = Array.from(levels.tags).map(t => `<span onclick="advanceFilter('${t}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${t}</span>`).join('');
-                }
-                card.innerHTML = `
-                <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'}" class="w-full h-32 object-contain rounded-lg mb-4">
-                <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
-                <div class="flex justify-center flex-wrap mt-2 gap-2">
-                    ${badges}
-                </div>
-                <p class="text-gray-500 text-center">${business.address || 'No Address'}</p>
-                ${business.profiles && business.profiles.membership_level !== 'free' ? `<a href="${business.website || '#'}" class="block text-blue-500 hover:underline text-center">${business.website ? 'Visit Website' : 'No Website'}</a>` : ''}
-            `;
-                card.addEventListener('click', () => {
-                    window.location.href = `business.html?id=${business.id || '#'}`;
-                });
-                grid.appendChild(card);
+            card.innerHTML = `
+            <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'}" class="w-full h-32 object-contain rounded-lg mb-4">
+            <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
+            <div class="flex justify-center flex-wrap mt-2 gap-2">
+                ${badges}
+            </div>
+            <p class="text-gray-500 text-center">${business.address || 'No Address'}</p>
+            ${business.profiles && business.profiles.membership_level !== 'free' ? `<a href="${business.website || '#'}" class="block text-blue-500 hover:underline text-center">${business.website ? 'Visit Website' : 'No Website'}</a>` : ''}
+        `;
+            card.addEventListener('click', () => {
+                window.location.href = `business.html?id=${business.id || '#'}`;
             });
-            updateFilterBar();
-            repopulateCategories(businesses); // Repopulate dropdown based on current filtered businesses and filterPath level
-        }
-
-        function advanceFilter(level) {
-            filterPath.push(level);
-            filterListings();
-        }
-
-        function backFilter() {
-            filterPath.pop();
-            filterListings();
-        }
-
-        function updateFilterBar() {
-            filterBar.innerHTML = '';
-            if (filterPath.length > 0) {
-                const pathText = filterPath.join(' → ');
-                filterBar.innerHTML = `<p class="text-gray-600">${pathText}</p>`;
-                const backBtn = document.createElement('button');
-                backBtn.textContent = 'Back';
-                backBtn.className = 'bg-gray-500 text-white p-2 rounded ml-2';
-                backBtn.onclick = backFilter;
-                filterBar.appendChild(backBtn);
-            }
-        }
-
-        function filterListings() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const selectedCategory = filterPath.join(' > ');
-            console.log('Starting filter with selectedCategory:', selectedCategory);
-            const filtered = allBusinesses.filter(business => {
-                const matchesSearch = business.name.toLowerCase().includes(searchTerm) ||
-                    (business.categories || []).some(cat => cat.toLowerCase().includes(searchTerm));
-                const matchesCategory = !selectedCategory || (business.categories || []).some(cat => cat.startsWith(selectedCategory));
-                console.log(`Business: ${business.name || 'No Name'}, Categories: ${JSON.stringify(business.categories)}, Matches Category: ${matchesCategory}`);
-                return matchesSearch && matchesCategory;
-            });
-            console.log('Filtered businesses count:', filtered.length);
-            displayListings(filtered);
-        }
-
-        function filterToCategory(cat) {
-            filterPath = [cat]; // Start new path
-            filterListings();
-        }
-
-        searchInput.addEventListener('input', filterListings);
-        categorySelect.addEventListener('change', () => {
-            const val = categorySelect.value;
-            if (val) {
-                advanceFilter(val);
-            }
+            grid.appendChild(card);
         });
+        updateFilterBar();
+        repopulateCategories(businesses); // Repopulate dropdown based on current filtered businesses and filterPath level
+    }
 
-        // Handle ?category= param
-        const urlParams = new URLSearchParams(window.location.search);
-        const initialCategory = urlParams.get('category');
-        if (initialCategory) {
-            filterToCategory(initialCategory);
+    function advanceFilter(level) {
+        filterPath.push(level);
+        filterListings();
+        categorySelect.value = ''; // Reset dropdown after advance
+    }
+
+    function backFilter() {
+        filterPath.pop();
+        filterListings();
+    }
+
+    function updateFilterBar() {
+        filterBar.innerHTML = '';
+        if (filterPath.length > 0) {
+            const pathText = filterPath.join(' → ');
+            filterBar.innerHTML = `<p class="text-gray-600">${pathText}</p>`;
+            const backBtn = document.createElement('button');
+            backBtn.textContent = 'Back';
+            backBtn.className = 'bg-gray-500 text-white p-2 rounded ml-2';
+            backBtn.onclick = backFilter;
+            filterBar.appendChild(backBtn);
         }
+    }
 
-        loadBusinesses().then(() => {
-            console.log('Load complete, allBusinesses length:', allBusinesses.length);
-            if (allBusinesses.length > 0) {
-                filterListings();
-            } else {
-                console.log('No businesses loaded—check Supabase');
-            }
+    function filterListings() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = filterPath.join(' > ');
+        console.log('Starting filter with selectedCategory:', selectedCategory);
+        const filtered = allBusinesses.filter(business => {
+            const matchesSearch = business.name.toLowerCase().includes(searchTerm) ||
+                (business.categories || []).some(cat => cat.toLowerCase().includes(searchTerm));
+            const matchesCategory = !selectedCategory || (business.categories || []).some(cat => cat.startsWith(selectedCategory) || cat === selectedCategory);
+            console.log(`Business: ${business.name || 'No Name'}, Categories: ${JSON.stringify(business.categories)}, Matches Category: ${matchesCategory}`);
+            return matchesSearch && matchesCategory;
         });
+        console.log('Filtered businesses count:', filtered.length);
+        displayListings(filtered);
+    }
 
-        updateNavAuth();
-    </script>
+    function filterToCategory(cat) {
+        filterPath = cat.split(' > '); // Split full path into array
+        filterListings();
+    }
+
+    searchInput.addEventListener('input', filterListings);
+    categorySelect.addEventListener('change', () => {
+        const val = categorySelect.value;
+        if (val) {
+            advanceFilter(val);
+        }
+    });
+
+    // Handle ?category= param
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialCategory = urlParams.get('category');
+    if (initialCategory) {
+        filterToCategory(decodeURIComponent(initialCategory)); // Decode and filter on load
+    }
+    loadBusinesses().then(() => {
+        console.log('Load complete, allBusinesses length:', allBusinesses.length);
+        if (allBusinesses.length > 0) {
+            filterListings();
+        } else {
+            console.log('No businesses loaded—check Supabase');
+        }
+    });
+
+    updateNavAuth();
+</script>
 
 
 </body>
