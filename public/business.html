@@ -71,48 +71,79 @@
     const params = new URLSearchParams(window.location.search);
     let id = params.get('id');
     if (!id) id = window.location.pathname.split('/').pop();
-    id = parseInt(id, 10);
+    
 
     let currentPhotos = [];
 
         async function loadBusiness() {
-                if (!id || isNaN(id)) {
+                const params = new URLSearchParams(window.location.search);
+                let id = params.get('id');
+                if (!id) id = window.location.pathname.split('/').pop(); // Fallback (unlikely here)
+
+                if (!id || typeof id !== 'string' || id.length !== 36) { // Validate UUID format
                     document.getElementById('business-details').innerHTML = `<p class="text-red-500 text-center">Invalid business ID. Try clicking from homepage.</p>`;
                     return;
                 }
-                const { data, error } = await supabaseClient.from('businesses').select('*, profiles!businesses_owner_id_fkey(membership_level)').eq('id', id).single();
+
+                const { data, error } = await supabaseClient.from('businesses').select(`
+        *,
+        profiles (membership_level)
+    `).eq('id', id).single();
+                if (error) {
+                    console.error('Error loading business:', error);
+                    document.getElementById('business-details').innerHTML = `<p class="text-red-500 text-center">Error loading business details. Please try again or check ID.</p>`;
+                    return;
+                }
+                if (!data) {
+                    document.getElementById('business-details').innerHTML = `<p class="text-center">Business not found.</p>`;
+                    return;
+                }
+
                 currentPhotos = data.photos || [];
                 const detailsDiv = document.getElementById('business-details');
                 if (!detailsDiv) {
-                console.error('business-details div not found on page');
-                return;
-            }
-                if (error) {
-                    console.error('Error loading business:', error);
-                    detailsDiv.innerHTML = `<p class="text-red-500 text-center">Error loading business details. Please try again or check ID.</p>`;
-                } else if (!data) {
-                    detailsDiv.innerHTML = `<p class="text-center">Business not found.</p>`;
-                } else {
-                    const membership = data.profiles ? data.profiles.membership_level : 'free';
-                    console.log('Membership on this device:', membership);
-                    const mains = new Set();
-                    const subs = new Set();
-                    const tags = new Set();
-                    (data.categories || []).forEach(cat => {
-                        const parts = cat.split(' > ');
-                        if (parts[0]) mains.add(parts[0]);
-                        if (parts[1]) subs.add(parts[1]);
-                        if (parts[2]) tags.add(parts[2]);
-                    });
-                    const mainBadges = Array.from(mains).map(m => `<a href="index.html?category=${encodeURIComponent(m)}" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${m}</a>`).join('');
-                    const subBadges = Array.from(subs).map(s => `<a href="index.html?category=${encodeURIComponent(Array.from(mains)[0] + ' > ' + s)}" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${s}</a>`).join('');
-                    const tagBadges = Array.from(tags).map(t => {
-                        const matchingCat = (data.categories || []).find(cat => cat.endsWith(t));
-                        const fullPath = matchingCat || `${Array.from(mains)[0]} > ${Array.from(subs).find(s => data.categories.some(cat => cat.includes(s + ' > ' + t))) || ''} > ${t}`;
-                        return `<a href="index.html?category=${encodeURIComponent(fullPath)}" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${t}</a>`;
-                    }).join('');
-                    const categoriesHtml = mainBadges + subBadges + tagBadges || 'No Categories';
-                    detailsDiv.innerHTML = `
+                    console.error('business-details div not found on page');
+                    return;
+                }
+
+                const membership = data.profiles ? data.profiles.membership_level : 'free';
+                const mains = new Set();
+                const subs = new Set();
+                const tags = new Set();
+                (data.categories || []).forEach(cat => {
+                    const parts = cat.split(' > ');
+                    if (parts[0]) mains.add(parts[0]);
+                    if (parts[1]) subs.add(parts[1]);
+                    if (parts[2]) tags.add(parts[2]);
+                });
+                const mainBadges = Array.from(mains).map(m => `<a href="index.html?category=${encodeURIComponent(m)}" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${m}</a>`).join('');
+                const subBadges = Array.from(subs).map(s => `<a href="index.html?category=${encodeURIComponent(Array.from(mains)[0] + ' > ' + s)}" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${s}</a>`).join('');
+                const tagBadges = Array.from(tags).map(t => {
+                    const matchingCat = (data.categories || []).find(cat => cat.endsWith(t));
+                    const fullPath = matchingCat || `${Array.from(mains)[0]} > ${Array.from(subs).find(s => data.categories.some(cat => cat.includes(s + ' > ' + t))) || ''} > ${t}`;
+                    return `<a href="index.html?category=${encodeURIComponent(fullPath)}" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 mr-2 mb-2 hover:bg-blue-900">${t}</a>`;
+                }).join('');
+                const categoriesHtml = mainBadges + subBadges + tagBadges || 'No Categories';
+
+                // Add offers section for premium users
+                let offersHtml = '';
+                if (membership !== 'free') {
+                    const { data: offers, error: offersError } = await supabaseClient.from('offers').select('*').eq('business_id', id);
+                    if (offersError) {
+                        console.error('Error loading offers:', offersError);
+                    } else if (offers && offers.length > 0) {
+                        offersHtml = '<h2 class="text-xl font-semibold mb-2 mt-4">Special Offers</h2>' +
+                            '<ul class="list-disc pl-5">';
+                        offers.forEach(offer => {
+                            offersHtml += `<li>${offer.description} (Code: ${offer.code}, Expires: ${new Date(offer.expires_at).toLocaleDateString()})</li>`;
+                        });
+                        offersHtml += '</ul>';
+                    } else {
+                        offersHtml = '<p class="text-gray-600 mt-4">No offers available.</p>';
+                    }
+                }
+
+                detailsDiv.innerHTML = `
         <img src="${data.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${data.name || 'No Name'}" class="max-w-full sm:max-w-80 max-h-80 object-contain rounded-full mx-auto mb-4">
         <h1 class="text-3xl font-bold text-center mb-2">${data.name || 'No Name'}</h1>
         <p class="text-xl italic text-gray-600 text-center mb-4">${data.tagline || ''}</p>
@@ -137,8 +168,8 @@
         <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1 justify-center max-w-full mx-auto">
             ${(data.photos || []).map((photo, index) => `<img src="${photo}" alt="Photo ${index + 1}" class="w-full aspect-square object-cover rounded cursor-pointer" onclick="openPhotoModal(${index})">`).join('') || 'No Photos'}
         </div>
+        ${offersHtml} <!-- Add offers section -->
     `;
-                }
             }
 
     function openPhotoModal(index) {

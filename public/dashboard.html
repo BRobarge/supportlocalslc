@@ -1,93 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SupportLocalSLC</title>
     <link href="./output.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
+        crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body class="bg-gray-100 font-sans">
     <header class="shadow-md">
         <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
-            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
+            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg"
+                alt="Support Local SLC Banner"
+                class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
         </div>
     </header>
-        <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
-            <a href="index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-                <i class="fas fa-home text-2xl"></i>
-                <span class="text-sm font-semibold">Home</span>
-            </a>
-            <a id="auth-link" href="login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-                <i class="fas fa-sign-in-alt text-2xl"></i>
-                <span class="text-sm font-semibold">Login</span>
-            </a>
-            <a href="dashboard.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-                <i class="fas fa-user-cog text-2xl"></i>
-                <span class="text-sm font-semibold">Dashboard</span>
-            </a>
-        </nav>
-    <main class="container mx-auto p-4">
-        <div id="owned-businesses" class="mt-8">
-            <h3 class="text-lg font-bold mb-2">Your Businesses</h3>
-            <div id="owned-list" class="grid grid-cols-1 p-6 md:grid-cols-2 gap-4"></div>
-        </div>        
-        <h2 class="text-xl font-semibold mb-4">Claim or Edit Your Business</h2>
-        <div class="mb-4">
-            <input id="claim-code" type="text" placeholder="Enter your claim code..." class="w-full p-2 border rounded">
-            <button onclick="claimWithCode()" class="bg-green-500 text-white p-2 rounded w-full mt-2">Claim with Code</button>
-        </div>
-        <button onclick="toggleSearch()" class="bg-blue-500 text-white p-2 rounded w-full mb-4">Search for My Business</button>
-        <div id="search-section" class="hidden">
-            <input id="search-business" type="text" placeholder="Search business name..." class="w-full p-2 mb-2 border rounded">
-            <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </div>
-        
-        <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-            <div class="bg-white p-6 rounded shadow-md max-w-lg w-full max-h-[80vh] overflow-y-auto">
-                <h3 class="text-lg font-bold mb-4">Edit Business</h3>
-                <input type="hidden" id="edit-id">
-                <input type="text" id="name" placeholder="Business Name" class="w-full p-2 mb-2 border rounded" required>
-                <input type="text" id="tagline" placeholder="Tagline" class="w-full p-2 mb-2 border rounded">
-                <textarea id="description" placeholder="Description" class="w-full p-2 mb-2 border rounded"></textarea>
-                <input type="text" id="address" placeholder="Address (e.g., 123 Main St, Sandy, UT)"
-                    class="w-full p-2 mb-2 border rounded">
-                <input type="url" id="website" placeholder="Website" class="w-full p-2 mb-2 border rounded">
-                <input type="url" id="menu_url" placeholder="Menu URL" class="w-full p-2 mb-2 border rounded">
-                <div class="mb-2">
-                    <label>Social Links:</label>
-                    <select id="social-select" class="w-full p-2 border rounded mb-2">
-                        <option value="">Add a social site...</option>
-                        <option value="facebook">Facebook</option>
-                        <option value="instagram">Instagram</option>
-                        <option value="twitter">X (Twitter)</option>
-                        <option value="tiktok">TikTok</option>
-                        <option value="youtube">YouTube</option>
-                        <option value="linkedin">LinkedIn</option>
-                    </select>
-                    <button onclick="addSocialField(document.getElementById('social-select').value)"
-                        class="bg-blue-500 text-white p-2 rounded w-full mb-2">Add Selected</button>
-                    <div id="social-fields"></div>
-                </div>
-                <div class="mb-2" id="category-container">
-                    <label>Categories (search/select up to tier limit):</label>
-                    <!-- Populated by script -->
-                </div>
-                <div class="mb-2">
-                    <label>Logo Upload:</label>
-                    <input type="file" id="logo-upload" accept="image/*" class="w-full">
-                </div>
-                <div class="mb-2">
-                    <label>Photos Upload (multiple):</label>
-                    <input type="file" id="photos-upload" accept="image/*" multiple class="w-full">
-                </div>
-                <button onclick="saveBusiness()" class="bg-blue-500 text-white p-2 rounded w-full">Save</button>
-                <button onclick="cancelEdit()" class="bg-gray-500 text-white p-2 rounded w-full mt-2">Cancel</button>
+    <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
+        <a href="index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+            <i class="fas fa-home text-2xl"></i>
+            <span class="text-sm font-semibold">Home</span>
+        </a>
+        <a id="auth-link" href="login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+            <i class="fas fa-sign-in-alt text-2xl"></i>
+            <span class="text-sm font-semibold">Login</span>
+        </a>
+        <a href="dashboard.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+            <i class="fas fa-user-cog text-2xl"></i>
+            <span class="text-sm font-semibold">Dashboard</span>
+        </a>
+    </nav>
+        <main class="container mx-auto p-4 relative" style="padding-bottom: 200px;"> <!-- Added padding to avoid nav overlap -->
+            <div id="dashboard-content">
+                <!-- Content will be dynamically loaded based on role -->
             </div>
-        </div>
-    </main>
-    
+        </main>
+
     <script type="module">
         const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
@@ -101,35 +52,118 @@
             'Pro': { subs: 3, tags: 5 }
         };
 
-        // Hide edit form on load
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('edit-modal').style.display = 'none';
+        // Single DOMContentLoaded for all logic
+        document.addEventListener('DOMContentLoaded', async () => {
+            const content = document.getElementById('dashboard-content');
+            if (!content) {
+                console.error('Dashboard content div not found');
+                return;
+            }
+
+            const storedSession = sessionStorage.getItem('supabase_session');
+            if (storedSession) {
+                const session = JSON.parse(storedSession);
+                await supabaseClient.auth.setSession(session);
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single();
+
+                if (profile && profile.role === 'supporter') {
+                    content.innerHTML = `
+                        <p class="text-center text-gray-600">Welcome, Local Supporter! This dashboard is under development. Check back later for offer claims and business follows.</p>
+                        <button onclick="window.location.href='index.html'" class="bg-blue-500 text-white p-2 rounded mt-4">Back to Directory</button>
+                    `;
+                } else if (profile && profile.role === 'business') {
+                        content.innerHTML = `
+                            <h3 class="text-lg font-bold mb-2">Your Businesses</h3>
+                            <div id="owned-list" class="grid grid-cols-1 p-6 md:grid-cols-2 gap-4"></div>
+                            <h2 class="text-xl font-semibold mb-4">Claim or Edit Your Business</h2>
+                            <div class="mb-4">
+                                <input id="claim-code" type="text" placeholder="Enter your claim code..." class="w-full p-2 border rounded">
+                                <button onclick="claimWithCode()" class="bg-green-500 text-white p-2 rounded w-full mt-2">Claim with Code</button>
+                            </div>
+                            <button onclick="toggleSearch()" class="bg-blue-500 text-white p-2 rounded w-full mb-4">Search for My Business</button>
+                            <div id="search-section" class="hidden max-h-[50vh] overflow-y-auto"> <!-- Added max-height and scroll -->
+                                <input id="search-business" type="text" placeholder="Search business name..." class="w-full p-2 mb-2 border rounded">
+                                <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"> <!-- Added padding-bottom -->
+                                </div>
+                            </div>
+                            <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                                <div class="bg-white p-6 rounded shadow-md max-w-lg w-full max-h-[80vh] overflow-y-auto">
+                                    <h3 class="text-lg font-bold mb-4">Edit Business</h3>
+                                    <input type="hidden" id="edit-id">
+                                    <input type="text" id="name" placeholder="Business Name" class="w-full p-2 mb-2 border rounded" required>
+                                    <input type="text" id="tagline" placeholder="Tagline" class="w-full p-2 mb-2 border rounded">
+                                    <textarea id="description" placeholder="Description" class="w-full p-2 mb-2 border rounded"></textarea>
+                                    <input type="text" id="address" placeholder="Address (e.g., 123 Main St, Sandy, UT)" class="w-full p-2 mb-2 border rounded">
+                                    <input type="url" id="website" placeholder="Website" class="w-full p-2 mb-2 border rounded">
+                                    <input type="url" id="menu_url" placeholder="Menu URL" class="w-full p-2 mb-2 border rounded">
+                                    <div class="mb-2">
+                                        <label>Social Links:</label>
+                                        <select id="social-select" class="w-full p-2 border rounded mb-2">
+                                            <option value="">Add a social site...</option>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="instagram">Instagram</option>
+                                            <option value="twitter">X (Twitter)</option>
+                                            <option value="tiktok">TikTok</option>
+                                            <option value="youtube">YouTube</option>
+                                            <option value="linkedin">LinkedIn</option>
+                                        </select>
+                                        <button onclick="addSocialField(document.getElementById('social-select').value)" class="bg-blue-500 text-white p-2 rounded w-full mb-2">Add Selected</button>
+                                        <div id="social-fields"></div>
+                                    </div>
+                                    <div class="mb-2" id="category-container">
+                                        <label>Categories (search/select up to tier limit):</label>
+                                        <!-- Populated by script -->
+                                    </div>
+                                    <div class="mb-2">
+                                        <label>Logo Upload:</label>
+                                        <input type="file" id="logo-upload" accept="image/*" class="w-full">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label>Photos Upload (multiple):</label>
+                                        <input type="file" id="photos-upload" accept="image/*" multiple class="w-full">
+                                    </div>
+                                    <button onclick="saveBusiness()" class="bg-blue-500 text-white p-2 rounded w-full">Save</button>
+                                    <button onclick="cancelEdit()" class="bg-gray-500 text-white p-2 rounded w-full mt-2">Cancel</button>
+                                </div>
+                            </div>
+                        `;
+                    // Hide edit modal
+                    const editModal = document.getElementById('edit-modal');
+                    if (editModal) editModal.style.display = 'none';
+                    initDashboard();
+                } else {
+                    content.innerHTML = '<p class="text-center text-red-500">Unknown role. Please contact support.</p>';
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
         });
 
         // Dynamic nav swap
-        async function updateNavAuth() {
-            const storedSession = sessionStorage.getItem('supabase_session');
-            const authLink = document.getElementById('auth-link');
-            if (!authLink) return;
-            const iconElement = authLink.querySelector('svg, i');
-            const textSpan = authLink.querySelector('span');
-            if (storedSession) {
-                authLink.href = '#';
-                authLink.onclick = async (e) => {
-                    e.preventDefault();
-                    await supabaseClient.auth.signOut();
-                    sessionStorage.removeItem('supabase_session');
-                    window.location.href = 'login.html';
-                };
-                if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
-                if (textSpan) textSpan.textContent = 'Logout';
-            } else {
-                authLink.href = 'login.html';
-                authLink.onclick = null;
-                if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
-                if (textSpan) textSpan.textContent = 'Login';
+            async function updateNavAuth() {
+                const storedSession = sessionStorage.getItem('supabase_session');
+                const authLink = document.getElementById('auth-link');
+                if (!authLink) return;
+                const iconElement = authLink.querySelector('svg, i');
+                const textSpan = authLink.querySelector('span');
+                if (storedSession) {
+                    authLink.href = '#';
+                    authLink.onclick = async (e) => {
+                        e.preventDefault();
+                        await supabaseClient.auth.signOut();
+                        sessionStorage.removeItem('supabase_session');
+                        window.location.href = 'login.html';
+                    };
+                    if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
+                    if (textSpan) textSpan.textContent = 'Logout';
+                } else {
+                    authLink.href = 'login.html';
+                    authLink.onclick = null;
+                    if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
+                    if (textSpan) textSpan.textContent = 'Login';
+                }
             }
-        }
 
         // Toggle subs under main
         function toggleSubs(radio) {
@@ -164,6 +198,7 @@
         // Populate categories with limits
         async function populateCategories(membership) {
             const container = document.getElementById('category-container');
+            if (!container) return; // Guard against null
             container.innerHTML = '';
             const limits = tierLimits[membership] || tierLimits['free'];
             const subCounter = document.createElement('p');
@@ -248,8 +283,10 @@
         function updateCounters(limits) {
             const selectedSubs = document.querySelectorAll('.sub-checkbox:checked').length;
             const selectedTags = document.querySelectorAll('.tag-checkbox:checked').length;
-            document.getElementById('sub-counter').textContent = `You can select ${limits.subs - selectedSubs} more subcategories.`;
-            document.getElementById('tag-counter').textContent = `You can select ${limits.tags - selectedTags} more tags.`;
+            const subCounter = document.getElementById('sub-counter');
+            const tagCounter = document.getElementById('tag-counter');
+            if (subCounter) subCounter.textContent = `You can select ${limits.subs - selectedSubs} more subcategories.`;
+            if (tagCounter) tagCounter.textContent = `You can select ${limits.tags - selectedTags} more tags.`;
         }
 
         // Enforce limits (disable if exceeded)
@@ -293,7 +330,8 @@
             currentUser = data.user;
             updateNavAuth();
             loadOwnedBusinesses();
-            document.getElementById('search-business').addEventListener('input', searchBusinesses);
+            const searchInput = document.getElementById('search-business');
+            if (searchInput) searchInput.addEventListener('input', searchBusinesses);
         }
 
         // Load owned
@@ -305,6 +343,10 @@
             }
             console.log('Loaded businesses:', data);
             const listDiv = document.getElementById('owned-list');
+            if (!listDiv) {
+                console.error('owned-list div not found');
+                return;
+            }
             listDiv.innerHTML = '';
             if (!data || data.length === 0) {
                 listDiv.innerHTML = '<p>No businesses yet—claim or add one!</p>';
@@ -334,19 +376,25 @@
 
         // Toggle search
         function toggleSearch() {
-            document.getElementById('search-section').classList.toggle('hidden');
+            const searchSection = document.getElementById('search-section');
+            if (searchSection) searchSection.classList.toggle('hidden');
         }
 
         // Search businesses
         async function searchBusinesses(event) {
             const query = event.target.value.toLowerCase();
             if (query.length < 3) {
-                document.getElementById('search-results').innerHTML = '';
+                const resultsDiv = document.getElementById('search-results');
+                if (resultsDiv) resultsDiv.innerHTML = '';
                 return;
             }
             const { data, error } = await supabaseClient.from('businesses').select('*').ilike('name', `%${query}%`).eq('claim_status', 'unclaimed');
             if (error) console.error('Search error:', error);
             const resultsDiv = document.getElementById('search-results');
+            if (!resultsDiv) {
+                console.error('search-results div not found');
+                return;
+            }
             resultsDiv.innerHTML = '';
             data.forEach(business => {
                 const card = document.createElement('div');
@@ -382,38 +430,44 @@
 
         // Claim with code
         async function claimWithCode() {
-            const code = document.getElementById('claim-code').value.trim();
-            if (!code) {
-                alert('Enter a code');
-                return;
+                const code = document.getElementById('claim-code').value.trim();
+                if (!code) {
+                    alert('Enter a code');
+                    return;
+                }
+                const { count, error: countError } = await supabaseClient.from('businesses').select('id', { count: 'exact' }).eq('owner_id', currentUser.id);
+                if (countError) {
+                    console.error('Count error:', countError);
+                    alert('Error checking claims: ' + countError.message);
+                    return;
+                }
+                const isPreAdded = true; // Adjust logic later
+                let status = 'pending';
+                if (count <= 2 && isPreAdded) status = 'approved';
+                const { data: biz, error } = await supabaseClient.from('businesses').select('*').eq('claim_code', code).eq('claim_status', 'unclaimed').maybeSingle();
+                if (error) {
+                    console.error('Business fetch error:', error);
+                    alert('Invalid code or already claimed');
+                    return;
+                }
+                if (!biz) {
+                    alert('No unclaimed business found with that code');
+                    return;
+                }
+                const update = { owner_id: currentUser.id, claim_status: status, claim_code: null };
+                const { data: updateData, error: updateError } = await supabaseClient.from('businesses').update(update).eq('id', biz.id).select();
+                console.log('Update result:', updateData, updateError);
+                if (updateError) {
+                    console.error('Update error:', updateError);
+                    alert('Claim error: ' + updateError.message);
+                } else if (!updateData.length) {
+                    alert('Claim failed - no rows updated (check RLS)');
+                } else {
+                    alert(`Claimed! Status: ${status.toUpperCase()}`);
+                    loadOwnedBusinesses();
+                    sendGHLNotification('claim_event', `New claim: ${status} for biz ID ${biz.id}, user: ${currentUser.id}`);
+                }
             }
-            // Check count
-            const { count, error: countError } = await supabaseClient.from('businesses').select('id', { count: 'exact' }).eq('owner_id', currentUser.id);
-            if (countError) {
-                alert('Error checking claims: ' + countError.message);
-                return;
-            }
-            const isPreAdded = true; // Assume pre-added for code (expand to check DB flag in Phase 2)
-            let status = 'pending';
-            if (count <= 2 && isPreAdded) status = 'approved'; // Auto-approve if under limit and pre-added
-            const { data: biz, error } = await supabaseClient.from('businesses').select('*').eq('claim_code', code).eq('claim_status', 'unclaimed').maybeSingle();
-            if (error || !biz) {
-                alert('Invalid code or already claimed');
-                return;
-            }
-            const update = { owner_id: currentUser.id, claim_status: status, claim_code: null };
-            const { data: updateData, error: updateError } = await supabaseClient.from('businesses').update(update).eq('id', biz.id).select();
-            console.log('Update result:', updateData, updateError);
-            if (updateError) {
-                alert('Claim error: ' + updateError.message);
-            } else if (!updateData.length) {
-                alert('Claim failed - no rows updated (check RLS)');
-            } else {
-                alert(`Claimed! Status: ${status.toUpperCase()}`);
-                loadOwnedBusinesses();
-                sendGHLNotification('claim_event', `New claim: ${status} for biz ID ${biz.id}, user: ${currentUser.id}`);
-            }
-        }
 
         // Request claim
         async function requestClaim(id) {
@@ -442,26 +496,28 @@
 
         // Show edit form
         async function showEditForm(business) {
-            if (business.claim_status !== 'approved') {
-                alert('Can\'t edit—pending approval');
-                return;
-            }
-            if (!business) {
-                console.error('No business data provided for edit');
-                return;
-            }
-            document.getElementById('edit-id').value = business.id;
-            document.getElementById('name').value = business.name || '';
-            document.getElementById('tagline').value = business.tagline || '';
-            document.getElementById('description').value = business.description || '';
-            document.getElementById('address').value = business.address || '';
-            document.getElementById('website').value = business.website || '';
-            document.getElementById('menu_url').value = business.menu_url || '';
-            const modal = document.getElementById('edit-modal');
-            modal.style.display = 'flex';
-            const { data: profile } = await supabaseClient.from('profiles').select('membership_level').eq('id', currentUser.id).single();
-            const membership = profile ? profile.membership_level : 'free';
-            populateCategories(membership); // Re-populate with limits
+                if (business.claim_status !== 'approved') {
+                    alert('Can\'t edit—pending approval');
+                    return;
+                }
+                if (!business || business.owner_id !== currentUser.id) { // Add owner check
+                    alert('You can only edit your own businesses.');
+                    return;
+                }
+                // Rest of the function remains (document.getElementById calls, etc.)
+                document.getElementById('edit-id').value = business.id;
+                document.getElementById('name').value = business.name || '';
+                document.getElementById('tagline').value = business.tagline || '';
+                document.getElementById('description').value = business.description || '';
+                document.getElementById('address').value = business.address || '';
+                document.getElementById('website').value = business.website || '';
+                document.getElementById('menu_url').value = business.menu_url || '';
+                const modal = document.getElementById('edit-modal');
+                modal.style.display = 'flex';
+                const { data: profile } = await supabaseClient.from('profiles').select('membership_level').eq('id', currentUser.id).single();
+                const membership = profile ? profile.membership_level : 'free';
+                populateCategories(membership);
+                // ... (rest of the function)
             if (business.categories && business.categories.length > 0) {
                 setTimeout(async () => {
                     // Fetch all categories for mapping
@@ -680,7 +736,8 @@
 
         // Cancel edit
         function cancelEdit() {
-            document.getElementById('edit-modal').style.display = 'none';
+            const editModal = document.getElementById('edit-modal');
+            if (editModal) editModal.style.display = 'none';
         }
 
         // Sync GHL
@@ -697,10 +754,6 @@
             }
         }
 
-        // Start dashboard
-        document.addEventListener('DOMContentLoaded', () => {
-            initDashboard();
-        });
         window.saveBusiness = saveBusiness;
         window.cancelEdit = cancelEdit;
         window.claimWithCode = claimWithCode;
@@ -709,6 +762,6 @@
         window.addSocialField = addSocialField;
         window.toggleSubs = toggleSubs;
     </script>
-
 </body>
+
 </html>

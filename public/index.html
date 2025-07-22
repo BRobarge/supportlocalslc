@@ -82,15 +82,22 @@
     document.querySelector('section.container.mx-auto.p-4.flex.flex-col.md\\:flex-row.gap-4').appendChild(filterBar);
 
     async function loadBusinesses() {
-        const { data, error } = await supabaseClient.from('businesses').select('*, profiles!businesses_owner_id_fkey(membership_level)');
-        if (error) {
-            console.error('Error loading businesses:', error);
-            return;
+            const { data, error } = await supabaseClient.from('businesses').select(`
+        *,
+        profiles (membership_level)
+    `);
+            if (error) {
+                console.error('Error loading businesses:', error);
+                return;
+            }
+            allBusinesses = data || [];
+            console.log('Load complete, allBusinesses length:', allBusinesses.length);
+            filterListings(); // Correct call to existing function
+            if (allBusinesses.length === 0) {
+                console.log('No businesses loaded—check Supabase');
+            }
         }
-        allBusinesses = data;
-        filterListings(); // Initial filter and populate
-    }
-
+        
     function repopulateCategories(filtered) {
         categorySelect.innerHTML = '<option value="">All Categories</option>';
         const levels = { mains: new Set(), subs: new Set(), tags: new Set() };

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SupportLocalSLC</title>
+    <link href="./output.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-gray-100 font-sans">
+    <header class="shadow-md">
+        <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
+            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg"
+                alt="Support Local SLC Banner"
+                class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
+        </div>
+    </header>
+    <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
+        <a href="index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+            <i class="fas fa-home text-2xl"></i>
+            <span class="text-sm font-semibold">Home</span>
+        </a>
+        <a id="auth-link" href="login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+            <i class="fas fa-sign-in-alt text-2xl"></i>
+            <span class="text-sm font-semibold">Login</span>
+        </a>
+        <a href="dashboard.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+            <i class="fas fa-user-cog text-2xl"></i>
+            <span class="text-sm font-semibold">Dashboard</span>
+        </a>
+    </nav>
+    <main class="container mx-auto p-4" id="admin-content">
+        <h2 class="text-xl font-semibold mb-4">Admin Dashboard</h2>
+        <div id="business-section" class="mb-8">
+            <h3 class="text-lg font-bold mb-2">All Businesses</h3>
+            <div id="business-table" class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 table-auto text-left">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[200px]">Name</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[100px]">Tier</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[100px]">City</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[100px]">Status</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[250px]">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="business-body" class="text-gray-700 text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="users-section" class="mb-8">
+            <h3 class="text-lg font-bold mb-2">All Users</h3>
+            <div id="users-table" class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 table-auto text-left">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[200px]">Email</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[100px]">Role</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[150px]">Membership
+                                Level</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[200px]">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-body" class="text-gray-700 text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="categories-section" class="mb-8">
+            <h3 class="text-lg font-bold mb-2">Category Management</h3>
+            <button onclick="showAddCategory()" class="bg-green-500 text-white px-4 py-2 rounded mb-4">Add New
+                Category</button>
+            <div id="categories-table" class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 table-auto text-left">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[150px]">Name</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[100px]">Level</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[200px]">Parent</th>
+                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[150px]">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categories-body" class="text-gray-700 text-sm"></tbody>
+                </table>
+            </div>
+            <!-- Add/Edit Modal -->
+            <div id="category-modal"
+                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                <div class="bg-white p-6 rounded shadow-md max-w-lg w-full">
+                    <h3 id="modal-title" class="text-lg font-bold mb-4">Add Category</h3>
+                    <input type="hidden" id="category-id">
+                    <input type="text" id="category-name" placeholder="Name" class="w-full p-2 mb-2 border rounded"
+                        required>
+                    <select id="category-level" class="w-full p-2 mb-2 border rounded"
+                        onchange="populateParentSelect(this.value)">
+                        <option value="1">Main (Level 1)</option>
+                        <option value="2">Sub (Level 2)</option>
+                        <option value="3">Tag (Level 3)</option>
+                    </select>
+                    <select id="category-parent" class="w-full p-2 mb-2 border rounded">
+                        <option value="">No Parent</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                    <button onclick="saveCategory()" class="bg-blue-500 text-white p-2 rounded w-full">Save</button>
+                    <button onclick="closeCategoryModal()"
+                        class="bg-gray-500 text-white p-2 rounded w-full mt-2">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <!-- Business Edit Modal (reuse from dashboard) -->
+        <div id="business-edit-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white p-6 rounded shadow-md max-w-lg w-full max-h-[80vh] overflow-y-auto">
+                <h3 class="text-lg font-bold mb-4">Edit Business</h3>
+                <input type="hidden" id="edit-id">
+                <input type="text" id="name" placeholder="Business Name" class="w-full p-2 mb-2 border rounded"
+                    required>
+                <input type="text" id="tagline" placeholder="Tagline" class="w-full p-2 mb-2 border rounded">
+                <textarea id="description" placeholder="Description" class="w-full p-2 mb-2 border rounded"></textarea>
+                <input type="text" id="address" placeholder="Address (e.g., 123 Main St, Sandy, UT)"
+                    class="w-full p-2 mb-2 border rounded">
+                <input type="url" id="website" placeholder="Website" class="w-full p-2 mb-2 border rounded">
+                <input type="url" id="menu_url" placeholder="Menu URL" class="w-full p-2 mb-2 border rounded">
+                <div class="mb-2">
+                    <label>Social Links:</label>
+                    <select id="social-select" class="w-full p-2 border rounded mb-2">
+                        <option value="">Add a social site...</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="twitter">X (Twitter)</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="linkedin">LinkedIn</option>
+                    </select>
+                    <button onclick="addSocialField(document.getElementById('social-select').value)"
+                        class="bg-blue-500 text-white p-2 rounded w-full mb-2">Add Selected</button>
+                    <div id="social-fields"></div>
+                </div>
+                <div class="mb-2" id="category-container">
+                    <label>Categories (search/select up to tier limit):</label>
+                    <!-- Populated by script -->
+                </div>
+                <div class="mb-2">
+                    <label>Logo Upload:</label>
+                    <input type="file" id="logo-upload" accept="image/*" class="w-full">
+                </div>
+                <div class="mb-2">
+                    <label>Photos Upload (multiple):</label>
+                    <input type="file" id="photos-upload" accept="image/*" multiple class="w-full">
+                </div>
+                <button onclick="saveBusiness()" class="bg-blue-500 text-white p-2 rounded w-full">Save</button>
+                <button onclick="cancelBusinessEdit()"
+                    class="bg-gray-500 text-white p-2 rounded w-full mt-2">Cancel</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        // Tier config
+        const tierLimits = {
+            'free': { subs: 1, tags: 0 },
+            'Growth': { subs: 2, tags: 3 },
+            'Pro': { subs: 3, tags: 5 }
+        };
+
+        async function updateNavAuth() {
+                const storedSession = sessionStorage.getItem('supabase_session');
+                const authLink = document.getElementById('auth-link');
+                if (!authLink) return;
+                const iconElement = authLink.querySelector('svg, i');
+                const textSpan = authLink.querySelector('span');
+                if (storedSession) {
+                    authLink.href = '#';
+                    authLink.onclick = async (e) => {
+                        e.preventDefault();
+                        await supabaseClient.auth.signOut();
+                        sessionStorage.removeItem('supabase_session');
+                        window.location.href = 'login.html';
+                    };
+                    if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
+                    if (textSpan) textSpan.textContent = 'Logout';
+                } else {
+                    authLink.href = 'login.html';
+                    authLink.onclick = null;
+                    if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
+                    if (textSpan) textSpan.textContent = 'Login';
+                }
+            }
+        
+        async function initAdmin() {
+            const storedSession = sessionStorage.getItem('supabase_session');
+            if (storedSession) {
+                const session = JSON.parse(storedSession);
+                await supabaseClient.auth.setSession(session);
+            }
+            const { data: user } = await supabaseClient.auth.getUser();
+            if (!user.user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.user.id).single();
+            if (!profile || profile.role !== 'admin') {
+                alert('Access denied - admins only');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            updateNavAuth(); // Reuse from dashboard
+            // Load businesses table
+            const { data: businesses, error: bizError } = await supabaseClient.from('businesses').select('*, profiles!businesses_owner_id_fkey(membership_level)');
+            console.log('Businesses data:', businesses, 'Error:', bizError);
+            if (bizError) {
+                console.error('Error loading businesses:', bizError);
+                document.getElementById('business-body').innerHTML = '<tr><td colspan="5" class="text-center text-red-500">Error loading businesses</td></tr>';
+            } else if (!businesses || businesses.length === 0) {
+                document.getElementById('business-body').innerHTML = '<tr><td colspan="5" class="text-center">No businesses found</td></tr>';
+            } else {
+                const body = document.getElementById('business-body');
+                if (!body) {
+                    console.error('business-body tbody not found');
+                    return;
+                }
+                body.innerHTML = '';
+                businesses.forEach(biz => {
+                    const city = biz.address ? biz.address.split(',').pop()?.trim() || 'No City' : 'No City';
+                    const tier = biz.profiles ? biz.profiles.membership_level : 'free';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-4 py-2 border">${biz.name || 'No Name'}</td>
+                        <td class="px-4 py-2 border">${tier}</td>
+                        <td class="px-4 py-2 border">${city}</td>
+                        <td class="px-4 py-2 border">${biz.claim_status || 'unclaimed'}</td>
+                        <td class="px-4 py-2 border">
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="approveBusiness('${biz.id}')" class="bg-green-500 text-white px-2 py-1 rounded">Approve</button>
+                                <button onclick="rejectBusiness('${biz.id}')" class="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
+                                <button onclick="editBusiness('${biz.id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                            </div>
+                        </td>
+                    `;
+                    body.appendChild(row);
+                });
+            }
+
+            // Load users table
+            const { data: users, error: userError } = await supabaseClient.from('profiles').select('*');
+            console.log('Users data:', users, 'Error:', userError);
+            if (userError) {
+                console.error('Error loading users:', userError);
+                document.getElementById('users-body').innerHTML = '<tr><td colspan="4" class="text-center text-red-500">Error loading users</td></tr>';
+            } else if (!users || users.length === 0) {
+                document.getElementById('users-body').innerHTML = '<tr><td colspan="4" class="text-center">No users found</td></tr>';
+            } else {
+                const userBody = document.getElementById('users-body');
+                userBody.innerHTML = '';
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-3 border">${user.email || 'No Email'}</td>
+                        <td class="px-6 py-3 border">${user.role || 'business'}</td>
+                        <td class="px-6 py-3 border">${user.membership_level || 'free'}</td>
+                        <td class="px-6 py-3 border flex flex-wrap gap-2">
+                            <button onclick="editUser('${user.id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                            <button onclick="deleteUser('${user.id}')" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                        </td>
+                    `;
+                    userBody.appendChild(row);
+                });
+            }
+
+            // Load categories table
+            const { data: categories, error: catError } = await supabaseClient.from('categories').select('*');
+            console.log('Categories data:', categories, 'Error:', catError);
+            allCategories = categories || []; // Global for modal
+            if (catError) {
+                console.error('Error loading categories:', catError);
+                document.getElementById('categories-body').innerHTML = '<tr><td colspan="4" class="text-center text-red-500">Error loading categories</td></tr>';
+            } else if (!categories || categories.length === 0) {
+                document.getElementById('categories-body').innerHTML = '<tr><td colspan="4" class="text-center">No categories found</td></tr>';
+            } else {
+                const catBody = document.getElementById('categories-body');
+                catBody.innerHTML = '';
+                categories.forEach(cat => {
+                    const parentName = categories.find(p => p.id === cat.parent_id)?.name || 'No Parent';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-3 border">${cat.name || 'No Name'}</td>
+                        <td class="px-6 py-3 border">${cat.level}</td>
+                        <td class="px-6 py-3 border">${parentName}</td>
+                        <td class="px-6 py-3 border flex flex-wrap gap-2">
+                            <button onclick="showEditCategory('${cat.id}', '${cat.name}', '${cat.level}', '${cat.parent_id || ''}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                            <button onclick="deleteCategory('${cat.id}')" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                        </td>
+                    `;
+                    catBody.appendChild(row);
+                });
+            }
+        }
+
+        async function approveBusiness(id) {
+            const { error } = await supabaseClient.from('businesses').update({ claim_status: 'approved' }).eq('id', id);
+            if (error) alert('Error approving: ' + error.message);
+            else {
+                alert('Business approved');
+                initAdmin(); // Reload table
+            }
+        }
+
+        async function rejectBusiness(id) {
+            const { error } = await supabaseClient.from('businesses').update({ claim_status: 'rejected', owner_id: null }).eq('id', id);
+            if (error) alert('Error rejecting: ' + error.message);
+            else {
+                alert('Business rejected');
+                initAdmin(); // Reload table
+            }
+        }
+
+        function editUser(id) {
+            alert('Edit user feature coming soon - ID: ' + id);
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+            const { error } = await supabaseClient.from('profiles').delete().eq('id', id);
+            if (error) alert('Error deleting: ' + error.message);
+            else {
+                alert('User deleted');
+                initAdmin(); // Reload table
+            }
+        }
+
+        // Toggle subs under main
+        function toggleSubs(radio) {
+            const allMains = document.querySelectorAll('#category-container div.mb-4');
+            allMains.forEach(div => {
+                const search = div.querySelector('input[type="text"]');
+                const ul = div.querySelector('ul');
+                if (div.querySelector('input[type="radio"]') === radio) {
+                    search.classList.remove('hidden');
+                    ul.classList.remove('hidden');
+                } else {
+                    search.classList.add('hidden');
+                    ul.classList.add('hidden');
+                    div.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                    div.querySelectorAll('ul li ul').forEach(u => u.classList.add('hidden'));
+                }
+            });
+        }
+
+        // Toggle tags under sub
+        function toggleTags(checkbox) {
+            const li = checkbox.closest('li');
+            const tagsUl = li.querySelector('ul');
+            if (tagsUl) {
+                tagsUl.classList.toggle('hidden', !checkbox.checked);
+            }
+            if (!checkbox.checked) {
+                li.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            }
+        }
+
+        async function populateCategories(membership) {
+            const container = document.getElementById('category-container');
+            container.innerHTML = '';
+            const limits = tierLimits[membership] || tierLimits['free'];
+            const subCounter = document.createElement('p');
+            subCounter.id = 'sub-counter';
+            subCounter.className = 'text-sm text-gray-600 mb-2';
+            container.appendChild(subCounter);
+            const tagCounter = document.createElement('p');
+            tagCounter.id = 'tag-counter';
+            tagCounter.className = 'text-sm text-gray-600 mb-2';
+            container.appendChild(tagCounter);
+
+            // Fetch all categories from Supabase
+            const { data: categories, error } = await supabaseClient.from('categories').select('*');
+            if (error) {
+                console.error('Error fetching categories:', error);
+                container.innerHTML += '<p class="text-red-500">Error loading categories</p>';
+                return;
+            }
+
+            // Build hierarchy: mains (level 1), subs (level 2), tags (level 3)
+            const mains = categories.filter(c => c.level === 1).sort((a, b) => a.name.localeCompare(b.name));
+            mains.forEach(main => {
+                const mainDiv = document.createElement('div');
+                mainDiv.className = 'mb-4';
+                mainDiv.innerHTML = `<label class="flex items-center font-bold mb-2">
+                    <input type="radio" name="main-category" value="${main.id}" class="mr-2" onclick="toggleSubs(this)" />
+                    ${main.name}
+                </label>`;
+                const searchInput = document.createElement('input');
+                searchInput.type = 'text';
+                searchInput.placeholder = `Search in ${main.name}...`;
+                searchInput.className = 'w-full p-2 border rounded mb-2 hidden';
+                searchInput.addEventListener('input', (e) => filterSubs(e.target.value, mainDiv));
+                mainDiv.appendChild(searchInput);
+                const ul = document.createElement('ul');
+                ul.className = 'max-h-32 overflow-y-auto hidden';
+
+                // Fetch subs for this main
+                const subs = categories.filter(c => c.parent_id === main.id && c.level === 2).sort((a, b) => a.name.localeCompare(b.name));
+                subs.forEach(sub => {
+                    const li = document.createElement('li');
+                    li.className = 'flex flex-col mb-2';
+                    li.innerHTML = `
+                        <label class="flex items-center">
+                            <input type="checkbox" value="${sub.id}" class="mr-2 sub-checkbox" />
+                            ${sub.name}
+                        </label>
+                    `;
+                    li.querySelector('.sub-checkbox').addEventListener('change', (e) => {
+                        toggleTags(e.target);
+                        updateCounters(limits);
+                    });
+                    const tagsUl = document.createElement('ul');
+                    tagsUl.className = 'ml-4 hidden';
+
+                    // Fetch tags for this sub
+                    const tags = categories.filter(c => c.parent_id === sub.id && c.level === 3).sort((a, b) => a.name.localeCompare(b.name));
+                    tags.forEach(tag => {
+                        const tagLi = document.createElement('li');
+                        tagLi.innerHTML = `
+                            <label class="flex items-center">
+                                <input type="checkbox" value="${tag.id}" class="mr-2 tag-checkbox" />
+                                ${tag.name}
+                            </label>
+                        `;
+                        tagLi.querySelector('.tag-checkbox').addEventListener('change', () => updateCounters(limits));
+                        tagsUl.appendChild(tagLi);
+                    });
+                    li.appendChild(tagsUl);
+                    ul.appendChild(li);
+                });
+                mainDiv.appendChild(ul);
+                container.appendChild(mainDiv);
+            });
+
+            // Event for limit enforcement
+            container.addEventListener('change', (e) => enforceLimits(limits, e.target));
+            updateCounters(limits);
+        }
+
+        // Update counters
+        function updateCounters(limits) {
+            const selectedSubs = document.querySelectorAll('.sub-checkbox:checked').length;
+            const selectedTags = document.querySelectorAll('.tag-checkbox:checked').length;
+            document.getElementById('sub-counter').textContent = `You can select ${limits.subs - selectedSubs} more subcategories.`;
+            document.getElementById('tag-counter').textContent = `You can select ${limits.tags - selectedTags} more tags.`;
+        }
+
+        // Enforce limits (disable if exceeded)
+        function enforceLimits(limits, changedInput) {
+            const selectedSubs = document.querySelectorAll('.sub-checkbox:checked').length;
+            const selectedTags = document.querySelectorAll('.tag-checkbox:checked').length;
+            document.querySelectorAll('.sub-checkbox:not(:checked)').forEach(cb => cb.disabled = selectedSubs >= limits.subs);
+            document.querySelectorAll('.tag-checkbox:not(:checked)').forEach(cb => cb.disabled = selectedTags >= limits.tags);
+            // If uncheck, re-enable
+            if (!changedInput.checked) {
+                document.querySelectorAll('.sub-checkbox:not(:checked)').forEach(cb => cb.disabled = false);
+                document.querySelectorAll('.tag-checkbox:not(:checked)').forEach(cb => cb.disabled = false);
+            }
+        }
+
+        // Filter subs
+        function filterSubs(term, mainDiv) {
+            const lowerTerm = term.toLowerCase();
+            const items = mainDiv.querySelectorAll('li');
+            items.forEach(item => {
+                const label = item.querySelector('label').textContent.toLowerCase();
+                const subLabels = Array.from(item.querySelectorAll('ul li label')).map(l => l.textContent.toLowerCase());
+                item.style.display = label.includes(lowerTerm) || subLabels.some(sl => sl.includes(lowerTerm)) ? 'block' : 'none';
+            });
+        }
+
+        // Add social
+        function addSocialField(site = '', url = '') {
+            const fields = document.getElementById('social-fields');
+            const div = document.createElement('div');
+            div.className = 'flex mb-1';
+            div.innerHTML = `
+                <input type="text" value="${site}" class="w-1/3 p-2 border rounded mr-1" readonly>
+                <input type="url" value="${url}" class="flex-1 p-2 border rounded mr-1" placeholder="URL">
+                <button onclick="this.parentElement.remove()" class="bg-red-500 text-white p-2 rounded">Remove</button>
+            `;
+            fields.appendChild(div);
+        }
+
+        // Cancel business edit
+        function cancelBusinessEdit() {
+            document.getElementById('business-edit-modal').style.display = 'none';
+        }
+
+        async function editBusiness(id) {
+            const { data: biz } = await supabaseClient.from('businesses').select('*').eq('id', id).single();
+            if (!biz) {
+                alert('Business not found');
+                return;
+            }
+            document.getElementById('edit-id').value = biz.id;
+            document.getElementById('name').value = biz.name || '';
+            document.getElementById('tagline').value = biz.tagline || '';
+            document.getElementById('description').value = biz.description || '';
+            document.getElementById('address').value = biz.address || '';
+            document.getElementById('website').value = biz.website || '';
+            document.getElementById('menu_url').value = biz.menu_url || '';
+            document.getElementById('social-fields').innerHTML = '';
+            if (biz.social_links) {
+                Object.entries(biz.social_links).forEach(([site, url]) => addSocialField(site, url));
+            }
+            let membership = 'free';
+            if (biz.owner_id) {
+                const { data: profile } = await supabaseClient.from('profiles').select('membership_level').eq('id', biz.owner_id).single();
+                membership = profile ? profile.membership_level : 'free';
+            }
+            populateCategories(membership);
+            // Pre-fill categories (copy from dashboard showEditForm if needed)
+            setTimeout(async () => {
+                // Fetch all categories for mapping
+                const { data: allCategories } = await supabaseClient.from('categories').select('*');
+
+                // Pre-fill
+                const selectedPaths = biz.categories || [];
+                if (selectedPaths.length > 0) {
+                    const firstMainName = selectedPaths[0].split(' > ')[0];
+                    const mainId = allCategories.find(c => c.name === firstMainName && c.level === 1)?.id;
+                    const mainRadio = document.querySelector(`input[name="main-category"][value="${mainId}"]`);
+                    if (mainRadio) {
+                        mainRadio.checked = true;
+                        toggleSubs(mainRadio);
+                        selectedPaths.forEach(path => {
+                            const parts = path.split(' > ');
+                            if (parts.length === 2) { // Sub only
+                                const subId = allCategories.find(c => c.name === parts[1] && c.level === 2 && c.parent_id === mainId)?.id;
+                                const subCb = document.querySelector(`input.sub-checkbox[value="${subId}"]`);
+                                if (subCb) {
+                                    subCb.checked = true;
+                                    toggleTags(subCb);
+                                }
+                            } else if (parts.length === 3) { // Tag
+                                const subId = allCategories.find(c => c.name === parts[1] && c.level === 2 && c.parent_id === mainId)?.id;
+                                const subCb = document.querySelector(`input.sub-checkbox[value="${subId}"]`);
+                                if (subCb) {
+                                    subCb.checked = true;
+                                    toggleTags(subCb);
+                                    const tagId = allCategories.find(c => c.name === parts[2] && c.level === 3 && c.parent_id === subId)?.id;
+                                    const tagCb = document.querySelector(`input.tag-checkbox[value="${tagId}"]`);
+                                    if (tagCb) tagCb.checked = true;
+                                }
+                            }
+                        });
+                    }
+                }
+                updateCounters(tierLimits[membership] || tierLimits['free']);
+            }, 100);
+            document.getElementById('business-edit-modal').style.display = 'flex';
+        }
+
+        async function saveBusiness() {
+                const id = document.getElementById('edit-id').value;
+                console.log('Saving business ID:', id);
+                const { data: biz, error: bizError } = await supabaseClient.from('businesses').select('*').eq('id', id).single();
+                if (bizError) {
+                    console.error('Error fetching business for save:', bizError);
+                    alert('Error fetching business for save: ' + bizError.message);
+                    return;
+                }
+                console.log('Fetched biz:', biz);
+                let membership = 'free';
+                if (biz.owner_id) {
+                    const { data: profile, error: profileError } = await supabaseClient.from('profiles').select('membership_level').eq('id', biz.owner_id).single();
+                    if (profileError) {
+                        console.error('Error fetching membership:', profileError);
+                        alert('Error fetching membership: ' + profileError.message);
+                        return;
+                    }
+                    membership = profile ? profile.membership_level : 'free';
+                }
+                console.log('Membership:', membership);
+                const limits = tierLimits[membership] || tierLimits['free'];
+                const name = document.getElementById('name').value;
+                const tagline = document.getElementById('tagline').value;
+                const description = document.getElementById('description').value;
+                let address = document.getElementById('address').value;
+                const website = document.getElementById('website').value;
+                const menu_url = document.getElementById('menu_url').value;
+                const social_links = {};
+                document.querySelectorAll('#social-fields div').forEach(div => {
+                    const site = div.querySelector('input:first-child').value.trim().toLowerCase();
+                    let url = div.querySelector('input[type="url"]').value.trim();
+                    if (site && url) {
+                        if (!url.startsWith('http')) url = `https://${url}`;
+                        social_links[site] = url;
+                    }
+                });
+                console.log('Social links:', social_links);
+
+                // Fetch all categories for path building
+                const { data: allCategories, error: catError } = await supabaseClient.from('categories').select('*');
+                if (catError) {
+                    console.error('Error fetching categories for save:', catError);
+                    alert('Error fetching categories for save: ' + catError.message);
+                    return;
+                }
+                console.log('All categories fetched:', allCategories.length);
+
+                // Updated category collection (use IDs, but save full paths)
+                const selectedSubCbs = document.querySelectorAll('#category-container input.sub-checkbox:checked');
+                const subs = Array.from(selectedSubCbs).map(cb => cb.value);
+                console.log('Selected subs:', subs);
+                const mains = new Set();
+                subs.forEach(subId => {
+                    const sub = allCategories.find(c => c.id === subId);
+                    if (sub) {
+                        const main = allCategories.find(c => c.id === sub.parent_id);
+                        if (main) mains.add(main.id);
+                    }
+                });
+                if (subs.length > 0 && mains.size !== 1) {
+                    alert('All subs must be under the same main category.');
+                    return;
+                }
+                const selectedTagCbs = document.querySelectorAll('#category-container input.tag-checkbox:checked');
+                const selectedTagsCount = selectedTagCbs.length;
+                console.log('Selected tags count:', selectedTagsCount);
+                if (subs.length > limits.subs) {
+                    alert(`Limited to max ${limits.subs} subs on ${membership} tier.`);
+                    return;
+                }
+                if (selectedTagsCount > limits.tags) {
+                    alert(`Limited to max ${limits.tags} tags on ${membership} tier.`);
+                    return;
+                }
+                let categoriesFull = [];
+                // Function to get full path
+                const getPath = (id) => {
+                    const item = allCategories.find(c => c.id === id);
+                    if (!item) return '';
+                    if (item.level === 1) return item.name;
+                    const parent = allCategories.find(c => c.id === item.parent_id);
+                    if (!parent) return item.name;
+                    const grandparent = parent.level === 2 ? allCategories.find(c => c.id === parent.parent_id) : null;
+                    return [grandparent?.name, parent.name, item.name].filter(Boolean).join(' > ');
+                };
+                Array.from(selectedTagCbs).forEach(cb => {
+                    const path = getPath(cb.value);
+                    if (path) categoriesFull.push(path);
+                });
+                selectedSubCbs.forEach(subCb => {
+                    const li = subCb.closest('li');
+                    const checkedTagsInSub = li.querySelectorAll('input.tag-checkbox:checked');
+                    if (checkedTagsInSub.length === 0) {
+                        const path = getPath(subCb.value);
+                        if (path) categoriesFull.push(path);
+                    }
+                });
+                console.log('Categories to save:', categoriesFull);
+
+                let latitude = null;
+                let longitude = null;
+                if (address) {
+                    try {
+                        const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`);
+                        const data = await res.json();
+                        if (data.status === 'OK' && data.results.length > 0) {
+                            latitude = data.results[0].geometry.location.lat;
+                            longitude = data.results[0].geometry.location.lng;
+                        } else {
+                            alert(`Could not geocode address: ${data.error_message || 'Try adding city/state.'}`);
+                            return;
+                        }
+                    } catch (err) {
+                        alert('Geocoding error: ' + err.message);
+                        return;
+                    }
+                }
+                let logo_url = null;
+                const logoFile = document.getElementById('logo-upload').files[0];
+                if (logoFile) {
+                    alert('Uploading logo...');
+                    const ownerId = biz.owner_id || 'admin'; // Fallback for unclaimed
+                    const { data, error } = await supabaseClient.storage.from('business-logos').upload(`${ownerId}/${logoFile.name}`, logoFile);
+                    if (error) {
+                        alert('Logo upload error: ' + error.message);
+                        return;
+                    }
+                    logo_url = `${supabaseUrl}/storage/v1/object/public/business-logos/${data.path}`;
+                    console.log('Logo uploaded successfully');
+                }
+                let photos = biz.photos || [];
+                const photoFiles = document.getElementById('photos-upload').files;
+                if (photoFiles.length > 0) {
+                    alert('Uploading photos...');
+                    const ownerId = biz.owner_id || 'admin'; // Fallback for unclaimed
+                    for (let file of photoFiles) {
+                        const { data, error } = await supabaseClient.storage.from('business-photos').upload(`${ownerId}/${file.name}`, file);
+                        if (error) {
+                            alert('Photo upload error: ' + error.message);
+                            return;
+                        }
+                        photos.push(`${supabaseUrl}/storage/v1/object/public/business-photos/${data.path}`);
+                    }
+                    console.log('Photos uploaded successfully');
+                }
+                const updateData = {
+                    name,
+                    tagline,
+                    description,
+                    address,
+                    website,
+                    menu_url,
+                    social_links,
+                    categories: categoriesFull,
+                    latitude,
+                    longitude,
+                    photos
+                };
+                if (logo_url) updateData.logo_url = logo_url;
+                console.log('Update data:', updateData);
+                const { error } = await supabaseClient.from('businesses').update(updateData).eq('id', id);
+                if (error) {
+                    console.error('Update error:', error);
+                    alert('Save error: ' + error.message);
+                } else {
+                    alert('Business saved');
+                    cancelBusinessEdit();
+                    initAdmin(); // Reload table
+                }
+            }
+
+        function showAddCategory() {
+            document.getElementById('modal-title').textContent = 'Add Category';
+            document.getElementById('category-id').value = '';
+            document.getElementById('category-name').value = '';
+            document.getElementById('category-level').value = '1';
+            populateParentSelect('1');
+            document.getElementById('category-modal').style.display = 'flex';
+        }
+
+        function showEditCategory(id, name, level, parentId) {
+            document.getElementById('modal-title').textContent = 'Edit Category';
+            document.getElementById('category-id').value = id;
+            document.getElementById('category-name').value = name;
+            document.getElementById('category-level').value = level;
+            populateParentSelect(level, parentId);
+            document.getElementById('category-modal').style.display = 'flex';
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('category-modal').style.display = 'none';
+        }
+
+        function populateParentSelect(level, selectedParent = '') {
+            const parentSelect = document.getElementById('category-parent');
+            parentSelect.innerHTML = '<option value="">No Parent</option>';
+            let parents = [];
+            if (level === '2') {
+                parents = allCategories.filter(c => c.level === 1);
+            } else if (level === '3') {
+                parents = allCategories.filter(c => c.level === 2);
+            }
+            parents.sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = p.name;
+                if (p.id === selectedParent) option.selected = true;
+                parentSelect.appendChild(option);
+            });
+        }
+
+        async function saveCategory() {
+            const id = document.getElementById('category-id').value;
+            const name = document.getElementById('category-name').value.trim();
+            const level = parseInt(document.getElementById('category-level').value);
+            const parentId = document.getElementById('category-parent').value || null;
+            if (!name) {
+                alert('Name required');
+                return;
+            }
+            const data = { name, level, parent_id: parentId };
+            let error;
+            if (id) {
+                ({ error } = await supabaseClient.from('categories').update(data).eq('id', id));
+            } else {
+                ({ error } = await supabaseClient.from('categories').insert(data));
+            }
+            if (error) alert('Save error: ' + error.message);
+            else {
+                alert('Category saved');
+                closeCategoryModal();
+                initAdmin(); // Reload table
+            }
+        }
+
+        async function deleteCategory(id) {
+            if (!confirm('Delete category? Subs/tags will cascade delete.')) return;
+            const { error } = await supabaseClient.from('categories').delete().eq('id', id);
+            if (error) alert('Delete error: ' + error.message);
+            else {
+                alert('Category deleted');
+                initAdmin(); // Reload table
+            }
+        }
+
+        // Event for level change to update parent options
+        document.getElementById('category-level').addEventListener('change', (e) => populateParentSelect(e.target.value));
+
+        initAdmin();
+    </script>
+</body>
+
+</html>

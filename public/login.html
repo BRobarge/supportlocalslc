@@ -29,6 +29,7 @@
                 </a>
             </nav>
     <main class="container mx-auto p-4">
+        <div id="success-message" class="text-center text-green-500 mb-4 hidden"></div> <!-- New message area -->
         <h2 id="auth-title" class="text-xl font-semibold mb-4">Login to Claim/Edit Your Listing</h2>
         <form id="auth-form" class="bg-white p-6 rounded shadow-md max-w-md mx-auto">
             <input type="email" id="email" placeholder="Email" class="w-full p-2 mb-4 border rounded" required>
@@ -65,43 +66,102 @@
             }
 
             async function handleAuth(e) {
-                e.preventDefault();
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                let data, error;
-                if (isLoginMode) {
-                    ({ data, error } = await supabaseClient.auth.signInWithPassword({ email, password }));
-                    if (error) {
-                        document.getElementById('message').innerText = 'Error: ' + error.message;
-                        return;
+                    e.preventDefault();
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    let data, error;
+                    if (isLoginMode) {
+                        ({ data, error } = await supabaseClient.auth.signInWithPassword({ email, password }));
+                        if (error) {
+                            document.getElementById('message').innerText = 'Error: ' + error.message;
+                            return;
+                        }
+                        sessionStorage.setItem('supabase_session', JSON.stringify(data.session));
+                        syncUserToGHL(email, 'customer');
+                        window.location.href = 'dashboard.html';
+                   } else {
+                        const selectedRole = document.querySelector('input[name="role"]:checked');
+                        if (!selectedRole) {
+                            document.getElementById('message').innerText = 'Error: Please select an account type.';
+                            return;
+                        }
+                        const role = selectedRole.value || 'business';
+                        ({ data, error } = await supabaseClient.auth.signUp({
+                            email,
+                            password,
+                            options: {
+                                data: { role: role },  // Metadata for trigger
+                                emailRedirectTo: 'http://127.0.0.1:5500/public/login.html'  // Local dev URL
+                            }
+                        }));
+                        if (error) {
+                            document.getElementById('message').innerText = 'Error: ' + error.message;
+                            return;
+                        }
+                        syncUserToGHL(email, 'customer');
+                        toggleMode(); // Switch back to login first
+                        const successMsg = document.getElementById('success-message');
+                        successMsg.innerText = 'Sign up successful! Please check your email to confirm your account.';
+                        successMsg.classList.remove('hidden'); // Show the message
                     }
-                    sessionStorage.setItem('supabase_session', JSON.stringify(data.session));
-                    syncUserToGHL(email, 'customer');
-                    window.location.href = 'dashboard.html';
-                } else {
-                    ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
-                    if (error) {
-                        document.getElementById('message').innerText = 'Error: ' + error.message;
-                        return;
-                    }
-                    const { error: profileError } = await supabaseClient.from('profiles').insert({
-                        id: data.user.id,
-                        membership_level: 'free'
-                    });
-                    if (profileError) console.error('Profile insert error:', profileError);
-                    document.getElementById('message').innerText = 'Sign up successful! Please login.';
-                    syncUserToGHL(email, 'customer');
-                    toggleMode(); // Switch back to login after signup
                 }
-            }
 
             function toggleMode() {
-                isLoginMode = !isLoginMode;
-                document.getElementById('auth-title').innerText = isLoginMode ? 'Login to Claim/Edit Your Listing' : 'Sign Up for an Account';
-                document.getElementById('auth-form').querySelector('button').textContent = isLoginMode ? 'Login' : 'Sign Up';
-                document.getElementById('toggle-auth').textContent = isLoginMode ? "Don't have an account? Sign Up" : 'Already have an account? Login';
-                document.getElementById('message').innerText = '';
-            }
+                    isLoginMode = !isLoginMode;
+                    document.getElementById('auth-title').innerText = isLoginMode ? 'Login to Claim/Edit Your Listing' : 'Sign Up for an Account';
+                    const form = document.getElementById('auth-form');
+                    const emailInput = document.getElementById('email');
+                    const passwordInput = document.getElementById('password');
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.textContent = isLoginMode ? 'Login' : 'Sign Up';
+                    document.getElementById('toggle-auth').textContent = isLoginMode ? "Don't have an account? Sign Up" : 'Already have an account? Login';
+                    document.getElementById('message').innerText = '';
+
+                    // Add role selector (radio buttons) for signup
+                    let roleContainer = document.getElementById('role-container');
+                    if (!isLoginMode) {
+                        // Hide fields and disable submit initially on signup
+                        emailInput.style.display = 'none';
+                        passwordInput.style.display = 'none';
+                        submitBtn.style.display = 'none';
+                        submitBtn.disabled = true; // Disable until role selected
+
+                        if (!roleContainer) {
+                            roleContainer = document.createElement('div');
+                            roleContainer.id = 'role-container';
+                            roleContainer.className = 'mb-4';
+                            roleContainer.innerHTML = `
+                <label class="block text-gray-700 font-bold mb-2">What type of account are you creating?</label>
+                <div class="flex items-center mb-2">
+                    <input type="radio" id="role-business" name="role" value="business" class="mr-2">
+                    <label for="role-business">Local Business</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="radio" id="role-supporter" name="role" value="supporter" class="mr-2">
+                    <label for="role-supporter">Local Supporter</label>
+                </div>
+            `;
+                            form.insertBefore(roleContainer, emailInput); // Insert before email
+
+                            // Listener: Show fields and enable submit on role select
+                            roleContainer.addEventListener('change', () => {
+                                if (document.querySelector('input[name="role"]:checked')) {
+                                    emailInput.style.display = 'block';
+                                    passwordInput.style.display = 'block';
+                                    submitBtn.style.display = 'block';
+                                    submitBtn.disabled = false; // Enable submit
+                                }
+                            });
+                        }
+                    } else {
+                        // On login: Show all fields, remove role, enable submit
+                        emailInput.style.display = 'block';
+                        passwordInput.style.display = 'block';
+                        submitBtn.style.display = 'block';
+                        submitBtn.disabled = false;
+                        if (roleContainer) roleContainer.remove();
+                    }
+                }
 
             async function updateNavAuth() {
                 const storedSession = sessionStorage.getItem('supabase_session');
