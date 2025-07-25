@@ -3,11 +3,6 @@
         {
             "source": "/",
             "destination": "/hub.html"
-        },
-        {
-            "source": "/:path*",
-            "destination": "https://supportlocalslc.com/:path*",
-            "permanent": true
         }
     ]
 }
