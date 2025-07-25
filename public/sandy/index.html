@@ -155,7 +155,7 @@
                 if (parts[2]) levels.tags.add(parts[2]);
             });
             let badges = '';
-            console.log('displayListings called - filterPath length:', filterPath.length, 'filterPath:', JSON.stringify(filterPath));
+            console.log('displayListings called - filterPath length:', filterPath.length, 'filterPath:', JSON.stringify(filterPath)); // Debug log
             if (filterPath.length === 0) {
                 badges = Array.from(levels.mains).map(m => `<span onclick="advanceFilter('${m}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${m}</span>`).join('');
             } else if (filterPath.length === 1) {
@@ -163,7 +163,7 @@
             } else if (filterPath.length === 2) {
                 badges = Array.from(levels.tags).map(t => `<span onclick="advanceFilter('${t}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${t}</span>`).join('');
             } else {
-                badges = '';
+                badges = ''; // Reset if filterPath exceeds expected levels
                 console.log('Warning: filterPath length exceeds 2, resetting badges');
             }
             card.innerHTML = `
