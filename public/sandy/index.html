@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support Local SLC - Business Directory</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="../shared/output.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <!-- Correct CDN -->
-    <script type="module" src="../config.js"></script>
+    <script type="module" src="../shared/config.js"></script>
+
 
 <body class="bg-gray-100 font-sans pb-60">
     <header class="shadow-md">
@@ -44,7 +45,10 @@
     </section>
 
 <script type="module">
-    import { getBusinessUrl, getLoginUrl, getHomeUrl, getDashboardUrl } from '../config.js';
+    // The corrected, valid syntax
+        import { getBusinessUrl, getLoginUrl, getHomeUrl, getDashboardUrl } from '../shared/config.js';
+
+
 
 
     const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
@@ -155,15 +159,15 @@
                 if (parts[2]) levels.tags.add(parts[2]);
             });
             let badges = '';
-            console.log('displayListings called - filterPath length:', filterPath.length, 'filterPath:', JSON.stringify(filterPath)); // Debug log
+            console.log('displayListings called - filterPath length:', filterPath.length, 'filterPath:', JSON.stringify(filterPath));
             if (filterPath.length === 0) {
-                badges = Array.from(levels.mains).map(m => `<span onclick="advanceFilter('${m}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${m}</span>`).join('');
+                badges = Array.from(levels.mains).map(m => `<span data-category="${m}" class="category-badge inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${m}</span>`).join('');
             } else if (filterPath.length === 1) {
-                badges = Array.from(levels.subs).map(s => `<span onclick="advanceFilter('${s}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${s}</span>`).join('');
+                badges = Array.from(levels.subs).filter(s => s !== '').map(s => `<span data-category="${s}" class="category-badge inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${s}</span>`).join('');
             } else if (filterPath.length === 2) {
-                badges = Array.from(levels.tags).map(t => `<span onclick="advanceFilter('${t}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${t}</span>`).join('');
+                badges = Array.from(levels.tags).filter(t => t !== '').map(t => `<span data-category="${t}" class="category-badge inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${t}</span>`).join('');
             } else {
-                badges = ''; // Reset if filterPath exceeds expected levels
+                badges = '';
                 console.log('Warning: filterPath length exceeds 2, resetting badges');
             }
             card.innerHTML = `
@@ -175,10 +179,22 @@
                 <p class="text-gray-500 text-center">${business.address || 'No Address'}</p>
                 ${business.profiles && business.profiles.membership_level !== 'free' ? `<a href="${business.website || '#'}" class="block text-blue-500 hover:underline text-center">${business.website ? 'Visit Website' : 'No Website'}</a>` : ''}
             `;
-            card.addEventListener('click', () => {
-                window.location.href = getBusinessUrl(business.id || '#');
+            // --- In your displayListings function ---
+
+            // ... (code to create the card and badges) ...
+
+            // NEW way
+            card.addEventListener('click', (event) => {
+                if (event.target.closest('.category-badge')) {
+                    return;
+                }
+                // We are now passing "sandy" as the first argument
+                window.location.href = getBusinessUrl('sandy', business.id || '#');
             });
+
+
             grid.appendChild(card);
+
         });
         updateFilterBar();
         repopulateCategories(businesses);
@@ -249,6 +265,28 @@
             console.log('No businesses loaded—check Supabase');
         }
     });
+
+    // Add this listener somewhere after the grid element is defined in the DOM
+        const listingsGrid = document.getElementById('listings-grid');
+
+        listingsGrid.addEventListener('click', function (event) {
+            // Check if the clicked element is a category badge
+            const badge = event.target.closest('.category-badge');
+
+            if (badge) {
+                // Stop the click from bubbling up to the card's own click listener
+                event.stopPropagation();
+
+                // Get the category from the data attribute
+                const category = badge.dataset.category;
+
+                // Call your advanceFilter function directly
+                if (category) {
+                    advanceFilter(category);
+                }
+            }
+        });
+
 
     updateNavAuth();
 </script>
