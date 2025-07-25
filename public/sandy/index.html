@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <!-- Correct CDN -->
     <script type="module" src="../config.js"></script>
-</head>
+
 <body class="bg-gray-100 font-sans pb-60">
     <header class="shadow-md">
         <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
@@ -44,7 +44,8 @@
     </section>
 
 <script type="module">
-    import { getBusinessUrl, getLoginUrl, getHomeUrl, getDashboardUrl } from '/config.js';
+    import { getBusinessUrl, getLoginUrl, getHomeUrl, getDashboardUrl } from '../config.js';
+
 
     const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
