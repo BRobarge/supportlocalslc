@@ -151,7 +151,7 @@
                 if (parts[2]) levels.tags.add(parts[2]);
             });
             let badges = '';
-            console.log('filterPath length:', filterPath.length, 'filterPath:', filterPath); // Debug log
+            console.log('filterPath length:', filterPath.length, 'filterPath:', JSON.stringify(filterPath)); // Added JSON.stringify for clarity
             if (filterPath.length === 0) {
                 badges = Array.from(levels.mains).map(m => `<span onclick="advanceFilter('${m}'); event.stopPropagation();" class="inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${m}</span>`).join('');
             } else if (filterPath.length === 1) {
@@ -162,7 +162,7 @@
                 badges = ''; // Reset if filterPath is longer than expected
             }
             card.innerHTML = `
-            <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'}" class="w-full h-32 object-contain rounded-lg mb-4">
+            <img src="${business.logo_url || 'https://via.placeholder.com/150x150?text=Logo'}" alt="${business.name || 'No Name'}" class="w-full h-32 object-contain rounded-lg mb-4">
             <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
             <div class="flex justify-center flex-wrap mt-2 gap-2">
                 ${badges}
