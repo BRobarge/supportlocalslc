@@ -158,41 +158,58 @@
         `;
 
             // --- Main Layout Structure ---
+            // In renderBusinessProfile, replace the entire container.innerHTML block with this one.
             container.innerHTML = `
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Left Column (Main Content) -->
-                <div class="lg:col-span-2 order-2 lg:order-1">
-                    <!-- Offers Section would go here -->
-                    <div id="offers-section" class="mb-8">
-                <!-- Offers will be loaded here -->
-                     </div>
+                <!-- 
+                On large screens (lg), we use a grid with two columns.
+                On small screens, it defaults to a single column (flex), and we can control the order.
+                -->
+                <div class="flex flex-col lg:grid lg:grid-cols-3 lg:gap-8">
 
-                    ${storyHtml}
-                    ${galleryHtml}
-                </div>
+                    <!-- 
+                    Right Column on Desktop (Info Panel)
+                    We will split this into two parts for better mobile ordering.
+                    -->
+                    <div class="lg:col-span-1 lg:order-2">
+                        <div class="lg:sticky lg:top-8">
+                            <!-- Part 1: Logo, Name, Buttons (Show this first on mobile) -->
+                            <div class="order-1">
+                                ${logoHtml}
+                                <div class="text-center">
+                                    ${nameAndTaglineHtml}
+                                </div>
+                                ${actionButtonsHtml}
+                                ${socialLinksHtml}
+                            </div>
 
-                <!-- Right Column (Info Panel) -->
-                <div class="lg:col-span-1 order-1 lg:order-2">
-                    <div class="sticky top-8">
-                        ${logoHtml}
-                        <div class="text-center">
-                            ${nameAndTaglineHtml}
-                        </div>
-                        ${actionButtonsHtml}
-                        ${socialLinksHtml}
-                        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-                            ${mapHtml}
-                            ${contactAndHoursHtml}
+                            <!-- Part 2: Map & Contact (Show this last on mobile) -->
+                            <div class="order-3 lg:order-none mt-6 p-4 bg-gray-50 rounded-lg">
+                                ${mapHtml}
+                                ${contactAndHoursHtml}
+                            </div>
                         </div>
                     </div>
+
+                    <!-- 
+                    Left Column on Desktop (Main Content)
+                    This will be shown second on mobile.
+                    -->
+                    <div class="lg:col-span-2 lg:order-1 order-2 mt-8 lg:mt-0">
+                        <div id="offers-section" class="mb-8">
+                            <!-- Offers will be loaded here -->
+                        </div>
+                        ${storyHtml}
+                        ${galleryHtml}
+                    </div>
+
                 </div>
-            </div>
-        `;
+            `;
+
 
             // --- Post-render Population ---
             // Now that the #business-hours-display element exists, populate it.
             displayHours(business.hours_data);
-            
+
              // Now that the #offers-section element exists, populate it.
             displayOffers(business.offers);
         }
