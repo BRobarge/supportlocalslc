@@ -92,6 +92,11 @@
             /* blue-500 */
             color: white;
         }
+
+        .parent-has-selection {
+            background-color: #DBEAFE !important; /* A light blue color (Tailwind's blue-100) */
+            border-left: 4px solid #3B82F6; /* A solid blue left border */
+        }
     </style>
 
     <!-- The JavaScript will go here -->
@@ -632,12 +637,16 @@
                     const container = document.getElementById('edit-content');
                     // ... (The container.innerHTML part remains the same) ...
                     container.innerHTML = `
-                        <h2 class="text-2xl font-bold mb-2">Categories & Tags</h2>
-                        <p class="text-gray-600 mb-6">Help customers find you by selecting all relevant categories and tags.</p>
-                        <div id="limit-info" class="p-3 bg-blue-100 text-blue-800 rounded-md mb-4 text-sm font-medium"></div>
-                        
-                        <!-- Categories Section -->
-                        <div class="space-y-4 bg-gray-50 p-6 rounded-lg mb-8">
+                            <h2 class="text-2xl font-bold mb-2">Categories & Tags</h2>
+                            <p class="text-gray-600 mb-6">Help customers find you by selecting all relevant categories and tags.</p>
+
+                            <!-- NEW: Counter Display Area -->
+                            <div id="limit-info" class="p-3 bg-blue-100 text-blue-800 rounded-md mb-4 text-sm font-medium space-y-1">
+                                <!-- Counters will be injected here -->
+                            </div>
+
+                            <!-- Categories Section -->
+                            <div class="space-y-4 bg-gray-50 p-6 rounded-lg mb-8">
                             <h3 class="font-bold text-lg text-gray-800">Business Categories</h3>
                             <p class="text-sm text-gray-600">Select all categories that apply. Paid tiers allow for more selections.</p>
                             <input type="text" id="category-search" placeholder="Search categories..." class="w-full p-3 border border-gray-300 rounded-md mb-4">
@@ -684,39 +693,69 @@
 
 
                 // Add this new function to your script in edit-business.html
-                    function applyTierLimits(limits) {
-                        const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
-                        const tagCheckboxes = document.querySelectorAll('.attribute-tag-checkbox');
+                    // DELETE your old applyTierLimits function.
+                        // ADD this new block of two functions in its place.
 
-                        function enforceLimits() {
-                            // Enforce category limits
-                            const selectedCategories = document.querySelectorAll('.category-checkbox:checked').length;
-                            if (selectedCategories >= limits.categories) {
-                                categoryCheckboxes.forEach(cb => {
-                                    if (!cb.checked) cb.disabled = true;
-                                });
-                            } else {
-                                categoryCheckboxes.forEach(cb => cb.disabled = false);
-                            }
+                        function updateParentStyles() {
+                            // First, remove all existing highlights
+                            document.querySelectorAll('.accordion-toggle.parent-has-selection').forEach(el => {
+                                el.classList.remove('parent-has-selection');
+                            });
 
-                            // Enforce attribute tag limits
-                            const selectedTags = document.querySelectorAll('.attribute-tag-checkbox:checked').length;
-                            if (selectedTags >= limits.tags) {
-                                tagCheckboxes.forEach(cb => {
-                                    if (!cb.checked) cb.disabled = true;
-                                });
-                            } else {
-                                tagCheckboxes.forEach(cb => cb.disabled = false);
-                            }
+                            // Now, find checked boxes and add the highlight to their parents
+                            document.querySelectorAll('.category-checkbox:checked').forEach(checkbox => {
+                                const accordionToggle = checkbox.closest('.border.rounded-md').querySelector('.accordion-toggle');
+                                if (accordionToggle) {
+                                    accordionToggle.classList.add('parent-has-selection');
+                                }
+                            });
                         }
 
-                        // Add event listeners to all checkboxes to re-run the check on every click
-                        categoryCheckboxes.forEach(cb => cb.addEventListener('change', enforceLimits));
-                        tagCheckboxes.forEach(cb => cb.addEventListener('change', enforceLimits));
+                        function applyTierLimits(limits) {
+                            const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+                            const tagCheckboxes = document.querySelectorAll('.attribute-tag-checkbox');
+                            const limitInfo = document.getElementById('limit-info');
 
-                        // Run it once on load to set the initial state
-                        enforceLimits();
-                    }
+                            function enforceLimits() {
+                                // --- Category Limits & Counter ---
+                                const selectedCategories = document.querySelectorAll('.category-checkbox:checked').length;
+                                const remainingCategories = limits.categories - selectedCategories;
+                                const catCounterText = `Categories selected: ${selectedCategories} / ${limits.categories}. (${remainingCategories} remaining)`;
+
+                                if (selectedCategories >= limits.categories) {
+                                    categoryCheckboxes.forEach(cb => {
+                                        if (!cb.checked) cb.disabled = true;
+                                    });
+                                } else {
+                                    categoryCheckboxes.forEach(cb => cb.disabled = false);
+                                }
+
+                                // --- Tag Limits & Counter ---
+                                const selectedTags = document.querySelectorAll('.attribute-tag-checkbox:checked').length;
+                                const remainingTags = limits.tags - selectedTags;
+                                const tagCounterText = `Attribute Tags selected: ${selectedTags} / ${limits.tags}. (${remainingTags} remaining)`;
+
+                                if (selectedTags >= limits.tags) {
+                                    tagCheckboxes.forEach(cb => {
+                                        if (!cb.checked) cb.disabled = true;
+                                    });
+                                } else {
+                                    tagCheckboxes.forEach(cb => cb.disabled = false);
+                                }
+
+                                // --- Update UI ---
+                                limitInfo.innerHTML = `<div>${catCounterText}</div><div>${tagCounterText}</div>`;
+                                updateParentStyles(); // Call the new highlighting function
+                            }
+
+                            // Add event listeners to all checkboxes
+                            categoryCheckboxes.forEach(cb => cb.addEventListener('change', enforceLimits));
+                            tagCheckboxes.forEach(cb => cb.addEventListener('change', enforceLimits));
+
+                            // Run it once on load
+                            enforceLimits();
+                        }
+
 
 
                     // ===================================================================================
