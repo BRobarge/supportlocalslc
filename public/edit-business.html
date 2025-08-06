@@ -53,6 +53,9 @@
                     <a href="#categories" data-section="categories" class="edit-nav-link">
                         <i class="fas fa-tags w-6 mr-3"></i> Categories
                     </a>
+                    <a href="#offers" data-section="offers" class="edit-nav-link">
+                        <i class="fas fa-star w-6 mr-3"></i> Offers
+                    </a>
                 </nav>
             </aside>
 
@@ -66,6 +69,74 @@
             </div>
 
         </div>
+
+        <!-- In /public/edit-business.html, before </main> -->
+
+        <!-- Add/Edit Offer Modal -->
+        <div id="offer-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
+            <div
+                class="bg-white p-6 md:p-8 rounded-lg shadow-2xl w-full sm:w-auto sm:min-w-[600px] max-w-2xl max-h-[90vh] overflow-y-auto">
+
+
+
+
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="offer-modal-title" class="text-2xl font-bold text-gray-800">Add New Offer</h2>
+                    <button id="close-offer-modal-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+                </div>
+
+                <!-- Offer Form -->
+                <div class="space-y-4">
+                    <input type="hidden" id="offer-id-input"> <!-- To store the ID when editing -->
+
+                    <div>
+                        <label for="offer-title" class="block text-sm font-medium text-gray-700">Offer Title</label>
+                        <input type="text" id="offer-title" placeholder="e.g., 15% Off Your Entire Purchase"
+                            class="mt-1 block w-full p-3 border border-gray-300 rounded-md">
+                    </div>
+
+                    <div>
+                        <label for="offer-description" class="block text-sm font-medium text-gray-700">Description &
+                            Terms</label>
+                        <textarea id="offer-description" rows="4"
+                            placeholder="e.g., Valid for first-time customers. Not valid with other discounts."
+                            class="mt-1 block w-full p-3 border border-gray-300 rounded-md"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="offer-pin" class="block text-sm font-medium text-gray-700">4-Digit Redemption
+                                PIN</label>
+                            <input type="text" id="offer-pin" placeholder="e.g., 1234" maxlength="4"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="offer-limit" class="block text-sm font-medium text-gray-700">Total Claim Limit
+                                (Optional)</label>
+                            <input type="number" id="offer-limit" placeholder="e.g., 100"
+                                class="mt-1 block w-full p-3 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="offer-first-time"
+                                class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <span class="ml-3 font-medium text-gray-700">This offer is for first-time customers only.</span>
+                        </label>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="flex justify-end pt-4">
+                        <button id="save-offer-btn"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Save Offer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </main>
 
     <!-- Add some basic CSS for the edit navigation -->
@@ -164,31 +235,40 @@
                 livePageBtn.classList.remove('hidden');
             }
 
-            function setupNavLinks() {
-                const navLinks = document.querySelectorAll('.edit-nav-link');
-                navLinks.forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        navLinks.forEach(l => l.classList.remove('active'));
-                        link.classList.add('active');
+            // In /public/edit-business.html
+                // Replace your entire setupNavLinks function with this one.
 
-                        const section = link.dataset.section;
-                        if (section === 'story') {
-                            renderStorySection();
-                        } else if (section === 'photos') {
-                            renderPhotosSection();
-                        } else if (section === 'location') {
-                            renderLocationSection();
-                        } else if (section === 'contact') {
-                            renderContactSection();
-                        } else if (section === 'categories') { // <-- ADD THIS BLOCK
-                            renderCategoriesSection();
-                        } else {
-                            document.getElementById('edit-content').innerHTML = `<h2 class="text-2xl font-bold">${section.charAt(0).toUpperCase() + section.slice(1)}</h2><p>This section is under construction.</p>`;
-                        }
+                function setupNavLinks() {
+                    const navLinks = document.querySelectorAll('.edit-nav-link');
+                    navLinks.forEach(link => {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
+
+                            const section = link.dataset.section;
+
+                            // This is the corrected if/else if chain
+                            if (section === 'story') {
+                                renderStorySection();
+                            } else if (section === 'photos') {
+                                renderPhotosSection();
+                            } else if (section === 'location') {
+                                renderLocationSection();
+                            } else if (section === 'contact') {
+                                renderContactSection();
+                            } else if (section === 'categories') {
+                                renderCategoriesSection();
+                            } else if (section === 'offers') {
+                                renderOffersSection();
+                            } else {
+                                // This is the fallback for any other links
+                                document.getElementById('edit-content').innerHTML = `<h2 class="text-2xl font-bold">${section.charAt(0).toUpperCase() + section.slice(1)}</h2><p>This section is under construction.</p>`;
+                            }
+                        });
                     });
-                });
-            }
+                }
+
 
             function showUploadStatus(message, type = 'info') {
                 const statusContainer = document.getElementById('upload-status');
@@ -632,39 +712,41 @@
                 saveBtn.disabled = false;
             }
 
-            // Replace your existing renderCategoriesSection function with this one.
+            // In /public/edit-business.html
+
+                // Replace your existing renderCategoriesSection function with this one
                 async function renderCategoriesSection() {
                     const container = document.getElementById('edit-content');
-                    // ... (The container.innerHTML part remains the same) ...
+
                     container.innerHTML = `
-                            <h2 class="text-2xl font-bold mb-2">Categories & Tags</h2>
-                            <p class="text-gray-600 mb-6">Help customers find you by selecting all relevant categories and tags.</p>
-
-                            <!-- NEW: Counter Display Area -->
-                            <div id="limit-info" class="p-3 bg-blue-100 text-blue-800 rounded-md mb-4 text-sm font-medium space-y-1">
-                                <!-- Counters will be injected here -->
-                            </div>
-
-                            <!-- Categories Section -->
-                            <div class="space-y-4 bg-gray-50 p-6 rounded-lg mb-8">
-                            <h3 class="font-bold text-lg text-gray-800">Business Categories</h3>
-                            <p class="text-sm text-gray-600">Select all categories that apply. Paid tiers allow for more selections.</p>
-                            <input type="text" id="category-search" placeholder="Search categories..." class="w-full p-3 border border-gray-300 rounded-md mb-4">
-                            <div id="category-checklist-container" class="max-h-72 overflow-y-auto space-y-2"></div>
+                    <h2 class="text-2xl font-bold mb-2">Categories & Tags</h2>
+                    <p class="text-gray-600 mb-6">Help customers find you by selecting all relevant categories and tags.</p>
+                    <div id="limit-info" class="p-3 bg-blue-100 text-blue-800 rounded-md mb-4 text-sm font-medium space-y-1"></div>
+                    
+                    <!-- Categories Section -->
+                    <div class="space-y-4 bg-gray-50 p-6 rounded-lg mb-8">
+                        <h3 class="font-bold text-lg text-gray-800">Business Categories</h3>
+                        <p class="text-sm text-gray-600">Select all categories that apply. Paid tiers allow for more selections.</p>
+                        <input type="text" id="category-search" placeholder="Search categories..." class="w-full p-3 border border-gray-300 rounded-md mb-4">
+                        <div id="category-checklist-container" class="max-h-72 overflow-y-auto space-y-2">
+                            <!-- Category checklist will be generated here -->
                         </div>
+                    </div>
 
-                        <!-- Attribute Tags Section -->
-                        <div class="space-y-4 bg-gray-50 p-6 rounded-lg">
-                            <h3 class="font-bold text-lg text-gray-800">Attribute Tags</h3>
-                            <p class="text-sm text-gray-600">Select all tags that apply to your business.</p>
-                            <div id="tags-checkbox-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4"></div>
+                    <!-- Attribute Tags Section -->
+                    <div class="space-y-4 bg-gray-50 p-6 rounded-lg">
+                        <h3 class="font-bold text-lg text-gray-800">Attribute Tags</h3>
+                        <p class="text-sm text-gray-600">Select all tags that apply to your business.</p>
+                        <div id="tags-checkbox-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                            <!-- Tag checkboxes will be generated here -->
                         </div>
+                    </div>
 
-                        <!-- Save Button -->
-                        <div class="flex justify-end mt-8">
-                            <button id="save-categories-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">Save Changes</button>
-                        </div>
-                    `;
+                    <!-- Save Button -->
+                    <div class="flex justify-end mt-8">
+                        <button id="save-categories-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">Save Changes</button>
+                    </div>
+                `;
 
                     // --- Fetch user's membership level ---
                     const { data: profile } = await supabaseClient
@@ -676,20 +758,263 @@
                     const membership = profile?.membership_level || 'free';
                     const limits = tierLimits[membership];
 
-                    // Display the limits to the user
-                    document.getElementById('limit-info').textContent = `Your '${membership}' plan allows you to select up to ${limits.categories} categories and ${limits.tags} attribute tags.`;
-
                     // --- Now, populate the UI ---
                     await populateCategoryChecklist();
                     populateTagsCheckboxes();
 
                     // --- Add event listeners ---
-                    document.getElementById('category-search').addEventListener('input', filterCategoryChecklist);
+                    document.getElementById('category-search').addEventListener('input', filterCategoryChecklist); // This now correctly calls the function below
                     document.getElementById('save-categories-btn').addEventListener('click', saveCategoriesAndTags);
 
                     // --- FINALLY, APPLY THE LIMITS ---
                     applyTierLimits(limits);
                 }
+
+                // Add this new function to your script
+                    async function renderOffersSection() {
+                        const container = document.getElementById('edit-content');
+                        container.innerHTML = `
+                                <div class="flex justify-between items-center mb-6">
+                                    <div>
+                                        <h2 class="text-2xl font-bold mb-2">Manage Offers</h2>
+                                        <p class="text-gray-600">Create and manage special offers to attract customers.</p>
+                                    </div>
+                                    <button id="add-offer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
+                                        <i class="fas fa-plus mr-2"></i> Add New Offer
+                                    </button>
+                                </div>
+                                <div id="offers-list-container" class="space-y-4">
+                                    <p>Loading offers...</p>
+                                </div>
+                            `;
+
+                        // --- Fetch and display existing offers ---
+                        const { data: offers, error } = await supabaseClient
+                            .from('offers')
+                            .select('*')
+                            .eq('business_id', currentBusinessData.id);
+
+                        if (error) {
+                            document.getElementById('offers-list-container').innerHTML = '<p class="text-red-500">Could not load offers.</p>';
+                            return;
+                        }
+
+                        const offersListContainer = document.getElementById('offers-list-container');
+                        offersListContainer.innerHTML = ''; // Clear loading message
+
+                        if (offers.length === 0) {
+                            offersListContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No offers created yet. Click "Add New Offer" to get started!</p>';
+                        } else {
+                            offers.forEach(offer => {
+                                const offerCard = document.createElement('div');
+                                offerCard.className = 'bg-gray-50 p-4 rounded-lg shadow-sm flex justify-between items-center';
+                                offerCard.innerHTML = `
+                                    <div>
+                                        <h4 class="font-bold text-lg">${offer.title}</h4>
+                                        <p class="text-sm text-gray-600">${offer.description}</p>
+                                        <p class="text-xs text-gray-500 mt-2">PIN: ${offer.redemption_pin} | Limit: ${offer.claim_limit || 'None'}</p>
+                                    </div>
+                                    <div>
+                                        <button class="edit-offer-btn text-blue-600 hover:text-blue-800 mr-4" data-offer-id="${offer.id}">Edit</button>
+                                        <button class="delete-offer-btn text-red-600 hover:text-red-800" data-offer-id="${offer.id}">Delete</button>
+                                    </div>
+                                `;
+                                offersListContainer.appendChild(offerCard);
+                            });
+                        }
+
+                       
+                        // --- Add Event Listeners ---
+                        setupOfferModal(); // This sets up the Add/Edit modal
+
+                        offersListContainer.addEventListener('click', (e) => {
+                            if (e.target.classList.contains('edit-offer-btn')) {
+                                const offerId = e.target.dataset.offerId;
+                                alert(`Editing offer ID: ${offerId}`);
+                                // In the future, this will also call openModal() and populate the form
+                            }
+                            if (e.target.classList.contains('delete-offer-btn')) {
+                                const offerId = e.target.dataset.offerId;
+                                alert(`Deleting offer ID: ${offerId}`);
+                            }
+                        });
+
+
+                        // Add listeners for edit/delete buttons (we'll build the logic later)
+                        offersListContainer.addEventListener('click', (e) => {
+                            if (e.target.classList.contains('edit-offer-btn')) {
+                                const offerId = e.target.dataset.offerId;
+                                alert(`Editing offer ID: ${offerId}`);
+                            }
+                            if (e.target.classList.contains('delete-offer-btn')) {
+                                const offerId = e.target.dataset.offerId;
+                                alert(`Deleting offer ID: ${offerId}`);
+                            }
+                        });
+                    }
+
+                    // Add this new function to your script
+                        function setupOfferModal() {
+                            const modal = document.getElementById('offer-modal');
+                            const addBtn = document.getElementById('add-offer-btn');
+                            const closeBtn = document.getElementById('close-offer-modal-btn');
+                            const saveBtn = document.getElementById('save-offer-btn');
+
+                            if (!modal || !addBtn || !closeBtn || !saveBtn) return;
+
+                            // Function to open the modal
+                            const openModal = () => modal.classList.remove('hidden');
+
+                            // Function to close the modal
+                            const closeModal = () => modal.classList.add('hidden');
+
+                            // Attach listeners
+                            addBtn.addEventListener('click', () => {
+                                // Clear the form for a new entry
+                                document.getElementById('offer-modal-title').textContent = 'Add New Offer';
+                                document.getElementById('offer-id-input').value = '';
+                                document.getElementById('offer-title').value = '';
+                                document.getElementById('offer-description').value = '';
+                                document.getElementById('offer-pin').value = '';
+                                document.getElementById('offer-limit').value = '';
+                                document.getElementById('offer-first-time').checked = false;
+
+                                // Open the modal
+                                modal.classList.remove('hidden');
+                            });
+                            closeBtn.addEventListener('click', closeModal);
+
+                           // In setupOfferModal, this is the correct replacement
+                            saveBtn.addEventListener('click', saveOffer);
+
+                        }
+
+
+                        // Add this new function to your script
+                            async function saveOffer() {
+                                const saveBtn = document.getElementById('save-offer-btn');
+                                saveBtn.textContent = 'Saving...';
+                                saveBtn.disabled = true;
+
+                                // --- Collect Data from Form ---
+                                const offerId = document.getElementById('offer-id-input').value;
+                                const title = document.getElementById('offer-title').value.trim();
+                                const description = document.getElementById('offer-description').value.trim();
+                                const redemption_pin = document.getElementById('offer-pin').value.trim();
+                                const claim_limit = document.getElementById('offer-limit').value;
+                                const is_first_time_only = document.getElementById('offer-first-time').checked;
+
+                                // --- Basic Validation ---
+                                if (!title || !description || !redemption_pin) {
+                                    alert('Please fill out the Title, Description, and Redemption PIN fields.');
+                                    saveBtn.textContent = 'Save Offer';
+                                    saveBtn.disabled = false;
+                                    return;
+                                }
+
+                                // --- Prepare Data for Supabase ---
+                                const offerData = {
+                                    business_id: currentBusinessData.id,
+                                    title: title,
+                                    description: description,
+                                    redemption_pin: redemption_pin,
+                                    claim_limit: claim_limit ? parseInt(claim_limit, 10) : null,
+                                    is_first_time_only: is_first_time_only,
+                                };
+
+                                let error;
+
+                                // --- Determine if we are UPDATING or INSERTING ---
+                                if (offerId) {
+                                    // We have an ID, so we are updating an existing offer
+                                    const { error: updateError } = await supabaseClient
+                                        .from('offers')
+                                        .update(offerData)
+                                        .eq('id', offerId);
+                                    error = updateError;
+                                } else {
+                                    // No ID, so we are inserting a new offer
+                                    const { error: insertError } = await supabaseClient
+                                        .from('offers')
+                                        .insert([offerData]);
+                                    error = insertError;
+                                }
+
+                                // --- Handle Response ---
+                                if (error) {
+                                    console.error('Error saving offer:', error);
+                                    alert('There was an error saving the offer. Please try again.');
+                                } else {
+                                    alert('Offer saved successfully!');
+                                    document.getElementById('offer-modal').classList.add('hidden'); // Close the modal
+                                    renderOffersSection(); // Re-render the offers list to show the new/updated offer
+                                }
+
+                                saveBtn.textContent = 'Save Offer';
+                                saveBtn.disabled = false;
+                            }
+
+             
+                // In /public/edit-business.html
+                    // Replace your existing filterCategoryChecklist function with this one.
+
+                    // In /public/edit-business.html
+                        // Replace your existing filterCategoryChecklist function with this one.
+
+                        function filterCategoryChecklist(event) {
+                            const searchTerm = event.target.value.toLowerCase();
+                            const allAccordions = document.querySelectorAll('#category-checklist-container > .border.rounded-md');
+
+                            // If the search term is empty, reset everything to its default state
+                            if (searchTerm.length === 0) {
+                                allAccordions.forEach(accordion => {
+                                    const content = accordion.querySelector('.accordion-content');
+                                    const icon = accordion.querySelector('.accordion-toggle i');
+
+                                    accordion.style.display = 'block'; // Make sure the whole block is visible
+                                    content.classList.add('hidden');   // Close the content
+                                    if (icon) icon.classList.remove('rotate-180'); // Reset the icon
+
+                                    // Make all items inside visible again
+                                    accordion.querySelectorAll('.category-item').forEach(item => item.style.display = 'flex');
+                                });
+                                return; // Stop here
+                            }
+
+                            // If there is a search term, perform the filtering
+                            allAccordions.forEach(accordion => {
+                                const mainCategoryButton = accordion.querySelector('.accordion-toggle');
+                                const mainCategoryText = mainCategoryButton.querySelector('span').textContent.toLowerCase();
+                                const content = accordion.querySelector('.accordion-content');
+                                const items = content.querySelectorAll('.category-item');
+
+                                let hasInternalMatch = false;
+
+                                // Check all the children (sub-categories and tags) for matches
+                                items.forEach(item => {
+                                    const labelText = item.querySelector('span').textContent.toLowerCase();
+                                    if (labelText.includes(searchTerm)) {
+                                        item.style.display = 'flex'; // Show this specific item
+                                        hasInternalMatch = true;
+                                    } else {
+                                        item.style.display = 'none'; // Hide this specific item
+                                    }
+                                });
+
+                                // --- THIS IS THE KEY LOGIC ---
+                                // An accordion should be visible if EITHER its own title matches OR it contains a child that matches.
+                                if (mainCategoryText.includes(searchTerm) || hasInternalMatch) {
+                                    accordion.style.display = 'block';      // Show the entire accordion block
+                                    content.classList.remove('hidden');     // Expand the content to show the results
+                                    mainCategoryButton.querySelector('i')?.classList.add('rotate-180'); // Rotate the icon
+                                } else {
+                                    // If nothing matches at all, hide the entire accordion block
+                                    accordion.style.display = 'none';
+                                }
+                            });
+                        }
+
+
 
 
                 // Add this new function to your script in edit-business.html
@@ -864,17 +1189,7 @@
                         }
 
 
-                    function filterCategoryChecklist(event) {
-                        const searchTerm = event.target.value.toLowerCase();
-                        document.querySelectorAll('.category-item').forEach(item => {
-                            const labelText = item.querySelector('span').textContent.toLowerCase();
-                            if (labelText.includes(searchTerm)) {
-                                item.style.display = 'flex';
-                            } else {
-                                item.style.display = 'none';
-                            }
-                        });
-                    }
+                  
 
                     async function saveCategoriesAndTags() {
                         const saveBtn = document.getElementById('save-categories-btn');

@@ -73,11 +73,17 @@
                 return;
             }
 
+            // In business.html, inside the loadBusiness function
             const { data: business, error } = await supabaseClient
                 .from('businesses')
-                .select(`*, profiles (membership_level)`)
+                .select(`
+                    *,
+                    profiles (membership_level),
+                    offers (*)
+                `) // <-- ADD offers(*) HERE
                 .eq('id', id)
                 .single();
+
 
             if (error || !business) {
                 console.error('Error loading business:', error);
@@ -157,6 +163,10 @@
                 <!-- Left Column (Main Content) -->
                 <div class="lg:col-span-2 order-2 lg:order-1">
                     <!-- Offers Section would go here -->
+                    <div id="offers-section" class="mb-8">
+                <!-- Offers will be loaded here -->
+                     </div>
+
                     ${storyHtml}
                     ${galleryHtml}
                 </div>
@@ -182,6 +192,9 @@
             // --- Post-render Population ---
             // Now that the #business-hours-display element exists, populate it.
             displayHours(business.hours_data);
+            
+             // Now that the #offers-section element exists, populate it.
+            displayOffers(business.offers);
         }
 
         // ===================================================================================
@@ -223,6 +236,41 @@
             hoursHtml += '</ul>';
             container.innerHTML = hoursHtml;
         }
+
+        // Add this new function to your business.html script
+            function displayOffers(offers) {
+                const container = document.getElementById('offers-section');
+                if (!container) return;
+
+                if (!offers || offers.length === 0) {
+                    // If there are no offers, we don't need to show anything.
+                    container.style.display = 'none';
+                    return;
+                }
+
+                let offersHtml = `
+                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Special Offers</h2>
+                    <div class="space-y-4">
+                `;
+
+                offers.forEach(offer => {
+                    offersHtml += `
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow">
+                            <h3 class="text-lg font-bold text-yellow-900">${offer.title}</h3>
+                            <p class="text-sm text-gray-700 mt-1">${offer.description}</p>
+                            <div class="mt-4">
+                                <button class="claim-offer-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg" data-offer-id="${offer.id}">
+                                    Claim Offer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                offersHtml += `</div>`;
+                container.innerHTML = offersHtml;
+            }
+
 
         function formatTime(timeString) {
             if (!timeString) return '';
