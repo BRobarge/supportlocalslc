@@ -10,6 +10,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Add these inside the <head> of edit-business.html -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
 </head>
 
 <body class="bg-gray-100 font-sans">
@@ -99,6 +103,11 @@
             const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
             const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
             const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+            const tierLimits = {
+                    'free': { categories: 1, tags: 0 }, // Max 1 category path, 0 attribute tags
+                    'Growth': { categories: 3, tags: 10 },
+                    'Pro': { categories: 10, tags: 25 }
+                };
 
             let currentBusinessData = null;
             let currentUser = null;
@@ -167,6 +176,8 @@
                             renderLocationSection();
                         } else if (section === 'contact') {
                             renderContactSection();
+                        } else if (section === 'categories') { // <-- ADD THIS BLOCK
+                            renderCategoriesSection();
                         } else {
                             document.getElementById('edit-content').innerHTML = `<h2 class="text-2xl font-bold">${section.charAt(0).toUpperCase() + section.slice(1)}</h2><p>This section is under construction.</p>`;
                         }
@@ -219,9 +230,11 @@
                 </div>
             </div>
             <div>
-                <label for="business-story" class="block text-sm font-medium text-gray-700">Our Story / Description</label>
-                <textarea id="business-story" rows="8" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">${currentBusinessData.description || ''}</textarea>
+                <label class="block text-sm font-medium text-gray-700">Our Story / Description</label>
+                <!-- Quill will take over this div -->
+                <div id="quill-editor" class="mt-1 bg-white" style="height: 250px;"></div>
             </div>
+
             <div class="flex justify-end">
                 <button id="save-story-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400">Save Changes</button>
             </div>
@@ -235,6 +248,25 @@
                 }
                 document.getElementById('logo-upload-input').addEventListener('change', handleLogoUpload);
                 document.getElementById('delete-logo-btn').addEventListener('click', handleLogoDelete);
+                // --- Initialize Quill Editor ---
+                const quill = new Quill('#quill-editor', {
+                    theme: 'snow', // Use the 'snow' theme
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            ['link'],
+                            ['clean'] // Button to remove all formatting
+                        ]
+                    }
+                });
+
+                // Load the existing story HTML into the editor
+                if (currentBusinessData.description) {
+                    quill.root.innerHTML = currentBusinessData.description;
+                }
+
                 document.getElementById('save-story-btn').addEventListener('click', saveStorySection);
             }
 
@@ -404,7 +436,9 @@
                 const updatedData = {
                     name: document.getElementById('business-name').value,
                     tagline: document.getElementById('business-tagline').value,
-                    description: document.getElementById('business-story').value,
+                    // Get the HTML content from the Quill editor
+                    description: document.querySelector('#quill-editor .ql-editor').innerHTML,
+
                 };
                 const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
                 if (error) {
@@ -592,6 +626,268 @@
                 }
                 saveBtn.disabled = false;
             }
+
+            // Replace your existing renderCategoriesSection function with this one.
+                async function renderCategoriesSection() {
+                    const container = document.getElementById('edit-content');
+                    // ... (The container.innerHTML part remains the same) ...
+                    container.innerHTML = `
+                        <h2 class="text-2xl font-bold mb-2">Categories & Tags</h2>
+                        <p class="text-gray-600 mb-6">Help customers find you by selecting all relevant categories and tags.</p>
+                        <div id="limit-info" class="p-3 bg-blue-100 text-blue-800 rounded-md mb-4 text-sm font-medium"></div>
+                        
+                        <!-- Categories Section -->
+                        <div class="space-y-4 bg-gray-50 p-6 rounded-lg mb-8">
+                            <h3 class="font-bold text-lg text-gray-800">Business Categories</h3>
+                            <p class="text-sm text-gray-600">Select all categories that apply. Paid tiers allow for more selections.</p>
+                            <input type="text" id="category-search" placeholder="Search categories..." class="w-full p-3 border border-gray-300 rounded-md mb-4">
+                            <div id="category-checklist-container" class="max-h-72 overflow-y-auto space-y-2"></div>
+                        </div>
+
+                        <!-- Attribute Tags Section -->
+                        <div class="space-y-4 bg-gray-50 p-6 rounded-lg">
+                            <h3 class="font-bold text-lg text-gray-800">Attribute Tags</h3>
+                            <p class="text-sm text-gray-600">Select all tags that apply to your business.</p>
+                            <div id="tags-checkbox-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4"></div>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="flex justify-end mt-8">
+                            <button id="save-categories-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">Save Changes</button>
+                        </div>
+                    `;
+
+                    // --- Fetch user's membership level ---
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('membership_level')
+                        .eq('id', currentUser.id)
+                        .single();
+
+                    const membership = profile?.membership_level || 'free';
+                    const limits = tierLimits[membership];
+
+                    // Display the limits to the user
+                    document.getElementById('limit-info').textContent = `Your '${membership}' plan allows you to select up to ${limits.categories} categories and ${limits.tags} attribute tags.`;
+
+                    // --- Now, populate the UI ---
+                    await populateCategoryChecklist();
+                    populateTagsCheckboxes();
+
+                    // --- Add event listeners ---
+                    document.getElementById('category-search').addEventListener('input', filterCategoryChecklist);
+                    document.getElementById('save-categories-btn').addEventListener('click', saveCategoriesAndTags);
+
+                    // --- FINALLY, APPLY THE LIMITS ---
+                    applyTierLimits(limits);
+                }
+
+
+                // Add this new function to your script in edit-business.html
+                    function applyTierLimits(limits) {
+                        const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+                        const tagCheckboxes = document.querySelectorAll('.attribute-tag-checkbox');
+
+                        function enforceLimits() {
+                            // Enforce category limits
+                            const selectedCategories = document.querySelectorAll('.category-checkbox:checked').length;
+                            if (selectedCategories >= limits.categories) {
+                                categoryCheckboxes.forEach(cb => {
+                                    if (!cb.checked) cb.disabled = true;
+                                });
+                            } else {
+                                categoryCheckboxes.forEach(cb => cb.disabled = false);
+                            }
+
+                            // Enforce attribute tag limits
+                            const selectedTags = document.querySelectorAll('.attribute-tag-checkbox:checked').length;
+                            if (selectedTags >= limits.tags) {
+                                tagCheckboxes.forEach(cb => {
+                                    if (!cb.checked) cb.disabled = true;
+                                });
+                            } else {
+                                tagCheckboxes.forEach(cb => cb.disabled = false);
+                            }
+                        }
+
+                        // Add event listeners to all checkboxes to re-run the check on every click
+                        categoryCheckboxes.forEach(cb => cb.addEventListener('change', enforceLimits));
+                        tagCheckboxes.forEach(cb => cb.addEventListener('change', enforceLimits));
+
+                        // Run it once on load to set the initial state
+                        enforceLimits();
+                    }
+
+
+                    // ===================================================================================
+                        // --- CATEGORY & TAGS JAVASCRIPT ---
+                        // ===================================================================================
+
+                        // Replace your existing populateCategoryChecklist function with this one.
+                        async function populateCategoryChecklist() {
+                            const container = document.getElementById('category-checklist-container');
+                            container.innerHTML = '<p>Loading categories...</p>';
+
+                            const { data: allCategories, error: catError } = await supabaseClient.from('categories').select('id, name, level, parent_id');
+                            const { data: currentSelections, error: selectionError } = await supabaseClient.from('business_categories').select('category_id').eq('business_id', currentBusinessData.id);
+
+                            if (catError || selectionError) {
+                                container.innerHTML = '<p class="text-red-500">Error loading category data.</p>';
+                                return;
+                            }
+
+                            const selectedIds = new Set(currentSelections.map(item => item.category_id));
+                            let html = '';
+                            const mainCategories = allCategories.filter(c => c.level === 1).sort((a, b) => a.name.localeCompare(b.name));
+
+                            mainCategories.forEach(mainCat => {
+                                html += `<div class="border rounded-md overflow-hidden">`; // Added overflow-hidden
+
+                                // Main category is now a clickable accordion toggle
+                                html += `
+                                    <button type="button" class="accordion-toggle w-full text-left p-3 font-bold bg-gray-100 hover:bg-gray-200 flex justify-between items-center">
+                                        <span>${mainCat.name}</span>
+                                        <i class="fas fa-chevron-down transform transition-transform duration-200"></i>
+                                    </button>
+                                `;
+
+                                // Content of the accordion
+                                html += `<div class="accordion-content hidden p-3 pl-4 border-t border-gray-200">`;
+
+                                const subCategories = allCategories.filter(c => c.parent_id === mainCat.id).sort((a, b) => a.name.localeCompare(b.name));
+                                subCategories.forEach(subCat => {
+                                    const isChecked = selectedIds.has(subCat.id);
+                                    html += `
+                                        <div class="ml-2">
+                                            <label class="category-item flex items-center p-1">
+                                                <input type="checkbox" value="${subCat.id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 category-checkbox" ${isChecked ? 'checked' : ''}>
+                                                <span class="ml-3 font-semibold text-gray-800">${subCat.name}</span>
+                                            </label>
+                                    `;
+
+                                    const tags = allCategories.filter(c => c.parent_id === subCat.id).sort((a, b) => a.name.localeCompare(b.name));
+                                    if (tags.length > 0) {
+                                        html += '<div class="pl-6 mt-1 space-y-1 border-l-2 ml-2">';
+                                        tags.forEach(tag => {
+                                            const isTagChecked = selectedIds.has(tag.id);
+                                            html += `
+                                                <label class="category-item flex items-center p-1">
+                                                    <input type="checkbox" value="${tag.id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 category-checkbox" ${isTagChecked ? 'checked' : ''}>
+                                                    <span class="ml-3 text-sm font-medium text-gray-600">${tag.name}</span>
+                                                </label>
+                                            `;
+                                        });
+                                        html += '</div>';
+                                    }
+                                    html += `</div>`; // Close sub-category div
+                                });
+
+                                html += `</div></div>`; // Close accordion-content and main border div
+                            });
+
+                            container.innerHTML = html;
+
+                            // Add event listeners for the new accordion toggles
+                            container.querySelectorAll('.accordion-toggle').forEach(button => {
+                                button.addEventListener('click', () => {
+                                    const content = button.nextElementSibling;
+                                    const icon = button.querySelector('i'); // This is now safe
+
+                                    // This check prevents the error.
+                                    if (content) {
+                                        content.classList.toggle('hidden');
+                                    }
+                                    if (icon) {
+                                        icon.classList.toggle('rotate-180');
+                                    }
+                                });
+                            });
+                        }
+
+                        // THIS IS THE MISSING FUNCTION. Please add it to your script.
+                        function populateTagsCheckboxes() {
+                            const container = document.getElementById('tags-checkbox-container');
+                            // In a real app, you'd fetch these from a 'tags' table in Supabase.
+                            // For now, we'll hardcode them.
+                            const availableTags = ['Veteran Owned', 'Woman Owned', 'LGBTQ+ Owned', 'Family Owned', 'Dog Friendly', 'Free Wi-Fi', 'Has a Patio', 'Accepts Crypto'];
+                            const currentTags = currentBusinessData.tags || [];
+
+                            container.innerHTML = ''; // Clear previous content
+                            availableTags.forEach(tag => {
+                                const isChecked = currentTags.includes(tag);
+                                container.innerHTML += `
+                                    <label class="flex items-center p-3 bg-white border rounded-lg hover:bg-gray-50">
+                                        <input type="checkbox" value="${tag}" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 attribute-tag-checkbox" ${isChecked ? 'checked' : ''}>
+                                        <span class="ml-3 text-sm font-medium text-gray-700">${tag}</span>
+                                    </label>
+                                `;
+                            });
+                        }
+
+
+                    function filterCategoryChecklist(event) {
+                        const searchTerm = event.target.value.toLowerCase();
+                        document.querySelectorAll('.category-item').forEach(item => {
+                            const labelText = item.querySelector('span').textContent.toLowerCase();
+                            if (labelText.includes(searchTerm)) {
+                                item.style.display = 'flex';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    }
+
+                    async function saveCategoriesAndTags() {
+                        const saveBtn = document.getElementById('save-categories-btn');
+                        saveBtn.textContent = 'Saving...';
+                        saveBtn.disabled = true;
+
+                        // --- Get Selected Category IDs ---
+                        const selectedCategoryIds = [];
+                        document.querySelectorAll('.category-checkbox:checked').forEach(checkbox => {
+                            selectedCategoryIds.push(checkbox.value);
+                        });
+
+                        // --- Get Selected Attribute Tags ---
+                        const selectedTags = [];
+                        document.querySelectorAll('.attribute-tag-checkbox:checked').forEach(checkbox => {
+                            selectedTags.push(checkbox.value);
+                        });
+
+                        // --- Save Attribute Tags (this is an UPDATE on the businesses table) ---
+                        const { error: tagsUpdateError } = await supabaseClient
+                            .from('businesses')
+                            .update({ tags: selectedTags })
+                            .eq('id', currentBusinessData.id);
+
+                        // --- Save Categories (this is a DELETE then INSERT on the linking table) ---
+                        // 1. Delete all existing entries for this business
+                        const { error: deleteError } = await supabaseClient
+                            .from('business_categories')
+                            .delete()
+                            .eq('business_id', currentBusinessData.id);
+
+                        // 2. Insert the new selections
+                        const newLinks = selectedCategoryIds.map(catId => ({
+                            business_id: currentBusinessData.id,
+                            category_id: catId
+                        }));
+
+                        const { error: insertError } = await supabaseClient
+                            .from('business_categories')
+                            .insert(newLinks);
+
+                        // --- Finalize ---
+                        if (tagsUpdateError || deleteError || insertError) {
+                            alert('An error occurred. Not all changes may have been saved.');
+                            console.error({ tagsUpdateError, deleteError, insertError });
+                        } else {
+                            alert('Categories and tags saved successfully!');
+                        }
+
+                        saveBtn.textContent = 'Save Changes';
+                        saveBtn.disabled = false;
+                    }
 
 
 
