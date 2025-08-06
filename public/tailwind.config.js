@@ -1,8 +1,10 @@
-// The corrected content section for a config file inside /public
+// Inside /public/tailwind.config.js
+
 module.exports = {
   content: [
-    "./**/*.html",
-    "./**/*.js"
+    // This is the crucial line
+    './**/*.{html,js}',
+    // It ensures Tailwind scans every HTML and JS file inside the /public folder and its subdirectories.
   ],
   theme: {
     extend: {},

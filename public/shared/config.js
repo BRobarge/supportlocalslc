@@ -29,25 +29,23 @@ export function getBusinessUrl(city, id) {
 }
 
 /**
- * Generates the URL for the user dashboard.
- * This should point to the dashboard within the current city's context.
+ * Generates the URL for the GLOBAL user dashboard.
+ * This will always point to the root dashboard page.
  * @returns {string} The URL path for the dashboard page.
  */
 export function getDashboardUrl() {
-    const cityBase = getCityBasePath();
-    // Assuming dashboard.html will live inside each city folder.
-    return `${cityBase}/dashboard.html`;
+    // This is a global page, so it should always be at the root.
+    return '/dashboard.html';
 }
 
 /**
- * Generates the URL for the login page.
- * This should point to the login page within the current city's context.
+ * Generates the URL for the GLOBAL login page.
+ * This will always point to the root login page.
  * @returns {string} The URL path for the login page.
  */
 export function getLoginUrl() {
-    const cityBase = getCityBasePath();
-    // Assuming login.html will live inside each city folder.
-    return `${cityBase}/login.html`;
+    // This is a global page, so it should always be at the root.
+    return '/login.html';
 }
 
 /**

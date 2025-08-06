@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Business - SupportLocalSLC</title>
+    <!-- We use the root-relative path for our shared CSS -->
+    <link href="/shared/output.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-gray-100 font-sans">
+
+    <!-- Header (can be simpler for the workspace ) -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800" id="editing-header">Editing: Loading...</h1>
+            <div>
+                <a href="/dashboard.html" class="text-sm text-blue-600 hover:underline">&larr; Back to Dashboard</a>
+                <a id="view-live-page-btn" href="#" target="_blank"
+                    class="ml-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm hover:bg-blue-700 hidden">View
+                    Live Page</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="container mx-auto p-4 md:p-8">
+        <div class="md:flex md:space-x-8">
+
+            <!-- Left Side Navigation -->
+            <aside class="md:w-1/4 mb-8 md:mb-0">
+                <nav id="edit-nav" class="space-y-2">
+                    <a href="#story" data-section="story" class="edit-nav-link active">
+                        <i class="fas fa-book-open w-6 mr-3"></i> Story & Info
+                    </a>
+                    <a href="#photos" data-section="photos" class="edit-nav-link">
+                        <i class="fas fa-camera-retro w-6 mr-3"></i> Photos & Gallery
+                    </a>
+                    <a href="#location" data-section="location" class="edit-nav-link">
+                        <i class="fas fa-map-marker-alt w-6 mr-3"></i> Location & Hours
+                    </a>
+                    <a href="#contact" data-section="contact" class="edit-nav-link">
+                        <i class="fas fa-address-book w-6 mr-3"></i> Contact & Social
+                    </a>
+                    <a href="#categories" data-section="categories" class="edit-nav-link">
+                        <i class="fas fa-tags w-6 mr-3"></i> Categories
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Right Side Content Area -->
+            <div class="md:w-3/4">
+                <!-- The content for each section will be dynamically loaded here -->
+                <div id="edit-content" class="bg-white p-8 rounded-lg shadow-lg">
+                    <!-- Loading placeholder -->
+                    <p>Loading content...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Add some basic CSS for the edit navigation -->
+    <style>
+        .edit-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #4B5563;
+            /* gray-600 */
+            transition: background-color 0.2s, color 0.2s;
+            text-decoration: none;
+        }
+
+        .edit-nav-link:hover {
+            background-color: #E5E7EB;
+            /* gray-200 */
+        }
+
+        .edit-nav-link.active {
+            background-color: #3B82F6;
+            /* blue-500 */
+            color: white;
+        }
+    </style>
+
+    <!-- The JavaScript will go here -->
+    <!-- Add this script block right before the closing </body> tag -->
+    <script type="module">
+        // ===================================================================================
+            // --- CONFIGURATION & INITIALIZATION ---
+            // ===================================================================================
+            const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+            const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+            let currentBusinessData = null;
+            let currentUser = null;
+
+            // --- Main Entry Point ---
+            document.addEventListener('DOMContentLoaded', async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const businessId = urlParams.get('id');
+
+                if (!businessId) {
+                    document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: No business ID provided.</p>';
+                    return;
+                }
+
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) {
+                    window.location.href = `/login.html?redirect=/edit-business.html?id=${businessId}`;
+                    return;
+                }
+                currentUser = user;
+
+                const { data, error } = await supabaseClient
+                    .from('businesses')
+                    .select('*')
+                    .eq('id', businessId)
+                    .eq('owner_id', user.id)
+                    .single();
+
+                if (error || !data) {
+                    console.error('Error fetching business data or permission denied:', error);
+                    document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: Could not load business data.</p>';
+                    return;
+                }
+
+                currentBusinessData = data;
+                populateHeader(currentBusinessData);
+                renderStorySection();
+                setupNavLinks();
+            });
+
+            // ===================================================================================
+            // --- UI POPULATION & RENDERING FUNCTIONS ---
+            // ===================================================================================
+
+            function populateHeader(business) {
+                document.getElementById('editing-header').textContent = `Editing: ${business.name}`;
+                const livePageBtn = document.getElementById('view-live-page-btn');
+                livePageBtn.href = `/${business.territory}/business.html?id=${business.id}`;
+                livePageBtn.classList.remove('hidden');
+            }
+
+            function setupNavLinks() {
+                const navLinks = document.querySelectorAll('.edit-nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+
+                        const section = link.dataset.section;
+                        if (section === 'story') {
+                            renderStorySection();
+                        } else if (section === 'photos') {
+                            renderPhotosSection();
+                        } else if (section === 'location') {
+                            renderLocationSection();
+                        } else if (section === 'contact') {
+                            renderContactSection();
+                        } else {
+                            document.getElementById('edit-content').innerHTML = `<h2 class="text-2xl font-bold">${section.charAt(0).toUpperCase() + section.slice(1)}</h2><p>This section is under construction.</p>`;
+                        }
+                    });
+                });
+            }
+
+            function showUploadStatus(message, type = 'info') {
+                const statusContainer = document.getElementById('upload-status');
+                if (!statusContainer) return;
+                let bgColor, textColor, icon;
+                switch (type) {
+                    case 'error':
+                        bgColor = 'bg-red-100'; textColor = 'text-red-700'; icon = '<i class="fas fa-times-circle mr-3"></i>';
+                        break;
+                    case 'success':
+                        bgColor = 'bg-green-100'; textColor = 'text-green-700'; icon = '<i class="fas fa-check-circle mr-3"></i>';
+                        break;
+                    default:
+                        bgColor = 'bg-blue-100'; textColor = 'text-blue-700'; icon = '<i class="fas fa-spinner fa-spin mr-3"></i>';
+                        break;
+                }
+                statusContainer.innerHTML = `<div class="${bgColor} ${textColor} p-4 rounded-lg flex items-center" role="alert">${icon}<span class="font-medium">${message}</span></div>`;
+            }
+
+            function renderStorySection() {
+                const container = document.getElementById('edit-content');
+                container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-2">Story & Info</h2>
+        <p class="text-gray-600 mb-6">This is the heart of your profile. Tell your customers who you are and what makes you special.</p>
+        <div class="space-y-6">
+            <div>
+                <label for="business-name" class="block text-sm font-medium text-gray-700">Business Name</label>
+                <input type="text" id="business-name" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm" value="${currentBusinessData.name || ''}">
+            </div>
+            <div>
+                <label for="business-tagline" class="block text-sm font-medium text-gray-700">Tagline (a short, catchy phrase)</label>
+                <input type="text" id="business-tagline" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm" value="${currentBusinessData.tagline || ''}">
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Business Logo</label>
+                <div class="flex items-center space-x-6">
+                    <div id="logo-preview-container" class="w-48 h-32 bg-gray-200 flex items-center justify-center overflow-hidden shadow-inner rounded-lg"></div>
+                    <div class="flex-grow">
+                        <input type="file" id="logo-upload-input" accept="image/png, image/jpeg" class="hidden">
+                        <label for="logo-upload-input" class="cursor-pointer bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded-lg shadow-sm"><i class="fas fa-upload mr-2"></i> Choose New Logo</label>
+                        <button id="delete-logo-btn" class="ml-2 cursor-pointer bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-2 px-4 border border-red-200 rounded-lg shadow-sm"><i class="fas fa-trash-alt"></i></button>
+                        <p class="text-xs text-gray-500 mt-2">Max file size: 5MB. PNG or JPG format.</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label for="business-story" class="block text-sm font-medium text-gray-700">Our Story / Description</label>
+                <textarea id="business-story" rows="8" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">${currentBusinessData.description || ''}</textarea>
+            </div>
+            <div class="flex justify-end">
+                <button id="save-story-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400">Save Changes</button>
+            </div>
+        </div>
+    `;
+                const logoPreviewContainer = document.getElementById('logo-preview-container');
+                if (currentBusinessData.logo_url) {
+                    logoPreviewContainer.innerHTML = `<img src="${currentBusinessData.logo_url}" alt="Current Logo" class="w-full h-full object-contain">`;
+                } else {
+                    logoPreviewContainer.innerHTML = `<span class="text-gray-500 text-xs text-center">No Logo</span>`;
+                }
+                document.getElementById('logo-upload-input').addEventListener('change', handleLogoUpload);
+                document.getElementById('delete-logo-btn').addEventListener('click', handleLogoDelete);
+                document.getElementById('save-story-btn').addEventListener('click', saveStorySection);
+            }
+
+            function renderPhotosSection() {
+                const container = document.getElementById('edit-content');
+                container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-2">Photos & Gallery</h2>
+        <p class="text-gray-600 mb-6">Showcase your business, products, and team.</p>
+        <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-6">
+            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-700">Drag and drop photos here</h3>
+            <p class="text-sm text-gray-500">or</p>
+            <input type="file" id="photos-upload-input" multiple accept="image/png, image/jpeg" class="hidden">
+            <label for="photos-upload-input" class="cursor-pointer text-blue-600 font-semibold hover:underline">Select files from your computer</label>
+            <p class="text-xs text-gray-500 mt-2">PNG or JPG files accepted.</p>
+        </div>
+        <div id="upload-status" class="mb-4"></div>
+        <h3 class="text-xl font-bold mb-4">Current Gallery</h3>
+        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+    `;
+                const galleryGrid = document.getElementById('gallery-grid');
+                const photos = currentBusinessData.photos || [];
+                if (photos.length === 0) {
+                    galleryGrid.innerHTML = '<p class="text-gray-500 col-span-full">No photos uploaded yet.</p>';
+                } else {
+                    photos.forEach(photoUrl => {
+                        const photoCard = document.createElement('div');
+                        photoCard.className = 'relative group';
+                        photoCard.innerHTML = `
+                <img src="${photoUrl}" alt="Business Photo" class="w-full h-32 object-cover rounded-lg shadow-md z-10">
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex items-center justify-center transition-all duration-300 rounded-lg z-20">
+                    <button class="delete-photo-btn text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-url="${photoUrl}"><i class="fas fa-trash-alt"></i></button>
+                </div>`;
+                        galleryGrid.appendChild(photoCard);
+                    });
+                }
+                document.getElementById('photos-upload-input').addEventListener('change', handlePhotoUpload);
+                galleryGrid.addEventListener('click', (e) => {
+                    const deleteBtn = e.target.closest('.delete-photo-btn');
+                    if (deleteBtn) handlePhotoDelete(deleteBtn.dataset.url);
+                });
+            }
+
+            function renderLocationSection() {
+                const container = document.getElementById('edit-content');
+                container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-2">Location & Hours</h2>
+        <p class="text-gray-600 mb-6">Let customers know where to find you and when you're open.</p>
+        <div class="space-y-4 bg-gray-50 p-6 rounded-lg mb-8">
+            <h3 class="font-bold text-lg text-gray-800">Business Address</h3>
+            <div>
+                <label for="address-street" class="block text-sm font-medium text-gray-700">Street Address</label>
+                <input type="text" id="address-street" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.address || ''}">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="address-city" class="block text-sm font-medium text-gray-700">City</label>
+                    <input type="text" id="address-city" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.city || ''}">
+                </div>
+                <div>
+                    <label for="address-state" class="block text-sm font-medium text-gray-700">State</label>
+                    <input type="text" id="address-state" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.state || ''}">
+                </div>
+                <div>
+                    <label for="address-zip" class="block text-sm font-medium text-gray-700">Zip Code</label>
+                    <input type="text" id="address-zip" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.zip_code || ''}">
+                </div>
+            </div>
+        </div>
+        <div class="space-y-4 bg-gray-50 p-6 rounded-lg">
+            <h3 class="font-bold text-lg text-gray-800">Hours of Operation</h3>
+            <div id="hours-inputs" class="space-y-3"></div>
+        </div>
+        <div class="flex justify-end mt-8">
+            <button id="save-location-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400">Save Changes</button>
+        </div>
+    `;
+                const hoursContainer = document.getElementById('hours-inputs');
+                const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const hoursData = currentBusinessData.hours_data || {};
+                daysOfWeek.forEach(day => {
+                    const dayData = hoursData[day] || { isOpen: false, is24Hours: false, from: '09:00', to: '17:00' };
+                    const dayRow = document.createElement('div');
+                    dayRow.className = 'grid grid-cols-1 md:grid-cols-4 items-center gap-3 p-2 rounded-md';
+                    dayRow.dataset.day = day;
+                    dayRow.innerHTML = `
+            <div class="md:col-span-1"><label class="flex items-center"><input type="checkbox" class="mr-2 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 day-open-checkbox" ${dayData.isOpen ? 'checked' : ''}><span class="font-medium text-gray-800">${day}</span></label></div>
+            <div class="time-inputs md:col-span-3 flex items-center gap-2 ${dayData.isOpen ? '' : 'hidden'}">
+                <input type="time" class="from-time-input bg-white p-2 border border-gray-300 rounded-md w-full" value="${dayData.from}" ${dayData.is24Hours ? 'disabled' : ''}>
+                <span>to</span>
+                <input type="time" class="to-time-input bg-white p-2 border border-gray-300 rounded-md w-full" value="${dayData.to}" ${dayData.is24Hours ? 'disabled' : ''}>
+                <label class="flex items-center text-sm whitespace-nowrap"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 mr-1 twenty-four-hour-checkbox" ${dayData.is24Hours ? 'checked' : ''}>24 hours</label>
+            </div>
+            <div class="closed-text md:col-span-3 text-gray-500 ${dayData.isOpen ? 'hidden' : ''}">Closed</div>`;
+                    hoursContainer.appendChild(dayRow);
+                });
+                hoursContainer.addEventListener('change', (e) => {
+                    const row = e.target.closest('[data-day]');
+                    if (!row) return;
+                    if (e.target.classList.contains('day-open-checkbox')) {
+                        row.querySelector('.time-inputs').classList.toggle('hidden', !e.target.checked);
+                        row.querySelector('.closed-text').classList.toggle('hidden', e.target.checked);
+                    }
+                    if (e.target.classList.contains('twenty-four-hour-checkbox')) {
+                        row.querySelector('.from-time-input').disabled = e.target.checked;
+                        row.querySelector('.to-time-input').disabled = e.target.checked;
+                    }
+                });
+                document.getElementById('save-location-btn').addEventListener('click', saveLocationSection);
+            }
+
+            function renderContactSection() {
+                const container = document.getElementById('edit-content');
+                container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-2">Contact & Social</h2>
+        <p class="text-gray-600 mb-6">Provide ways for customers to reach you and follow you online.</p>
+        <div class="space-y-6">
+            <div class="space-y-4 bg-gray-50 p-6 rounded-lg">
+                <h3 class="font-bold text-lg text-gray-800">Contact Information</h3>
+                <div>
+                    <label for="contact-phone" class="block text-sm font-medium text-gray-700">Public Phone Number</label>
+                    <input type="tel" id="contact-phone" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.phone || ''}">
+                </div>
+                <div>
+                    <label for="contact-email" class="block text-sm font-medium text-gray-700">Public Email Address</label>
+                    <input type="email" id="contact-email" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.email || ''}">
+                </div>
+                 <div>
+                    <label for="contact-website" class="block text-sm font-medium text-gray-700">Website URL</label>
+                    <input type="url" id="contact-website" placeholder="https://example.com" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.website || ''}">
+                </div>
+            </div>
+            <div class="space-y-4 bg-gray-50 p-6 rounded-lg">
+                <h3 class="font-bold text-lg text-gray-800">Social Media</h3>
+                <div id="social-links-container" class="space-y-3"></div>
+            </div>
+        </div>
+        <div class="flex justify-end mt-8">
+            <button id="save-contact-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400">Save Changes</button>
+        </div>
+    `;
+                const socialContainer = document.getElementById('social-links-container');
+                const socialPlatforms = ['Facebook', 'Instagram', 'X (Twitter)', 'TikTok', 'YouTube', 'LinkedIn'];
+                const socialData = currentBusinessData.social_links || {};
+                socialPlatforms.forEach(platform => {
+                    const key = platform.split(' ')[0].toLowerCase().replace(/[^a-z]/g, '');
+                    const url = socialData[key] || '';
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center gap-3';
+                    row.innerHTML = `
+                        <label for="social-${key}" class="w-28 flex-shrink-0 text-sm font-medium text-gray-700">${platform}</label>
+                        <input type="url" id="social-${key}" data-key="${key}" class="social-link-input flex-grow p-2 border border-gray-300 rounded-md" placeholder="Enter full URL..." value="${url}">
+                    `;
+                    socialContainer.appendChild(row);
+                });
+                document.getElementById('save-contact-btn').addEventListener('click', saveContactSection);
+            }
+
+            // ===================================================================================
+            // --- DATA SAVING FUNCTIONS ---
+            // ===================================================================================
+
+            async function saveStorySection() {
+                const saveBtn = document.getElementById('save-story-btn');
+                saveBtn.textContent = 'Saving...';
+                saveBtn.disabled = true;
+                const updatedData = {
+                    name: document.getElementById('business-name').value,
+                    tagline: document.getElementById('business-tagline').value,
+                    description: document.getElementById('business-story').value,
+                };
+                const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
+                if (error) {
+                    console.error('Error updating story section:', error);
+                    alert('Error: Could not save changes.');
+                } else {
+                    currentBusinessData = data;
+                    document.getElementById('editing-header').textContent = `Editing: ${updatedData.name}`;
+                    saveBtn.textContent = 'Saved!';
+                    setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+                }
+                saveBtn.disabled = false;
+            }
+
+            async function handleLogoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const logoPreviewContainer = document.getElementById('logo-preview-container');
+                logoPreviewContainer.innerHTML = `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-spinner fa-spin text-2xl text-gray-500"></i></div>`;
+                const filePath = `${currentUser.id}/${currentBusinessData.id}/logo-${Date.now()}`;
+                const { error: uploadError } = await supabaseClient.storage.from('business-logos').upload(filePath, file, { cacheControl: '3600', upsert: true });
+                if (uploadError) {
+                    alert(`Error uploading logo: ${uploadError.message}`);
+                    renderStorySection();
+                    return;
+                }
+                const { data: { publicUrl } } = supabaseClient.storage.from('business-logos').getPublicUrl(filePath);
+                const { data, error: updateError } = await supabaseClient.from('businesses').update({ logo_url: publicUrl }).eq('id', currentBusinessData.id).select().single();
+                if (updateError) {
+                    alert('Could not save the new logo to your profile.');
+                } else {
+                    currentBusinessData = data;
+                    renderStorySection();
+                }
+            }
+
+            async function handleLogoDelete() {
+                if (!currentBusinessData.logo_url) {
+                    alert("There is no logo to delete.");
+                    return;
+                }
+                if (!confirm("Are you sure you want to delete your business logo?")) return;
+                const { data, error: updateError } = await supabaseClient.from('businesses').update({ logo_url: null }).eq('id', currentBusinessData.id).select().single();
+                if (updateError) {
+                    alert("Could not delete the logo from your profile.");
+                } else {
+                    try {
+                        const filePath = currentBusinessData.logo_url.split('/business-logos/')[1];
+                        await supabaseClient.storage.from('business-logos').remove([filePath]);
+                    } catch (storageError) {
+                        console.error("Couldn't delete file from storage, but removed from profile.", storageError);
+                    }
+                    currentBusinessData = data;
+                    renderStorySection();
+                    alert("Logo deleted.");
+                }
+            }
+
+            async function handlePhotoUpload(event) {
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
+                showUploadStatus(`Uploading ${files.length} photo(s)...`, 'info');
+                let existingPhotos = currentBusinessData.photos || [];
+                let uploadSuccess = false;
+                for (const file of files) {
+                    const filePath = `${currentUser.id}/${currentBusinessData.id}/${Date.now()}-${file.name}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('business-photos').upload(filePath, file);
+                    if (uploadError) {
+                        console.error('Error uploading photo:', uploadError);
+                        showUploadStatus(`Error uploading ${file.name}: ${uploadError.message}`, 'error');
+                        return;
+                    }
+                    const { data: { publicUrl } } = supabaseClient.storage.from('business-photos').getPublicUrl(filePath);
+                    existingPhotos.push(publicUrl);
+                    uploadSuccess = true;
+                }
+                if (!uploadSuccess) {
+                    document.getElementById('upload-status').innerHTML = '';
+                    return;
+                }
+                const { data, error: updateError } = await supabaseClient.from('businesses').update({ photos: existingPhotos }).eq('id', currentBusinessData.id).select().single();
+                if (updateError) {
+                    console.error('Error updating business with new photos:', updateError);
+                    showUploadStatus('Could not save new photos to your profile.', 'error');
+                } else {
+                    currentBusinessData = data;
+                    showUploadStatus('Upload complete!', 'success');
+                    setTimeout(() => { renderPhotosSection(); }, 2000);
+                }
+            }
+
+            async function handlePhotoDelete(photoUrl) {
+                if (!confirm('Are you sure you want to delete this photo?')) return;
+                let updatedPhotos = (currentBusinessData.photos || []).filter(url => url !== photoUrl);
+                const { data, error: updateError } = await supabaseClient.from('businesses').update({ photos: updatedPhotos }).eq('id', currentBusinessData.id).select().single();
+                if (updateError) {
+                    alert('Error deleting photo from profile.');
+                    return;
+                }
+                try {
+                    const filePath = photoUrl.split('/business-photos/')[1];
+                    await supabaseClient.storage.from('business-photos').remove([filePath]);
+                } catch (storageError) {
+                    console.error("Couldn't delete file from storage, but removed from profile.", storageError);
+                }
+                currentBusinessData = data;
+                renderPhotosSection();
+                alert('Photo deleted.');
+            }
+
+            async function saveLocationSection() {
+                const saveBtn = document.getElementById('save-location-btn');
+                saveBtn.textContent = 'Saving...';
+                saveBtn.disabled = true;
+                const street = document.getElementById('address-street').value.trim();
+                const city = document.getElementById('address-city').value.trim();
+                const state = document.getElementById('address-state').value.trim();
+                const zip = document.getElementById('address-zip').value.trim();
+                const fullAddress = [street, city, state, zip].filter(Boolean).join(', ');
+                const hoursData = {};
+                document.querySelectorAll('#hours-inputs [data-day]').forEach(row => {
+                    const day = row.dataset.day;
+                    const isOpen = row.querySelector('.day-open-checkbox').checked;
+                    const is24Hours = row.querySelector('.twenty-four-hour-checkbox').checked;
+                    const from = row.querySelector('.from-time-input').value;
+                    const to = row.querySelector('.to-time-input').value;
+                    hoursData[day] = { isOpen, is24Hours, from, to };
+                });
+                const updatedData = {
+                    address: street, city: city, state: state, zip_code: zip, hours_data: hoursData,
+                };
+                if (fullAddress && fullAddress !== [currentBusinessData.address, currentBusinessData.city, currentBusinessData.state, currentBusinessData.zip_code].filter(Boolean).join(', ')) {
+                    try {
+                        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`;
+                        const res = await fetch(geocodeUrl);
+                        const data = await res.json();
+                        if (data.status === 'OK' && data.results.length > 0) {
+                            updatedData.latitude = data.results[0].geometry.location.lat;
+                            updatedData.longitude = data.results[0].geometry.location.lng;
+                        } else {
+                            alert(`Could not find that address on the map. Error: ${data.status}`);
+                            saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false; return;
+                        }
+                    } catch (err) {
+                        alert('An error occurred while trying to geocode the address.');
+                        saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false; return;
+                    }
+                }
+                const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
+                if (error) {
+                    console.error('Error updating location section:', error);
+                    alert('Error: Could not save changes.');
+                } else {
+                    currentBusinessData = data;
+                    saveBtn.textContent = 'Saved!';
+                    setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+                }
+                saveBtn.disabled = false;
+            }
+
+            async function saveContactSection() {
+                const saveBtn = document.getElementById('save-contact-btn');
+                saveBtn.textContent = 'Saving...';
+                saveBtn.disabled = true;
+                const socialLinks = {};
+                document.querySelectorAll('.social-link-input').forEach(input => {
+                    const key = input.dataset.key;
+                    const url = input.value.trim();
+                    if (url) socialLinks[key] = url;
+                });
+                const updatedData = {
+                    phone: document.getElementById('contact-phone').value.trim(),
+                    email: document.getElementById('contact-email').value.trim(),
+                    website: document.getElementById('contact-website').value.trim(),
+                    social_links: socialLinks,
+                };
+                const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
+                if (error) {
+                    console.error('Error updating contact section:', error);
+                    alert('Error: Could not save changes.');
+                } else {
+                    currentBusinessData = data;
+                    saveBtn.textContent = 'Saved!';
+                    setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+                }
+                saveBtn.disabled = false;
+            }
+
+
+
+
+
+    </script>
+
+
+</body>
+
+</html>
