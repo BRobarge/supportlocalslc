@@ -79,8 +79,11 @@
                 .select(`
                     *,
                     profiles (membership_level),
-                    offers (*)
-                `) // <-- ADD offers(*) HERE
+                    offers (
+                        *,
+                        claimed_offers (count)
+                    )
+                `) // <-- THIS IS THE UPGRADED PART
                 .eq('id', id)
                 .single();
 
@@ -251,38 +254,133 @@
         }
 
         // Add this new function to your business.html script
-            function displayOffers(offers) {
-                const container = document.getElementById('offers-section');
-                if (!container) return;
+            // In business.html, replace your entire displayOffers function
+                function displayOffers(offers) {
+                    const container = document.getElementById('offers-section');
+                    if (!container) return;
 
-                if (!offers || offers.length === 0) {
-                    // If there are no offers, we don't need to show anything.
-                    container.style.display = 'none';
-                    return;
+                    if (!offers || offers.length === 0) {
+                        container.style.display = 'none';
+                        return;
+                    }
+
+                    let offersHtml = `
+        <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Special Offers</h2>
+        <div class="space-y-4">
+    `;
+
+                    offers.forEach(offer => {
+                        // --- Calculate Offer Status ---
+                        const claimedCount = offer.claimed_offers[0]?.count || 0;
+                        const hasClaimsLeft = !offer.claim_limit || claimedCount < offer.claim_limit;
+                        const isExpired = offer.expires_at && new Date(offer.expires_at) < new Date();
+                        const canClaim = hasClaimsLeft && !isExpired;
+
+                        // --- Build Dynamic HTML based on Status ---
+                        let statusHtml = '';
+                        let buttonHtml = '';
+                        let cardBg = 'bg-yellow-50';
+                        let borderColor = 'border-yellow-400';
+
+                        if (canClaim) {
+                            // Offer is active
+                            if (offer.claim_limit) {
+                                const remaining = offer.claim_limit - claimedCount;
+                                statusHtml = `<p class="text-sm text-green-700 font-bold mt-2">Only ${remaining} left!</p>`;
+                            }
+                            buttonHtml = `<button class="claim-offer-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg" data-offer-id="${offer.id}">Claim Offer</button>`;
+                        } else {
+                            // Offer is inactive (expired or no claims left)
+                            cardBg = 'bg-gray-100';
+                            borderColor = 'border-gray-300';
+                            if (isExpired) {
+                                statusHtml = `<p class="text-sm text-red-700 font-bold mt-2">Offer expired on ${new Date(offer.expires_at).toLocaleDateString()}</p>`;
+                            } else {
+                                statusHtml = `<p class="text-sm text-red-700 font-bold mt-2">Maximum claims reached!</p>`;
+                            }
+                            buttonHtml = `<button class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Claim Offer</button>`;
+                        }
+
+                        const expirationHtml = offer.expires_at
+                            ? `<p class="text-xs text-gray-600 mt-1">Expires: ${new Date(offer.expires_at).toLocaleDateString()}</p>`
+                            : '';
+
+                        // --- Assemble the Card ---
+                        offersHtml += `
+            <div class="${cardBg} border-l-4 ${borderColor} p-4 rounded-r-lg shadow">
+                <h3 class="text-lg font-bold text-gray-900">${offer.title}</h3>
+                <p class="text-sm text-gray-700 mt-1">${offer.description}</p>
+                ${expirationHtml}
+                ${statusHtml}
+                <div class="mt-4">
+                    ${buttonHtml}
+                </div>
+            </div>
+        `;
+                    });
+
+                    offersHtml += `</div>`;
+                    container.innerHTML = offersHtml;
+
+                    // Add the event listener (no changes needed here)
+                    container.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('claim-offer-btn')) {
+                            const offerId = e.target.dataset.offerId;
+                            handleClaimOffer(offerId);
+                        }
+                    });
                 }
 
-                let offersHtml = `
-                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Special Offers</h2>
-                    <div class="space-y-4">
-                `;
 
-                offers.forEach(offer => {
-                    offersHtml += `
-                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow">
-                            <h3 class="text-lg font-bold text-yellow-900">${offer.title}</h3>
-                            <p class="text-sm text-gray-700 mt-1">${offer.description}</p>
-                            <div class="mt-4">
-                                <button class="claim-offer-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg" data-offer-id="${offer.id}">
-                                    Claim Offer
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
+            // Add this new function to your business.html script
+                async function handleClaimOffer(offerId) {
+                    // 1. Check if the user is logged in
+                    const { data: { user } } = await supabaseClient.auth.getUser();
 
-                offersHtml += `</div>`;
-                container.innerHTML = offersHtml;
-            }
+                    if (!user) {
+                        // If not logged in, show an alert and redirect them to the login page.
+                        // We'll pass a redirect URL so they come back here after logging in.
+                        alert('You must be logged in to claim an offer.');
+                        window.location.href = `/login.html?redirect=${window.location.pathname}${window.location.search}`;
+                        return;
+                    }
+
+                    // 2. Prepare the data for the new 'claimed_offers' row
+                    const sevenDaysFromNow = new Date();
+                    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+                    const claimData = {
+                        offer_id: offerId,
+                        user_id: user.id,
+                        status: 'claimed',
+                        // The 'claimed_at' field will be set automatically by its 'now()' default
+                        expires_at: sevenDaysFromNow.toISOString(), // Set expiration for 7 days from now
+                    };
+
+                    // 3. Insert the new row into the database
+                    const { error } = await supabaseClient
+                        .from('claimed_offers')
+                        .insert([claimData]);
+
+                    // 4. Handle the response
+                    if (error) {
+                        console.error('Error claiming offer:', error);
+                        // A common error might be if they've already claimed it (if we add a unique constraint)
+                        alert(`Could not claim offer. Error: ${error.message}`);
+                    } else {
+                        // Success!
+                        alert('Offer claimed successfully! You can view your claimed offers in your dashboard.');
+                        // Optionally, disable the button to prevent claiming again
+                        const button = document.querySelector(`.claim-offer-btn[data-offer-id="${offerId}"]`);
+                        if (button) {
+                            button.textContent = 'Claimed!';
+                            button.disabled = true;
+                            button.classList.remove('hover:bg-yellow-600');
+                            button.classList.add('bg-gray-400');
+                        }
+                    }
+                }
+
 
 
         function formatTime(timeString) {

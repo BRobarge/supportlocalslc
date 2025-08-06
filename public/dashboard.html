@@ -167,13 +167,91 @@
 
 
         // --- Supporter View ---
-        function renderSupporterView() {
-            const container = document.getElementById('dashboard-content');
-            container.innerHTML = `
-                <h2 class="text-2xl font-bold mb-4">My Followed Businesses & Offers</h2>
-                <p class="text-gray-600">This section is under construction. Soon you'll be able to see updates from businesses you follow and manage your claimed offers!</p>
-            `;
-        }
+        // In /public/dashboard.html
+            // Replace your entire renderSupporterView function with this one.
+
+            async function renderSupporterView() {
+                const container = document.getElementById('dashboard-content');
+                container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">My Claimed Offers</h2>
+        <div id="claimed-offers-list" class="space-y-4">
+            <p>Loading your claimed offers...</p>
+        </div>
+    `;
+
+                // Fetch all offers this user has claimed, and also get the details
+                // of the offer itself and the business it belongs to.
+                const { data: claims, error } = await supabaseClient
+                    .from('claimed_offers')
+                    .select(`
+            *,
+            offers (
+                *,
+                businesses (name, address)
+            )
+        `)
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false }); // Show newest claims first
+
+                const listContainer = document.getElementById('claimed-offers-list');
+                if (error) {
+                    listContainer.innerHTML = '<p class="text-red-500">Could not load your offers.</p>';
+                    return;
+                }
+
+                if (!claims || claims.length === 0) {
+                    listContainer.innerHTML = '<p class="text-gray-500 text-center py-8">You haven\'t claimed any offers yet. Go find some great deals!</p>';
+                    return;
+                }
+
+                listContainer.innerHTML = ''; // Clear loading message
+                claims.forEach(claim => {
+                    const offer = claim.offers; // The nested offer object
+                    const business = offer.businesses; // The nested business object
+                    const isExpired = new Date(claim.expires_at) < new Date();
+                    const statusColor = claim.status === 'redeemed' ? 'bg-green-100 text-green-800' : (isExpired ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800');
+                    const statusText = claim.status === 'redeemed' ? `Redeemed on ${new Date(claim.redeemed_at).toLocaleDateString()}` : (isExpired ? 'Expired' : 'Claimed');
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-4 rounded-lg shadow-md';
+                    card.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm font-semibold text-gray-600">${business.name}</p>
+                    <h3 class="text-lg font-bold text-gray-900">${offer.title}</h3>
+                </div>
+                <div class="text-sm font-bold px-3 py-1 rounded-full ${statusColor}">
+                    ${statusText}
+                </div>
+            </div>
+            <div class="mt-2 border-t pt-2">
+                <p class="text-sm text-gray-600">${offer.description}</p>
+                <div class="mt-3 flex justify-between items-end">
+                    <div class="text-xs text-gray-500">
+                        <p>Claimed: ${new Date(claim.claimed_at).toLocaleDateString()}</p>
+                        <p>Expires: ${new Date(claim.expires_at).toLocaleDateString()}</p>
+                    </div>
+                    ${claim.status === 'claimed' && !isExpired ? `
+                    <button class="redeem-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-claim-id="${claim.id}" data-pin="${offer.redemption_pin}">
+                        Redeem Now
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+                    listContainer.appendChild(card);
+                });
+
+                // Add event listener for the "Redeem Now" buttons
+                listContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('redeem-btn')) {
+                        const claimId = e.target.dataset.claimId;
+                        const correctPin = e.target.dataset.pin;
+                        handleRedeemOffer(claimId, correctPin);
+                    }
+                });
+            }
+
 
         // --- Business Owner View ---
         async function renderBusinessView() {
@@ -462,6 +540,39 @@
                 console.error('GHL notify error:', err);
             }
         }
+
+        // Add this new function to your dashboard.html script
+            async function handleRedeemOffer(claimId, correctPin) {
+                const enteredPin = prompt("Please have the business owner enter their 4-digit PIN to redeem this offer:");
+
+                if (enteredPin === null) {
+                    // User clicked cancel
+                    return;
+                }
+
+                if (enteredPin === correctPin) {
+                    // PIN is correct, update the database
+                    const { error } = await supabaseClient
+                        .from('claimed_offers')
+                        .update({
+                            status: 'redeemed',
+                            redeemed_at: new Date().toISOString()
+                        })
+                        .eq('id', claimId);
+
+                    if (error) {
+                        alert(`Error redeeming offer: ${error.message}`);
+                    } else {
+                        alert('Offer redeemed successfully!');
+                        renderSupporterView(); // Refresh the view to show the updated status
+                    }
+                } else {
+                    // PIN is incorrect
+                    alert('Incorrect PIN. Please try again.');
+                }
+            }
+
+
     </script>
 
     <!-- This is the end of the script tag. -->
