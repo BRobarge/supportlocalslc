@@ -159,21 +159,16 @@
 
             // --- Main Layout Structure ---
             // In renderBusinessProfile, replace the entire container.innerHTML block with this one.
-            container.innerHTML = `
-                <!-- 
-                On large screens (lg), we use a grid with two columns.
-                On small screens, it defaults to a single column (flex), and we can control the order.
-                -->
-                <div class="flex flex-col lg:grid lg:grid-cols-3 lg:gap-8">
-
+                container.innerHTML = `
                     <!-- 
-                    Right Column on Desktop (Info Panel)
-                    We will split this into two parts for better mobile ordering.
+                    On large screens (lg), we use a grid. On mobile, it's a single column.
+                    The key is that the three main sections are now direct children of this container.
                     -->
-                    <div class="lg:col-span-1 lg:order-2">
-                        <div class="lg:sticky lg:top-8">
-                            <!-- Part 1: Logo, Name, Buttons (Show this first on mobile) -->
-                            <div class="order-1">
+                    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
+
+                        <!-- Section 1: Logo, Name, Buttons (Mobile Order: 1) -->
+                        <div class="lg:col-span-1 lg:order-2">
+                            <div class="lg:sticky lg:top-8">
                                 ${logoHtml}
                                 <div class="text-center">
                                     ${nameAndTaglineHtml}
@@ -181,29 +176,30 @@
                                 ${actionButtonsHtml}
                                 ${socialLinksHtml}
                             </div>
+                        </div>
 
-                            <!-- Part 2: Map & Contact (Show this last on mobile) -->
-                            <div class="order-3 lg:order-none mt-6 p-4 bg-gray-50 rounded-lg">
-                                ${mapHtml}
-                                ${contactAndHoursHtml}
+                        <!-- Section 2: Main Content (Mobile Order: 2) -->
+                        <div class="lg:col-span-2 lg:order-1 mt-8 lg:mt-0">
+                            <div id="offers-section" class="mb-8">
+                                <!-- Offers will be loaded here -->
+                            </div>
+                            ${storyHtml}
+                            ${galleryHtml}
+                        </div>
+
+                        <!-- Section 3: Map & Contact (Mobile Order: 3) -->
+                        <div class="lg:col-span-1 lg:order-3 mt-8 lg:mt-0">
+                            <div class="lg:sticky lg:top-8">
+                                <div class="p-4 bg-gray-50 rounded-lg">
+                                    ${mapHtml}
+                                    ${contactAndHoursHtml}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- 
-                    Left Column on Desktop (Main Content)
-                    This will be shown second on mobile.
-                    -->
-                    <div class="lg:col-span-2 lg:order-1 order-2 mt-8 lg:mt-0">
-                        <div id="offers-section" class="mb-8">
-                            <!-- Offers will be loaded here -->
-                        </div>
-                        ${storyHtml}
-                        ${galleryHtml}
                     </div>
+                `;
 
-                </div>
-            `;
 
 
             // --- Post-render Population ---
