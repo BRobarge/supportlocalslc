@@ -162,47 +162,38 @@
         `;
 
             // --- Main Layout Structure ---
-            // In renderBusinessProfile, replace the entire container.innerHTML block with this one.
-                container.innerHTML = `
-                    <!-- 
-                    On large screens (lg), we use a grid. On mobile, it's a single column.
-                    The key is that the three main sections are now direct children of this container.
-                    -->
-                    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
-
-                        <!-- Section 1: Logo, Name, Buttons (Mobile Order: 1) -->
-                        <div class="lg:col-span-1 lg:order-2">
-                            <div class="lg:sticky lg:top-8">
-                                ${logoHtml}
-                                <div class="text-center">
-                                    ${nameAndTaglineHtml}
-                                </div>
-                                ${actionButtonsHtml}
-                                ${socialLinksHtml}
-                            </div>
-                        </div>
-
-                        <!-- Section 2: Main Content (Mobile Order: 2) -->
-                        <div class="lg:col-span-2 lg:order-1 mt-8 lg:mt-0">
-                            <div id="offers-section" class="mb-8">
-                                <!-- Offers will be loaded here -->
-                            </div>
-                            ${storyHtml}
-                            ${galleryHtml}
-                        </div>
-
-                        <!-- Section 3: Map & Contact (Mobile Order: 3) -->
-                        <div class="lg:col-span-1 lg:order-3 mt-8 lg:mt-0">
-                            <div class="lg:sticky lg:top-8">
-                                <div class="p-4 bg-gray-50 rounded-lg">
-                                    ${mapHtml}
-                                    ${contactAndHoursHtml}
-                                </div>
-                            </div>
-                        </div>
-
+            // Replace the container.innerHTML block with this one.
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left Column (Main Content) -->
+                    <div class="lg:col-span-2 order-2 lg:order-1">
+                        <!-- Offers Section would go here -->
+                        ${storyHtml}
+                        ${galleryHtml}
                     </div>
-                `;
+
+                    <!-- Right Column (Info Panel) -->
+                    <div class="lg:col-span-1 order-1 lg:order-2">
+                        <div class="sticky top-8">
+                            ${logoHtml}
+                            <div class="text-center">
+                                ${nameAndTaglineHtml}
+                            </div>
+                            ${actionButtonsHtml}
+                            ${socialLinksHtml}
+
+                            <!-- === THIS IS THE CORRECT LOCATION === -->
+                            <!-- The map and hours now live inside the right column -->
+                            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                                ${mapHtml}
+                                ${contactAndHoursHtml}
+                            </div>
+                            <!-- === END OF CORRECTION === -->
+                        </div>
+                    </div>
+                </div>
+            `;
+
 
 
 

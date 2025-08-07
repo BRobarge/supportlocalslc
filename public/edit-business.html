@@ -195,40 +195,69 @@
             let currentUser = null;
 
             // --- Main Entry Point ---
-            document.addEventListener('DOMContentLoaded', async () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const businessId = urlParams.get('id');
+            // In /public/edit-business.html
+                // Replace the entire DOMContentLoaded function with this one.
 
-                if (!businessId) {
-                    document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: No business ID provided.</p>';
-                    return;
-                }
+                document.addEventListener('DOMContentLoaded', async () => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const businessId = urlParams.get('id');
 
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                if (!user) {
-                    window.location.href = `/login.html?redirect=/edit-business.html?id=${businessId}`;
-                    return;
-                }
-                currentUser = user;
+                    if (!businessId) {
+                        document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: No business ID provided.</p>';
+                        return;
+                    }
 
-                const { data, error } = await supabaseClient
-                    .from('businesses')
-                    .select('*')
-                    .eq('id', businessId)
-                    .eq('owner_id', user.id)
-                    .single();
+                    // 1. Check user authentication
+                    const { data: { user } } = await supabaseClient.auth.getUser();
+                    if (!user) {
+                        window.location.href = `/login.html?redirect=/edit-business.html?id=${businessId}`;
+                        return;
+                    }
+                    currentUser = user;
 
-                if (error || !data) {
-                    console.error('Error fetching business data or permission denied:', error);
-                    document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: Could not load business data.</p>';
-                    return;
-                }
+                    // 2. Fetch the user's profile to check their roles
+                    const { data: profile, error: profileError } = await supabaseClient
+                        .from('profiles')
+                        .select('roles')
+                        .eq('id', user.id)
+                        .single();
 
-                currentBusinessData = data;
-                populateHeader(currentBusinessData);
-                renderStorySection();
-                setupNavLinks();
-            });
+                    if (profileError || !profile) {
+                        document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Could not load your user profile.</p>';
+                        return;
+                    }
+
+                    // 3. Build the query to fetch the business data
+                    let query = supabaseClient
+                        .from('businesses')
+                        .select('*')
+                        .eq('id', businessId);
+
+                    // --- THIS IS THE CRITICAL FIX ---
+                    // If the user is NOT an admin, we enforce the owner_id check.
+                    // If they ARE an admin, we skip this check and rely on the RLS policies.
+                    if (!profile.roles.includes('admin')) {
+                        query = query.eq('owner_id', user.id);
+                    }
+                    // --- END OF FIX ---
+
+                    // Finalize the query by expecting only a single result
+                    const { data: business, error: businessError } = await query.single();
+
+                    // 4. Handle errors and populate the page
+                    if (businessError || !business) {
+                        console.error('Error fetching business data or permission denied:', businessError);
+                        document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: Could not load business data. You may not have permission to edit this listing.</p>';
+                        return;
+                    }
+
+                    currentBusinessData = business;
+
+                    populateHeader(currentBusinessData);
+                    renderStorySection();
+                    setupNavLinks();
+                });
+
 
             // ===================================================================================
             // --- UI POPULATION & RENDERING FUNCTIONS ---
