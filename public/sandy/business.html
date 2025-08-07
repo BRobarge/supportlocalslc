@@ -81,11 +81,12 @@
                     profiles (membership_level),
                     offers (
                         *,
-                        claimed_offers (count)
+                        offer_claim_counts (claim_count)
                     )
-                `) // <-- THIS IS THE UPGRADED PART
+                `) // <-- Use the new 'offer_claim_counts' view
                 .eq('id', id)
                 .single();
+
 
 
             if (error || !business) {
@@ -253,96 +254,112 @@
             container.innerHTML = hoursHtml;
         }
 
-        // Add this new function to your business.html script
-            // In business.html, replace your entire displayOffers function
-                function displayOffers(offers) {
-                    const container = document.getElementById('offers-section');
-                    if (!container) return;
+        // In business.html, replace your entire displayOffers function
+            async function displayOffers(offers) {
+                const container = document.getElementById('offers-section');
+                if (!container) return;
 
-                    if (!offers || offers.length === 0) {
-                        container.style.display = 'none';
-                        return;
-                    }
-
-                    let offersHtml = `
-        <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Special Offers</h2>
-        <div class="space-y-4">
-    `;
-
-                    offers.forEach(offer => {
-                        // --- Calculate Offer Status ---
-                        const claimedCount = offer.claimed_offers[0]?.count || 0;
-                        const hasClaimsLeft = !offer.claim_limit || claimedCount < offer.claim_limit;
-                        const isExpired = offer.expires_at && new Date(offer.expires_at) < new Date();
-                        const canClaim = hasClaimsLeft && !isExpired;
-
-                        // --- Build Dynamic HTML based on Status ---
-                        let statusHtml = '';
-                        let buttonHtml = '';
-                        let cardBg = 'bg-yellow-50';
-                        let borderColor = 'border-yellow-400';
-
-                        if (canClaim) {
-                            // Offer is active
-                            if (offer.claim_limit) {
-                                const remaining = offer.claim_limit - claimedCount;
-                                statusHtml = `<p class="text-sm text-green-700 font-bold mt-2">Only ${remaining} left!</p>`;
-                            }
-                            buttonHtml = `<button class="claim-offer-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg" data-offer-id="${offer.id}">Claim Offer</button>`;
-                        } else {
-                            // Offer is inactive (expired or no claims left)
-                            cardBg = 'bg-gray-100';
-                            borderColor = 'border-gray-300';
-                            if (isExpired) {
-                                statusHtml = `<p class="text-sm text-red-700 font-bold mt-2">Offer expired on ${new Date(offer.expires_at).toLocaleDateString()}</p>`;
-                            } else {
-                                statusHtml = `<p class="text-sm text-red-700 font-bold mt-2">Maximum claims reached!</p>`;
-                            }
-                            buttonHtml = `<button class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Claim Offer</button>`;
-                        }
-
-                        const expirationHtml = offer.expires_at
-                            ? `<p class="text-xs text-gray-600 mt-1">Expires: ${new Date(offer.expires_at).toLocaleDateString()}</p>`
-                            : '';
-
-                        // --- Assemble the Card ---
-                        offersHtml += `
-                            <div class="${cardBg} border-l-4 ${borderColor} p-4 rounded-r-lg shadow">
-                                <h3 class="text-lg font-bold text-gray-900">${offer.title}</h3>
-                                <p class="text-sm text-gray-700 mt-1">${offer.description}</p>
-                                ${expirationHtml}
-                                ${statusHtml}
-                                <div class="mt-4">
-                                    ${buttonHtml}
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    offersHtml += `</div>`;
-                    container.innerHTML = offersHtml;
-
-                    // Add the event listener (no changes needed here)
-                    container.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('claim-offer-btn')) {
-                            const offerId = e.target.dataset.offerId;
-                            handleClaimOffer(offerId);
-                        }
-                    });
+                if (!offers || offers.length === 0) {
+                    container.style.display = 'none';
+                    return;
                 }
 
+                // --- NEW: Check which offers the current user has already claimed ---
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                let userClaimedOfferIds = new Set();
+                if (user) {
+                    const { data: claimed } = await supabaseClient
+                        .from('claimed_offers')
+                        .select('offer_id')
+                        .eq('user_id', user.id);
+                    if (claimed) {
+                        userClaimedOfferIds = new Set(claimed.map(c => c.offer_id));
+                    }
+                }
+                // --- END OF NEW PART ---
 
-            // Add this new function to your business.html script
+                let offersHtml = `
+                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Special Offers</h2>
+                    <div class="space-y-4">
+                `;
+
+                offers.forEach(offer => {
+                    const claimedCount = offer.offer_claim_counts[0]?.claim_count || 0;
+                    const hasClaimsLeft = !offer.claim_limit || claimedCount < offer.claim_limit;
+                    const isExpired = offer.expires_at && new Date(offer.expires_at) < new Date();
+
+                    // --- NEW: Check if this specific offer has been claimed by the user ---
+                    const isAlreadyClaimedByUser = userClaimedOfferIds.has(offer.id);
+                    const canClaim = hasClaimsLeft && !isExpired && !isAlreadyClaimedByUser;
+
+                    let statusHtml = '';
+                    let buttonHtml = '';
+                    let cardBg = 'bg-yellow-50';
+                    let borderColor = 'border-yellow-400';
+
+                    if (canClaim) {
+                        if (offer.claim_limit) {
+                            const remaining = offer.claim_limit - claimedCount;
+                            statusHtml = `<p class="text-sm text-green-700 font-bold mt-2">Only ${remaining} left!</p>`;
+                        }
+                        buttonHtml = `<button class="claim-offer-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg" data-offer-id="${offer.id}">Claim Offer</button>`;
+                    } else {
+                        cardBg = 'bg-gray-100';
+                        borderColor = 'border-gray-300';
+                        if (isAlreadyClaimedByUser) {
+                            statusHtml = `<p class="text-sm text-blue-700 font-bold mt-2">You have already claimed this offer!</p>`;
+                        } else if (isExpired) {
+                            statusHtml = `<p class="text-sm text-red-700 font-bold mt-2">Offer expired on ${new Date(offer.expires_at).toLocaleDateString()}</p>`;
+                        } else {
+                            statusHtml = `<p class="text-sm text-red-700 font-bold mt-2">Maximum claims reached!</p>`;
+                        }
+                        buttonHtml = `<button class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Claimed</button>`;
+                    }
+
+                    const expirationHtml = offer.expires_at ? `<p class="text-xs text-gray-600 mt-1">Expires: ${new Date(offer.expires_at).toLocaleDateString()}</p>` : '';
+
+                    offersHtml += `
+                        <div class="${cardBg} border-l-4 ${borderColor} p-4 rounded-r-lg shadow">
+                            <h3 class="text-lg font-bold text-gray-900">${offer.title}</h3>
+                            <p class="text-sm text-gray-700 mt-1">${offer.description}</p>
+                            ${expirationHtml}
+                            ${statusHtml}
+                            <div class="mt-4">${buttonHtml}</div>
+                        </div>
+                    `;
+                });
+
+                offersHtml += `</div>`;
+                container.innerHTML = offersHtml;
+
+                container.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('claim-offer-btn')) {
+                        e.target.disabled = true; // Immediately disable on click
+                        const offerId = e.target.dataset.offerId;
+                        handleClaimOffer(offerId);
+                    }
+                });
+            }
+
+
+
+            // In business.html, replace your entire handleClaimOffer function with this one.
+
                 async function handleClaimOffer(offerId) {
                     // 1. Check if the user is logged in
                     const { data: { user } } = await supabaseClient.auth.getUser();
 
                     if (!user) {
-                        // If not logged in, show an alert and redirect them to the login page.
-                        // We'll pass a redirect URL so they come back here after logging in.
                         alert('You must be logged in to claim an offer.');
                         window.location.href = `/login.html?redirect=${window.location.pathname}${window.location.search}`;
                         return;
+                    }
+
+                    // --- Find the button BEFORE making the request ---
+                    const button = document.querySelector(`.claim-offer-btn[data-offer-id="${offerId}"]`);
+                    if (button) {
+                        button.textContent = 'Claiming...';
+                        button.disabled = true;
                     }
 
                     // 2. Prepare the data for the new 'claimed_offers' row
@@ -353,8 +370,7 @@
                         offer_id: offerId,
                         user_id: user.id,
                         status: 'claimed',
-                        // The 'claimed_at' field will be set automatically by its 'now()' default
-                        expires_at: sevenDaysFromNow.toISOString(), // Set expiration for 7 days from now
+                        expires_at: sevenDaysFromNow.toISOString(),
                     };
 
                     // 3. Insert the new row into the database
@@ -365,22 +381,32 @@
                     // 4. Handle the response
                     if (error) {
                         console.error('Error claiming offer:', error);
-                        // A common error might be if they've already claimed it (if we add a unique constraint)
-                        alert(`Could not claim offer. Error: ${error.message}`);
+                        alert(`Could not claim offer. This may be because you have already claimed it. Error: ${error.message}`);
+                        // Re-enable the button on error so they can try again if it was a temporary issue
+                        if (button) {
+                            button.textContent = 'Claim Offer';
+                            button.disabled = false;
+                        }
                     } else {
                         // Success!
-                        alert('Offer claimed successfully! You can view your claimed offers in your dashboard.');
-                        window.location.reload(); 
-                        // Optionally, disable the button to prevent claiming again
-                        const button = document.querySelector(`.claim-offer-btn[data-offer-id="${offerId}"]`);
+                        alert('Offer claimed successfully!');
+
+                        // --- THIS IS THE KEY FIX ---
+                        // Visually update the button to show it's been claimed.
                         if (button) {
                             button.textContent = 'Claimed!';
                             button.disabled = true;
-                            button.classList.remove('hover:bg-yellow-600');
-                            button.classList.add('bg-gray-400');
+                            button.classList.remove('hover:bg-yellow-600', 'bg-yellow-500');
+                            button.classList.add('bg-gray-400', 'cursor-not-allowed');
                         }
+                        // We can also force a reload to ensure the claim count is updated everywhere.
+                        // This is a simple but effective way to handle the caching issue.
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000); // Reload after 1 second to let the user see the "Claimed!" state.
                     }
                 }
+
 
 
 
