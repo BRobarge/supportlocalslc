@@ -541,36 +541,29 @@
             }
         }
 
-        // Add this new function to your dashboard.html script
-            async function handleRedeemOffer(claimId, correctPin) {
-                const enteredPin = prompt("Please have the business owner enter their 4-digit PIN to redeem this offer:");
+        // In dashboard.html, replace the handleRedeemOffer function
+            async function handleRedeemOffer(claimId) {
+                const enteredPin = prompt("Please have the business owner enter their 4-digit PIN:");
 
-                if (enteredPin === null) {
-                    // User clicked cancel
-                    return;
-                }
+                if (enteredPin === null || enteredPin.trim() === '') return;
 
-                if (enteredPin === correctPin) {
-                    // PIN is correct, update the database
-                    const { error } = await supabaseClient
-                        .from('claimed_offers')
-                        .update({
-                            status: 'redeemed',
-                            redeemed_at: new Date().toISOString()
-                        })
-                        .eq('id', claimId);
+                // Call the database function to handle the redemption securely
+                const { data, error } = await supabaseClient.rpc('redeem_offer', {
+                    p_claim_id: claimId,
+                    p_pin: enteredPin
+                });
 
-                    if (error) {
-                        alert(`Error redeeming offer: ${error.message}`);
-                    } else {
-                        alert('Offer redeemed successfully!');
-                        renderSupporterView(); // Refresh the view to show the updated status
-                    }
+                if (error) {
+                    alert(`An unexpected error occurred: ${error.message}`);
                 } else {
-                    // PIN is incorrect
-                    alert('Incorrect PIN. Please try again.');
+                    // The function returns a string like "Success: ..." or "Error: ..."
+                    alert(data);
+                    if (data.startsWith('Success')) {
+                        renderSupporterView(); // Refresh the view on success
+                    }
                 }
             }
+
 
 
     </script>

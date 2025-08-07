@@ -307,16 +307,16 @@
 
                         // --- Assemble the Card ---
                         offersHtml += `
-            <div class="${cardBg} border-l-4 ${borderColor} p-4 rounded-r-lg shadow">
-                <h3 class="text-lg font-bold text-gray-900">${offer.title}</h3>
-                <p class="text-sm text-gray-700 mt-1">${offer.description}</p>
-                ${expirationHtml}
-                ${statusHtml}
-                <div class="mt-4">
-                    ${buttonHtml}
-                </div>
-            </div>
-        `;
+                            <div class="${cardBg} border-l-4 ${borderColor} p-4 rounded-r-lg shadow">
+                                <h3 class="text-lg font-bold text-gray-900">${offer.title}</h3>
+                                <p class="text-sm text-gray-700 mt-1">${offer.description}</p>
+                                ${expirationHtml}
+                                ${statusHtml}
+                                <div class="mt-4">
+                                    ${buttonHtml}
+                                </div>
+                            </div>
+                        `;
                     });
 
                     offersHtml += `</div>`;
@@ -370,6 +370,7 @@
                     } else {
                         // Success!
                         alert('Offer claimed successfully! You can view your claimed offers in your dashboard.');
+                        window.location.reload(); 
                         // Optionally, disable the button to prevent claiming again
                         const button = document.querySelector(`.claim-offer-btn[data-offer-id="${offerId}"]`);
                         if (button) {
