@@ -62,6 +62,129 @@
         
             <!-- Keep your Add/Claim Business Modal and <style> block here -->
             <!-- ... (The modal HTML you already have) ... -->
+
+            <!-- In /public/dashboard.html, paste this right before the closing </main> tag -->
+            
+            <!-- =================================================================== -->
+            <!-- --- ADD/CLAIM BUSINESS MODAL --- -->
+            <!-- =================================================================== -->
+            <div id="claim-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
+                <div
+                    class="bg-white p-6 md:p-8 rounded-lg shadow-2xl w-full sm:w-auto sm:min-w-[600px] max-w-2xl max-h-[90vh] overflow-y-auto">
+            
+                    <!-- Modal Header -->
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Claim or Add a Business</h2>
+                        <button id="close-claim-modal-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+                    </div>
+            
+                    <!-- Tab Navigation for the Modal -->
+                    <div class="border-b border-gray-200 mb-6">
+                        <nav class="flex space-x-4" aria-label="Tabs">
+                            <button id="tab-search" class="tab-button active-tab">1. Search for Your Business</button>
+                            <button id="tab-create" class="tab-button">2. Create a New Listing</button>
+                        </nav>
+                    </div>
+            
+                    <!-- Tab Content: Search -->
+                    <div id="tab-content-search" class="tab-content">
+                        <p class="text-gray-600 mb-4">See if your business is already listed. Type the name below to search.</p>
+                        <input id="search-business-input" type="text" placeholder="Search by business name..."
+                            class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500">
+                        <div id="search-results-container" class="space-y-3 min-h-[100px]">
+                            <!-- Search results will be injected here -->
+                        </div>
+                        <!-- Divider and Claim Code Section -->
+                        <div class="relative my-6">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center"><span
+                                    class="bg-white px-2 text-sm font-medium text-gray-500">Or</span></div>
+                        </div>
+                        <div id="claim-code-section">
+                            <label for="claim-code-input" class="block text-sm font-medium text-gray-700 mb-1">Have a Claim
+                                Code?</label>
+                            <div class="flex space-x-2">
+                                <input id="claim-code-input" type="text" placeholder="Enter your code here..."
+                                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <button id="claim-code-btn"
+                                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg">Claim</button>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Tab Content: Create -->
+                    <div id="tab-content-create" class="tab-content hidden">
+                        <p class="text-gray-600 mb-4">Can't find your business? No problem. Create a new listing for free.</p>
+                    
+                        <div class="space-y-4">
+                            <div>
+                                <label for="new-business-name" class="block text-sm font-medium text-gray-700">Business Name</label>
+                                <input type="text" id="new-business-name"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                    
+                            <!-- New Structured Address Fields -->
+                            <div>
+                                <label for="new-business-street" class="block text-sm font-medium text-gray-700">Street Address</label>
+                                <input type="text" id="new-business-street"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="new-business-city" class="block text-sm font-medium text-gray-700">City</label>
+                                    <input type="text" id="new-business-city"
+                                        class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="new-business-state" class="block text-sm font-medium text-gray-700">State</label>
+                                    <input type="text" id="new-business-state"
+                                        class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="new-business-zip" class="block text-sm font-medium text-gray-700">Zip Code</label>
+                                    <input type="text" id="new-business-zip"
+                                        class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                            </div>
+                    
+                            <div>
+                                <label for="new-business-territory" class="block text-sm font-medium text-gray-700">Primary
+                                    Territory</label>
+                                <select id="new-business-territory"
+                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm bg-white">
+                                    <option value="sandy">Sandy</option>
+                                    <option value="draper">Draper</option>
+                                    <option value="taylorsville">Taylorsville</option>
+                                </select>
+                            </div>
+                            <button id="create-listing-submit-btn"
+                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700">Create
+                                My Free Listing</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add some basic CSS for the tabs in the head -->
+            <style>
+                .tab-button {
+                    padding: 8px 16px;
+                    border-bottom: 3px solid transparent;
+                    font-weight: 600;
+                    color: #4B5563;
+                    /* gray-600 */
+                }
+            
+                .tab-button.active-tab {
+                    border-bottom-color: #3B82F6;
+                    /* blue-500 */
+                    color: #1F2937;
+                    /* gray-800 */
+                }
+            </style>
+
         </main>
 
 
@@ -97,163 +220,87 @@
 
             if (!profile) {
                 welcomeMessage.textContent = 'Error: Could not load user profile.';
-                document.getElementById('dashboard-content').innerHTML = '<p class="text-red-500">Could not load user profile.</p>';
                 return;
             }
 
             const displayName = profile.first_name || user.email;
             welcomeMessage.textContent = `Welcome, ${displayName}!`;
 
+            setupModal(); // Initialize the modal's internal components once on page load.
             setupDashboardTabs(profile.roles, profile.managed_territories);
             updateNavAuth();
         });
 
-
         // ===================================================================================
         // --- TAB & VIEW RENDERING LOGIC ---
         // ===================================================================================
+        function setupDashboardTabs(roles, managedTerritories) {
+            const tabsContainer = document.getElementById('dashboard-tabs');
+            if (!tabsContainer) return;
 
-        // In /public/dashboard.html
-            // Replace the entire setupDashboardTabs function with this one.
+            tabsContainer.innerHTML = '';
+            const availableTabs = [];
+            const tabConfig = {
+                supporter: { label: 'Supporter', renderFunc: renderSupporterView },
+                business: { label: 'My Businesses', renderFunc: renderBusinessView },
+                admin: { label: 'Admin Panel', renderFunc: () => renderAdminView(managedTerritories) }
+            };
+            const displayOrder = ['supporter', 'business', 'admin'];
 
-            function setupDashboardTabs(roles, managedTerritories) {
-                const tabsContainer = document.getElementById('dashboard-tabs');
-                if (!tabsContainer) return;
+            displayOrder.forEach(roleKey => {
+                if (roles.includes(roleKey)) {
+                    const tab = document.createElement('button');
+                    tab.className = 'tab-button';
+                    tab.textContent = tabConfig[roleKey].label;
+                    tab.dataset.view = roleKey;
+                    tabsContainer.appendChild(tab);
+                    availableTabs.push(tab);
+                }
+            });
 
-                tabsContainer.innerHTML = '';
-                const availableTabs = [];
-
-                // This object defines all possible tabs and their properties.
-                const tabConfig = {
-                    supporter: { label: 'Supporter', renderFunc: renderSupporterView },
-                    business: { label: 'My Businesses', renderFunc: renderBusinessView },
-                    admin: { label: 'Admin Panel', renderFunc: () => renderAdminView(managedTerritories) }
-                };
-
-                // --- THIS IS THE CORRECTED LOGIC ---
-                // We create an array of the roles in the order we want them to appear.
-                const displayOrder = ['supporter', 'business', 'admin'];
-
-                // We loop through our desired order.
-                displayOrder.forEach(roleKey => {
-                    // If the user's roles array INCLUDES this role, we create the tab.
-                    if (roles.includes(roleKey)) {
-                        const tab = document.createElement('button');
-                        tab.className = 'tab-button';
-                        tab.textContent = tabConfig[roleKey].label;
-                        tab.dataset.view = roleKey;
-                        tabsContainer.appendChild(tab);
-                        availableTabs.push(tab);
-                    }
-                });
-                // --- END OF CORRECTED LOGIC ---
-
-                if (availableTabs.length > 0) {
-                    availableTabs.forEach(tab => {
-                        tab.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            availableTabs.forEach(t => t.classList.remove('active-tab'));
-                            tab.classList.add('active-tab');
-                            const view = tab.dataset.view;
-                            tabConfig[view].renderFunc();
-                        });
+            if (availableTabs.length > 0) {
+                availableTabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        availableTabs.forEach(t => t.classList.remove('active-tab'));
+                        tab.classList.add('active-tab');
+                        const view = tab.dataset.view;
+                        tabConfig[view].renderFunc();
                     });
-                    // Automatically click the last tab in the list, which will be the highest privilege (Admin)
-                    availableTabs[availableTabs.length - 1].click();
-                } else {
-                    document.getElementById('dashboard-content').innerHTML = '<p>You do not have any roles assigned.</p>';
-                }
+                });
+                availableTabs[availableTabs.length - 1].click();
+            } else {
+                document.getElementById('dashboard-content').innerHTML = '<p>You do not have any roles assigned.</p>';
             }
+        }
 
-
-        // --- Supporter View ---
-        // In /public/dashboard.html
-            // Replace your entire renderSupporterView function with this one.
-
-            async function renderSupporterView() {
-                const container = document.getElementById('dashboard-content');
-                container.innerHTML = `
-        <h2 class="text-2xl font-bold mb-4">My Claimed Offers</h2>
-        <div id="claimed-offers-list" class="space-y-4">
-            <p>Loading your claimed offers...</p>
-        </div>
-    `;
-
-                // Fetch all offers this user has claimed, and also get the details
-                // of the offer itself and the business it belongs to.
-                const { data: claims, error } = await supabaseClient
-                    .from('claimed_offers')
-                    .select(`
-            *,
-            offers (
-                *,
-                businesses (name, address)
-            )
-        `)
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false }); // Show newest claims first
-
-                const listContainer = document.getElementById('claimed-offers-list');
-                if (error) {
-                    listContainer.innerHTML = '<p class="text-red-500">Could not load your offers.</p>';
-                    return;
-                }
-
-                if (!claims || claims.length === 0) {
-                    listContainer.innerHTML = '<p class="text-gray-500 text-center py-8">You haven\'t claimed any offers yet. Go find some great deals!</p>';
-                    return;
-                }
-
-                listContainer.innerHTML = ''; // Clear loading message
-                claims.forEach(claim => {
-                    const offer = claim.offers; // The nested offer object
-                    const business = offer.businesses; // The nested business object
-                    const isExpired = new Date(claim.expires_at) < new Date();
-                    const statusColor = claim.status === 'redeemed' ? 'bg-green-100 text-green-800' : (isExpired ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800');
-                    const statusText = claim.status === 'redeemed' ? `Redeemed on ${new Date(claim.redeemed_at).toLocaleDateString()}` : (isExpired ? 'Expired' : 'Claimed');
-
-                    const card = document.createElement('div');
-                    card.className = 'bg-white p-4 rounded-lg shadow-md';
-                    card.innerHTML = `
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-semibold text-gray-600">${business.name}</p>
-                    <h3 class="text-lg font-bold text-gray-900">${offer.title}</h3>
-                </div>
-                <div class="text-sm font-bold px-3 py-1 rounded-full ${statusColor}">
-                    ${statusText}
-                </div>
-            </div>
-            <div class="mt-2 border-t pt-2">
-                <p class="text-sm text-gray-600">${offer.description}</p>
-                <div class="mt-3 flex justify-between items-end">
-                    <div class="text-xs text-gray-500">
-                        <p>Claimed: ${new Date(claim.claimed_at).toLocaleDateString()}</p>
-                        <p>Expires: ${new Date(claim.expires_at).toLocaleDateString()}</p>
-                    </div>
-                    ${claim.status === 'claimed' && !isExpired ? `
-                    <button class="redeem-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-claim-id="${claim.id}" data-pin="${offer.redemption_pin}">
-                        Redeem Now
+        function renderSupporterView() {
+            const container = document.getElementById('dashboard-content');
+            const businessCallToAction = `
+                <div class="text-center bg-white p-8 rounded-lg shadow-lg border-2 border-dashed border-blue-300">
+                    <h3 class="text-2xl font-bold text-gray-800">Do You Own a Local Business?</h3>
+                    <p class="mt-2 text-gray-600">Get your free listing on Support Local SLC to connect with the community and grow your brand.</p>
+                    <button id="supporter-claim-btn" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                        Add or Claim Your Business Now
                     </button>
-                    ` : ''}
                 </div>
-            </div>
-        `;
-                    listContainer.appendChild(card);
-                });
+            `;
+            const claimedOffersSection = `
+                <div class="mt-8">
+                    <h2 class="text-2xl font-bold mb-4">My Claimed Offers</h2>
+                    <div id="claimed-offers-list" class="space-y-4">
+                        <p>Loading your claimed offers...</p>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = businessCallToAction + claimedOffersSection;
 
-                // Add event listener for the "Redeem Now" buttons
-                listContainer.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('redeem-btn')) {
-                        const claimId = e.target.dataset.claimId;
-                        const correctPin = e.target.dataset.pin;
-                        handleRedeemOffer(claimId, correctPin);
-                    }
-                });
-            }
+            document.getElementById('supporter-claim-btn').addEventListener('click', () => {
+                document.getElementById('claim-modal').classList.remove('hidden');
+            });
+            loadClaimedOffers();
+        }
 
-
-        // --- Business Owner View ---
         async function renderBusinessView() {
             const container = document.getElementById('dashboard-content');
             container.innerHTML = `
@@ -263,158 +310,93 @@
                 </div>
                 <div id="owned-list" class="space-y-4"><p>Loading your businesses...</p></div>
             `;
-            const { data, error } = await supabaseClient.from('businesses').select('*').eq('owner_id', currentUser.id);
+            const { data } = await supabaseClient.from('businesses').select('*').eq('owner_id', currentUser.id);
             renderBusinessCards(data, 'owned-list');
-            setupModal();
+            document.getElementById('add-claim-btn').addEventListener('click', () => {
+                document.getElementById('claim-modal').classList.remove('hidden');
+            });
         }
 
-        // --- Admin View ---
-        // In /public/dashboard.html
-            // Replace the entire renderAdminView function with this one.
-
-            async function renderAdminView(managedTerritories) {
-                const container = document.getElementById('dashboard-content');
-                const isSuperAdmin = !managedTerritories || managedTerritories.length === 0;
-                const title = isSuperAdmin ? 'Super Admin Panel' : `Admin Panel: ${managedTerritories.join(', ')}`;
-
-                container.innerHTML = `
-        <h2 class="text-2xl font-bold mb-4">${title}</h2>
-        <p class="text-gray-600 mb-6">Manage all business listings within your assigned territories.</p>
-        
-        <!-- Admin Controls -->
-        <div class="flex flex-col md:flex-row gap-4 mb-6 bg-gray-100 p-4 rounded-lg">
-            ${isSuperAdmin ? `
-            <div class="flex-1">
-                <label for="admin-territory-filter" class="block text-sm font-medium text-gray-700">Filter by Territory</label>
-                <select id="admin-territory-filter" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                    <option value="">All Territories</option>
-                    <!-- Territories will be populated here -->
-                </select>
-            </div>
-            ` : ''}
-            <div class="flex-1">
-                <label for="admin-search-input" class="block text-sm font-medium text-gray-700">Search by Name or Address</label>
-                <input type="text" id="admin-search-input" placeholder="Start typing to search..." class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-            </div>
-        </div>
-
-        <!-- Business List -->
-        <div id="admin-list" class="space-y-4"><p>Loading businesses...</p></div>
-    `;
-
-                // --- LOGIC FOR THE NEW CONTROLS ---
-
-                let allAdminBusinesses = []; // Cache the full list
-
-                // Fetch all businesses relevant to the admin
-                let query = supabaseClient.from('businesses').select('*');
-                if (!isSuperAdmin) {
-                    query = query.in('territory', managedTerritories);
-                }
-                const { data, error } = await query;
-
-                if (error) {
-                    document.getElementById('admin-list').innerHTML = '<p class="text-red-500">Failed to load businesses.</p>';
-                    return;
-                }
-                allAdminBusinesses = data || [];
-
-                // Populate territory dropdown if super admin
-                if (isSuperAdmin) {
-                    const territoryFilter = document.getElementById('admin-territory-filter');
-                    const territories = [...new Set(allAdminBusinesses.map(b => b.territory))].sort();
-                    territories.forEach(t => {
-                        territoryFilter.innerHTML += `<option value="${t}">${t}</option>`;
-                    });
-                }
-
-                // Function to filter and display businesses
-                const filterAndRenderAdminList = () => {
-                    const territory = document.getElementById('admin-territory-filter')?.value || '';
-                    const searchTerm = document.getElementById('admin-search-input').value.toLowerCase();
-
-                    const filtered = allAdminBusinesses.filter(business => {
-                        const matchesTerritory = !territory || business.territory === territory;
-                        const matchesSearch = !searchTerm ||
-                            business.name.toLowerCase().includes(searchTerm) ||
-                            (business.address && business.address.toLowerCase().includes(searchTerm));
-                        return matchesTerritory && matchesSearch;
-                    });
-                    renderBusinessCards(filtered, 'admin-list');
-                };
-
-                // Attach event listeners
-                document.getElementById('admin-search-input').addEventListener('input', filterAndRenderAdminList);
-                if (isSuperAdmin) {
-                    document.getElementById('admin-territory-filter').addEventListener('change', filterAndRenderAdminList);
-                }
-
-                // Initial render
-                filterAndRenderAdminList();
+        async function renderAdminView(managedTerritories) {
+            const container = document.getElementById('dashboard-content');
+            const isSuperAdmin = !managedTerritories || managedTerritories.length === 0;
+            const title = isSuperAdmin ? 'Super Admin Panel' : `Admin Panel: ${managedTerritories.join(', ')}`;
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold mb-4">${title}</h2>
+                <p class="text-gray-600 mb-6">Manage all business listings within your assigned territories.</p>
+                <div class="flex flex-col md:flex-row gap-4 mb-6 bg-gray-100 p-4 rounded-lg">
+                    ${isSuperAdmin ? `<div class="flex-1"><label for="admin-territory-filter" class="block text-sm font-medium text-gray-700">Filter by Territory</label><select id="admin-territory-filter" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"><option value="">All Territories</option></select></div>` : ''}
+                    <div class="flex-1"><label for="admin-search-input" class="block text-sm font-medium text-gray-700">Search by Name or Address</label><input type="text" id="admin-search-input" placeholder="Start typing to search..." class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></div>
+                </div>
+                <div id="admin-list" class="space-y-4"><p>Loading businesses...</p></div>
+            `;
+            let allAdminBusinesses = [];
+            let query = supabaseClient.from('businesses').select('*');
+            if (!isSuperAdmin) {
+                query = query.in('territory', managedTerritories);
             }
-
-
+            const { data } = await query;
+            allAdminBusinesses = data || [];
+            if (isSuperAdmin) {
+                const territoryFilter = document.getElementById('admin-territory-filter');
+                const territories = [...new Set(allAdminBusinesses.map(b => b.territory))].sort();
+                territories.forEach(t => { territoryFilter.innerHTML += `<option value="${t}">${t}</option>`; });
+            }
+            const filterAndRenderAdminList = () => {
+                const territory = document.getElementById('admin-territory-filter')?.value || '';
+                const searchTerm = document.getElementById('admin-search-input').value.toLowerCase();
+                const filtered = allAdminBusinesses.filter(business => {
+                    const matchesTerritory = !territory || business.territory === territory;
+                    const matchesSearch = !searchTerm || business.name.toLowerCase().includes(searchTerm) || (business.address && business.address.toLowerCase().includes(searchTerm));
+                    return matchesTerritory && matchesSearch;
+                });
+                renderBusinessCards(filtered, 'admin-list');
+            };
+            document.getElementById('admin-search-input').addEventListener('input', filterAndRenderAdminList);
+            if (isSuperAdmin) {
+                document.getElementById('admin-territory-filter').addEventListener('change', filterAndRenderAdminList);
+            }
+            filterAndRenderAdminList();
+        }
 
         // ===================================================================================
         // --- HELPER & SHARED FUNCTIONS ---
         // ===================================================================================
-
         function renderBusinessCards(businesses, containerId) {
             const listDiv = document.getElementById(containerId);
             if (!listDiv) return;
-
             listDiv.innerHTML = '';
             if (!businesses || businesses.length === 0) {
                 listDiv.innerHTML = '<p class="text-gray-600">No businesses found.</p>';
                 return;
             }
-
             businesses.forEach(business => {
                 const card = document.createElement('div');
                 card.className = 'bg-gray-50 p-4 rounded-lg shadow-md flex justify-between items-center';
                 const statusColor = business.claim_status === 'approved' ? 'text-green-600' : 'text-yellow-600';
-                card.innerHTML = `
-                    <div>
-                        <h3 class="text-lg font-bold">${business.name}</h3>
-                        <p class="text-sm text-gray-600">${business.address || 'No address'}, ${business.territory}</p>
-                        <p class="text-sm font-semibold capitalize ${statusColor}">Status: ${business.claim_status || 'unclaimed'}</p>
-                    </div>
-                    <a href="/edit-business.html?id=${business.id}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm">Edit</a>
-                `;
+                card.innerHTML = `<div><h3 class="text-lg font-bold">${business.name}</h3><p class="text-sm text-gray-600">${business.address || 'No address'}, ${business.territory}</p><p class="text-sm font-semibold capitalize ${statusColor}">Status: ${business.claim_status || 'unclaimed'}</p></div><a href="/edit-business.html?id=${business.id}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm">Edit</a>`;
                 listDiv.appendChild(card);
             });
         }
 
         function setupModal() {
             const claimModal = document.getElementById('claim-modal');
-            const addClaimBtn = document.getElementById('add-claim-btn');
             const closeModalBtn = document.getElementById('close-claim-modal-btn');
-            if (!claimModal || !addClaimBtn || !closeModalBtn) return;
-
-            addClaimBtn.addEventListener('click', () => claimModal.classList.remove('hidden'));
+            if (!claimModal || !closeModalBtn) return;
             closeModalBtn.addEventListener('click', () => claimModal.classList.add('hidden'));
-
             const tabSearch = document.getElementById('tab-search');
             const tabCreate = document.getElementById('tab-create');
             const contentSearch = document.getElementById('tab-content-search');
             const contentCreate = document.getElementById('tab-content-create');
-
             tabSearch.addEventListener('click', () => {
-                tabSearch.classList.add('active-tab');
-                tabCreate.classList.remove('active-tab');
-                contentSearch.classList.remove('hidden');
-                contentCreate.classList.add('hidden');
+                tabSearch.classList.add('active-tab'); tabCreate.classList.remove('active-tab');
+                contentSearch.classList.remove('hidden'); contentCreate.classList.add('hidden');
             });
-
             tabCreate.addEventListener('click', () => {
-                tabCreate.classList.add('active-tab');
-                tabSearch.classList.remove('active-tab');
-                contentCreate.classList.remove('hidden');
-                contentSearch.classList.add('hidden');
+                tabCreate.classList.add('active-tab'); tabSearch.classList.remove('active-tab');
+                contentCreate.classList.remove('hidden'); contentSearch.classList.add('hidden');
             });
-
             document.getElementById('search-business-input').addEventListener('input', searchBusinesses);
-            document.getElementById('claim-code-input').addEventListener('input', () => { }); // Clearer event setup
             document.getElementById('claim-code-btn').addEventListener('click', claimWithCode);
             document.getElementById('create-listing-submit-btn').addEventListener('click', createNewListing);
         }
@@ -423,29 +405,16 @@
             const query = event.target.value.toLowerCase();
             const resultsContainer = document.getElementById('search-results-container');
             if (!resultsContainer) return;
-            if (query.length < 3) {
-                resultsContainer.innerHTML = '';
-                return;
-            }
+            if (query.length < 3) { resultsContainer.innerHTML = ''; return; }
             const { data, error } = await supabaseClient.from('businesses').select('*').ilike('name', `%${query}%`).eq('claim_status', 'unclaimed');
-            if (error) {
-                resultsContainer.innerHTML = '<p class="text-red-500">Error searching.</p>';
-                return;
-            }
+            if (error) { resultsContainer.innerHTML = '<p class="text-red-500">Error searching.</p>'; return; }
             resultsContainer.innerHTML = '';
-            if (data.length === 0) {
-                resultsContainer.innerHTML = '<p class="text-gray-500">No unclaimed businesses found. Try the "Create" tab!</p>';
-            } else {
+            if (data.length === 0) { resultsContainer.innerHTML = '<p class="text-gray-500">No unclaimed businesses found.</p>'; }
+            else {
                 data.forEach(business => {
                     const card = document.createElement('div');
                     card.className = 'bg-gray-100 p-4 rounded-lg flex justify-between items-center';
-                    card.innerHTML = `
-                        <div>
-                            <h4 class="font-bold">${business.name}</h4>
-                            <p class="text-sm text-gray-600">${business.address || 'No Address'}</p>
-                        </div>
-                        <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm">Request Claim</button>
-                    `;
+                    card.innerHTML = `<div><h4 class="font-bold">${business.name}</h4><p class="text-sm text-gray-600">${business.address || 'No Address'}</p></div><button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm">Request Claim</button>`;
                     card.querySelector('button').addEventListener('click', () => requestClaim(business.id));
                     resultsContainer.appendChild(card);
                 });
@@ -454,31 +423,23 @@
 
         async function claimWithCode() {
             const code = document.getElementById('claim-code-input').value.trim();
-            if (!code) {
-                alert('Please enter a claim code.');
-                return;
-            }
+            if (!code) { alert('Please enter a claim code.'); return; }
             const { data: biz, error } = await supabaseClient.from('businesses').select('*').eq('claim_code', code).eq('claim_status', 'unclaimed').maybeSingle();
-            if (error || !biz) {
-                alert('Invalid code or business already claimed.');
-                return;
-            }
-            const { data: updateData, error: updateError } = await supabaseClient.from('businesses').update({ owner_id: currentUser.id, claim_status: 'approved', claim_code: null }).eq('id', biz.id).select();
-            if (updateError) {
-                alert(`Claim error: ${updateError.message}`);
-            } else {
+            if (error || !biz) { alert('Invalid code or business already claimed.'); return; }
+            const { error: updateError } = await supabaseClient.from('businesses').update({ owner_id: currentUser.id, claim_status: 'approved', claim_code: null }).eq('id', biz.id);
+            if (updateError) { alert(`Claim error: ${updateError.message}`); }
+            else {
                 alert(`Success! You have claimed ${biz.name}.`);
                 document.getElementById('claim-modal').classList.add('hidden');
-                renderBusinessView(); // Re-render the business view
+                renderBusinessView();
                 sendGHLNotification('claim_event', `Claimed with code: ${biz.name}`);
             }
         }
 
         async function requestClaim(id) {
-            const { data: updateData, error } = await supabaseClient.from('businesses').update({ owner_id: currentUser.id, claim_status: 'pending' }).eq('id', id).select();
-            if (error) {
-                alert(`Request error: ${error.message}`);
-            } else {
+            const { error } = await supabaseClient.from('businesses').update({ owner_id: currentUser.id, claim_status: 'pending' }).eq('id', id);
+            if (error) { alert(`Request error: ${error.message}`); }
+            else {
                 alert('Claim requested! You will be notified upon approval.');
                 document.getElementById('claim-modal').classList.add('hidden');
                 renderBusinessView();
@@ -486,22 +447,77 @@
             }
         }
 
-        async function createNewListing() {
-            const name = document.getElementById('new-business-name').value.trim();
-            const address = document.getElementById('new-business-address').value.trim();
-            const territory = document.getElementById('new-business-territory').value;
-            if (!name || !address || !territory) {
-                alert('Please fill out all fields.');
-                return;
+        // In dashboard.html, replace the entire createNewListing function
+            async function createNewListing() {
+                // --- Collect data from the form (no change here) ---
+                const name = document.getElementById('new-business-name').value.trim();
+                const street = document.getElementById('new-business-street').value.trim();
+                const city = document.getElementById('new-business-city').value.trim();
+                const state = document.getElementById('new-business-state').value.trim();
+                const zip = document.getElementById('new-business-zip').value.trim();
+                const territory = document.getElementById('new-business-territory').value;
+
+                if (!name || !street || !city || !state || !zip || !territory) {
+                    alert('Please fill out all fields to create your new listing.');
+                    return;
+                }
+
+                // --- Call our new database function ---
+                const { data, error } = await supabaseClient.rpc('create_business_and_upgrade_role', {
+                    p_name: name,
+                    p_street: street,
+                    p_city: city,
+                    p_state: state,
+                    p_zip: zip,
+                    p_territory: territory
+                });
+
+                if (error) {
+                    console.error('Error creating new business:', error);
+                    alert(`Error creating listing: ${error.message}`);
+                } else {
+                    alert('Success! Your new business listing has been created and your role has been upgraded.');
+                    // Reload the whole page to force the new tabs to appear
+                    window.location.reload();
+                }
             }
-            const { data, error } = await supabaseClient.from('businesses').insert([{ name, address, territory, owner_id: currentUser.id, claim_status: 'approved' }]).select();
-            if (error) {
-                alert(`Error creating listing: ${error.message}`);
-            } else {
-                alert('Success! Your new listing has been created.');
-                document.getElementById('claim-modal').classList.add('hidden');
-                renderBusinessView();
-                sendGHLNotification('new_business_created', `New business: ${name}`);
+
+
+
+        async function loadClaimedOffers() {
+            const listContainer = document.getElementById('claimed-offers-list');
+            if (!listContainer) return;
+            const { data: claims, error } = await supabaseClient.from('claimed_offers').select(`*, offers (*, businesses (name, address))`).eq('user_id', currentUser.id).order('created_at', { ascending: false });
+            if (error) { listContainer.innerHTML = '<p class="text-red-500">Could not load your offers.</p>'; return; }
+            if (!claims || claims.length === 0) { listContainer.innerHTML = '<p class="text-gray-500 text-center py-4">You haven\'t claimed any offers yet.</p>'; return; }
+            listContainer.innerHTML = '';
+            claims.forEach(claim => {
+                const offer = claim.offers;
+                const business = offer.businesses;
+                const isExpired = new Date(claim.expires_at) < new Date();
+                const statusColor = claim.status === 'redeemed' ? 'bg-green-100 text-green-800' : (isExpired ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800');
+                const statusText = claim.status === 'redeemed' ? `Redeemed on ${new Date(claim.redeemed_at).toLocaleDateString()}` : (isExpired ? 'Expired' : 'Claimed');
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-lg shadow-md';
+                card.innerHTML = `<div class="flex justify-between items-start"><div><p class="text-sm font-semibold text-gray-600">${business.name}</p><h3 class="text-lg font-bold text-gray-900">${offer.title}</h3></div><div class="text-sm font-bold px-3 py-1 rounded-full ${statusColor}">${statusText}</div></div><div class="mt-2 border-t pt-2"><p class="text-sm text-gray-600">${offer.description}</p><div class="mt-3 flex justify-between items-end"><div class="text-xs text-gray-500"><p>Claimed: ${new Date(claim.claimed_at).toLocaleDateString()}</p><p>Expires: ${new Date(claim.expires_at).toLocaleDateString()}</p></div>${claim.status === 'claimed' && !isExpired ? `<button class="redeem-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-claim-id="${claim.id}">Redeem Now</button>` : ''}</div></div>`;
+                listContainer.appendChild(card);
+            });
+            listContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('redeem-btn')) {
+                    const claimId = e.target.dataset.claimId;
+                    handleRedeemOffer(claimId);
+                }
+            });
+        }
+
+        async function handleRedeemOffer(claimId) {
+            const enteredPin = prompt("Please have the business owner enter their 4-digit PIN:");
+            if (enteredPin === null || enteredPin.trim() === '') return;
+            const { data, error } = await supabaseClient.rpc('redeem_offer', { p_claim_id: claimId, p_pin: enteredPin });
+            if (error) { alert(`An unexpected error occurred: ${error.message}`); }
+            else {
+                alert(data);
+                if (data.startsWith('Success')) { renderSupporterView(); }
             }
         }
 
@@ -540,33 +556,8 @@
                 console.error('GHL notify error:', err);
             }
         }
-
-        // In dashboard.html, replace the handleRedeemOffer function
-            async function handleRedeemOffer(claimId) {
-                const enteredPin = prompt("Please have the business owner enter their 4-digit PIN:");
-
-                if (enteredPin === null || enteredPin.trim() === '') return;
-
-                // Call the database function to handle the redemption securely
-                const { data, error } = await supabaseClient.rpc('redeem_offer', {
-                    p_claim_id: claimId,
-                    p_pin: enteredPin
-                });
-
-                if (error) {
-                    alert(`An unexpected error occurred: ${error.message}`);
-                } else {
-                    // The function returns a string like "Success: ..." or "Error: ..."
-                    alert(data);
-                    if (data.startsWith('Success')) {
-                        renderSupporterView(); // Refresh the view on success
-                    }
-                }
-            }
-
-
-
     </script>
+
 
     <!-- This is the end of the script tag. -->
 
