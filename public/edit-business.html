@@ -1206,80 +1206,123 @@
                             });
                         }
 
-                        // THIS IS THE MISSING FUNCTION. Please add it to your script.
-                        function populateTagsCheckboxes() {
+                       // In /public/edit-business.html
+                        // Replace your populateTagsCheckboxes function with this debugging version.
+
+                        async function populateTagsCheckboxes() {
+                            console.log("1. Starting populateTagsCheckboxes...");
                             const container = document.getElementById('tags-checkbox-container');
-                            // In a real app, you'd fetch these from a 'tags' table in Supabase.
-                            // For now, we'll hardcode them.
-                            const availableTags = ['Veteran Owned', 'Woman Owned', 'LGBTQ+ Owned', 'Family Owned', 'Dog Friendly', 'Free Wi-Fi', 'Has a Patio', 'Accepts Crypto'];
-                            const currentTags = currentBusinessData.tags || [];
+
+                            if (!container) {
+                                console.error("FATAL: Could not find the #tags-checkbox-container div. Stopping.");
+                                return;
+                            }
+                            console.log("2. Found the container div successfully.");
+
+                            // Fetch all available tags from the new 'tags' table.
+                            const { data: availableTags, error: tagsError } = await supabaseClient
+                                .from('tags')
+                                .select('id, name')
+                                .order('name');
+
+                            if (tagsError) {
+                                console.error("3. ERROR fetching available tags:", tagsError);
+                                container.innerHTML = '<p class="text-red-500">Could not load tags.</p>';
+                                return;
+                            }
+                            console.log("3. Successfully fetched available tags. Count:", availableTags.length, availableTags);
+
+                            if (availableTags.length === 0) {
+                                console.warn("4. No tags found in the 'tags' table. Have you added any yet?");
+                                container.innerHTML = '<p class="text-gray-500">No attribute tags have been configured.</p>';
+                                return;
+                            }
+
+                            // Fetch the tags currently linked to THIS business.
+                            const { data: currentLinks, error: linksError } = await supabaseClient
+                                .from('business_tags')
+                                .select('tag_id')
+                                .eq('business_id', currentBusinessData.id);
+
+                            if (linksError) {
+                                console.error("5. ERROR fetching current business_tags:", linksError);
+                            }
+                            const currentTagIds = new Set(currentLinks ? currentLinks.map(link => link.tag_id) : []);
+                            console.log("5. Successfully fetched current business tags. IDs:", currentTagIds);
 
                             container.innerHTML = ''; // Clear previous content
+
+                            // Loop and create checkboxes
                             availableTags.forEach(tag => {
-                                const isChecked = currentTags.includes(tag);
+                                const isChecked = currentTagIds.has(tag.id);
                                 container.innerHTML += `
                                     <label class="flex items-center p-3 bg-white border rounded-lg hover:bg-gray-50">
-                                        <input type="checkbox" value="${tag}" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 attribute-tag-checkbox" ${isChecked ? 'checked' : ''}>
-                                        <span class="ml-3 text-sm font-medium text-gray-700">${tag}</span>
+                                        <input type="checkbox" value="${tag.id}" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 attribute-tag-checkbox" ${isChecked ? 'checked' : ''}>
+                                        <span class="ml-3 text-sm font-medium text-gray-700">${tag.name}</span>
                                     </label>
                                 `;
                             });
+                            console.log("6. Finished rendering checkboxes.");
                         }
+
+
 
 
                   
 
-                    async function saveCategoriesAndTags() {
-                        const saveBtn = document.getElementById('save-categories-btn');
-                        saveBtn.textContent = 'Saving...';
-                        saveBtn.disabled = true;
+                    // In /public/edit-business.html
+                        // Replace your entire saveCategoriesAndTags function with this one.
 
-                        // --- Get Selected Category IDs ---
-                        const selectedCategoryIds = [];
-                        document.querySelectorAll('.category-checkbox:checked').forEach(checkbox => {
-                            selectedCategoryIds.push(checkbox.value);
-                        });
+                        async function saveCategoriesAndTags() {
+                            const saveBtn = document.getElementById('save-categories-btn');
+                            saveBtn.textContent = 'Saving...';
+                            saveBtn.disabled = true;
 
-                        // --- Get Selected Attribute Tags ---
-                        const selectedTags = [];
-                        document.querySelectorAll('.attribute-tag-checkbox:checked').forEach(checkbox => {
-                            selectedTags.push(checkbox.value);
-                        });
+                            // --- 1. GATHER SELECTIONS ---
+                            // Get selected CATEGORY IDs (no change here)
+                            const selectedCategoryIds = Array.from(document.querySelectorAll('.category-item-checkbox:checked')).map(cb => parseInt(cb.value, 10));
 
-                        // --- Save Attribute Tags (this is an UPDATE on the businesses table) ---
-                        const { error: tagsUpdateError } = await supabaseClient
-                            .from('businesses')
-                            .update({ tags: selectedTags })
-                            .eq('id', currentBusinessData.id);
+                            // Get selected TAG IDs from the new checkboxes
+                            const selectedTagIds = Array.from(document.querySelectorAll('.attribute-tag-checkbox:checked')).map(cb => parseInt(cb.value, 10));
 
-                        // --- Save Categories (this is a DELETE then INSERT on the linking table) ---
-                        // 1. Delete all existing entries for this business
-                        const { error: deleteError } = await supabaseClient
-                            .from('business_categories')
-                            .delete()
-                            .eq('business_id', currentBusinessData.id);
+                            // --- 2. SAVE CATEGORIES (no change here) ---
+                            // Delete all existing category links for this business
+                            await supabaseClient.from('business_categories').delete().eq('business_id', currentBusinessData.id);
+                            // Prepare new category links
+                            const newCategoryLinks = selectedCategoryIds.map(catId => ({ business_id: currentBusinessData.id, category_id: catId }));
+                            // Insert the new links if any were selected
+                            if (newCategoryLinks.length > 0) {
+                                const { error: catError } = await supabaseClient.from('business_categories').insert(newCategoryLinks);
+                                if (catError) {
+                                    alert(`Error saving categories: ${catError.message}`);
+                                    saveBtn.textContent = 'Save Changes';
+                                    saveBtn.disabled = false;
+                                    return;
+                                }
+                            }
 
-                        // 2. Insert the new selections
-                        const newLinks = selectedCategoryIds.map(catId => ({
-                            business_id: currentBusinessData.id,
-                            category_id: catId
-                        }));
+                            // --- 3. SAVE TAGS (This is the new logic) ---
+                            // Delete all existing tag links for this business from our new 'business_tags' table
+                            await supabaseClient.from('business_tags').delete().eq('business_id', currentBusinessData.id);
+                            // Prepare new tag links
+                            const newTagLinks = selectedTagIds.map(tagId => ({ business_id: currentBusinessData.id, tag_id: tagId }));
+                            // Insert the new links if any were selected
+                            if (newTagLinks.length > 0) {
+                                const { error: tagError } = await supabaseClient.from('business_tags').insert(newTagLinks);
+                                if (tagError) {
+                                    alert(`Error saving tags: ${tagError.message}`);
+                                    saveBtn.textContent = 'Save Changes';
+                                    saveBtn.disabled = false;
+                                    return;
+                                }
+                            }
 
-                        const { error: insertError } = await supabaseClient
-                            .from('business_categories')
-                            .insert(newLinks);
-
-                        // --- Finalize ---
-                        if (tagsUpdateError || deleteError || insertError) {
-                            alert('An error occurred. Not all changes may have been saved.');
-                            console.error({ tagsUpdateError, deleteError, insertError });
-                        } else {
+                            // --- 4. FINISH ---
                             alert('Categories and tags saved successfully!');
+                            saveBtn.textContent = 'Save Changes';
+                            saveBtn.disabled = false;
                         }
 
-                        saveBtn.textContent = 'Save Changes';
-                        saveBtn.disabled = false;
-                    }
 
 
 

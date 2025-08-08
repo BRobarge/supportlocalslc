@@ -1,355 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Support Local SLC - Business Directory</title>
-    <link href="../shared/output.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <!-- Correct CDN -->
-    <script type="module" src="../shared/config.js"></script>
+    <title>Support Local SLC - Sandy</title>
+    <link href="/shared/output.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Custom scrollbar for category pills */
+        .category-pills::-webkit-scrollbar {
+            height: 8px;
+        }
 
+        .category-pills::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
 
-<body class="bg-gray-100 font-sans pb-60">
-    <header class="shadow-md">
-        <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
-            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg" alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
+        .category-pills::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+
+        .category-pills::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- =================================================================== -->
+    <!-- --- HEADER / NAVIGATION (Copied from homepage for consistency ) --- -->
+    <!-- =================================================================== -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex-shrink-0">
+                    <img class="h-12 w-auto"
+                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                        alt="SupportLocalSLC Logo">
+                </a>
+
+                <!-- Desktop Navigation -->
+                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8">
+                    <!-- Directory Dropdown -->
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">
+                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
+                        </a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon )</a>
+                        </div>
+                    </div>
+                    <!-- Offers Dropdown -->
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">
+                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
+                        </a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html?filter=offers"
+                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers
+                                (Soon)</a>
+                        </div>
+                    </div>
+                    <a href="#" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
+                </nav>
+
+                <!-- Login/Dashboard Button (Desktop) -->
+                <div class="hidden lg:block">
+                    <a id="auth-link" href="/login.html"
+                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
+                </div>
+
+                <!-- Mobile Menu Button (Hamburger) -->
+                <div class="lg:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu (Hidden by default) -->
+            <nav id="mobile-menu" class="lg:hidden hidden mt-4">
+                <!-- Directory Dropdown (Mobile) -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold"
+                        data-toggle="dropdown">Directory <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
+                    </div>
+                </div>
+                <!-- Offers Dropdown (Mobile) -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold"
+                        data-toggle="dropdown">Offers <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                    </div>
+                </div>
+                <a href="#" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
+                <hr class="my-2">
+                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
+            </nav>
         </div>
     </header>
 
-    <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
-        <a id="home-link" href="/index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-home text-2xl"></i>
-            <span class="text-sm font-semibold">Home</span>
-        </a>
-        <a id="auth-link" href="login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-sign-in-alt text-2xl"></i>
-            <span class="text-sm font-semibold">Login</span>
-        </a>
-        <a id="dashboard-link" href="dashboard.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-user-cog text-2xl"></i>
-            <span class="text-sm font-semibold">Dashboard</span>
-        </a>
-    </nav>
-
-    <section class="container mx-auto p-4 flex flex-col md:flex-row gap-4">
-        <input id="search-input" type="text" placeholder="Search by business or category..." class="flex-1 p-2 border border-gray-300 rounded-md">
-        <select id="category-select" class="p-2 border border-gray-300 rounded-md">
-            <option value="">All Categories</option>
-        </select>
-    </section>
-
-    <section class="container mx-auto p-4">
-        <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <main class="container mx-auto p-4 md:p-8">
+        <!-- Page Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800">Sandy Directory</h1>
+            <p class="text-lg text-gray-600 mt-2">Discover the best local businesses in Sandy.</p>
         </div>
-    </section>
 
-<script type="module">
-    // The corrected, valid syntax
-        import { getBusinessUrl, getLoginUrl, getHomeUrl, getDashboardUrl } from '../shared/config.js';
+        <!-- Search and Filter Controls -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-8 sticky top-[76px] z-30">
+            <!-- Primary Search Bar -->
+            <div class="relative mb-4">
+                <input type="search" id="search-input" placeholder="Search by business name or keyword..."
+                    class="w-full p-3 pl-10 border border-gray-300 rounded-lg">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
 
+            <!-- Category Pills -->
+            <div id="category-pills-container" class="category-pills flex items-center space-x-3 overflow-x-auto pb-3">
+                <!-- Pills will be loaded here -->
+                <p class="text-gray-500">Loading categories...</p>
+            </div>
+        </div>
 
+        <!-- Business Listings Grid -->
+        <div id="business-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Business cards will be loaded here -->
+            <p class="text-gray-500 col-span-full">Loading businesses...</p>
+        </div>
+    </main>
 
-
-    const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-    async function updateNavAuth() {
-        const storedSession = sessionStorage.getItem('supabase_session');
-        const authLink = document.getElementById('auth-link');
-        if (!authLink) return;
-        const iconElement = authLink.querySelector('svg, i');
-        const textSpan = authLink.querySelector('span');
-        if (storedSession) {
-            authLink.href = '#';
-            authLink.onclick = async (e) => {
-                e.preventDefault();
-                await supabaseClient.auth.signOut();
-                sessionStorage.removeItem('supabase_session');
-                window.location.href = getLoginUrl();
-            };
-            if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
-            if (textSpan) textSpan.textContent = 'Logout';
-        } else {
-            authLink.href = getLoginUrl();
-            authLink.onclick = null;
-            if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
-            if (textSpan) textSpan.textContent = 'Login';
-        }
-        // Update other nav links
-        document.getElementById('home-link').href = getHomeUrl();
-        document.getElementById('dashboard-link').href = getDashboardUrl();
-    }
-
-    let allBusinesses = [];
-    let allCategories = []; 
-    let filterPath = []; // e.g., ['Food & Drink', 'Restaurants', 'Mexican']
-
-    const searchInput = document.getElementById('search-input');
-    const categorySelect = document.getElementById('category-select');
-    const filterBar = document.createElement('div');
-    filterBar.id = 'filter-bar';
-    filterBar.className = 'text-center mb-4';
-    document.querySelector('section.container.mx-auto.p-4.flex.flex-col.md\\:flex-row.gap-4').appendChild(filterBar);
-
-    // Replace your entire loadBusinesses function with this one.
-        async function loadBusinesses() {
-            // First, fetch ALL categories one time and store them globally.
-            const { data: categoriesData, error: categoriesError } = await supabaseClient.from('categories').select('*');
-            if (categoriesError) {
-                console.error('FATAL: Could not load category definitions.', categoriesError);
-                return;
-            }
-            allCategories = categoriesData; // Store in our new global variable
-
-            // Now, fetch the businesses and their links.
-            const { data, error } = await supabaseClient
-                .from('businesses')
-                .select(`
-            *,
-            profiles (membership_level),
-            business_categories (
-                category_id
-            )
-        `);
-
-            if (error) {
-                console.error('Error loading businesses:', error);
-                return;
-            }
-
-            // This helper function can now safely use the global 'allCategories' variable.
-            const getFullPath = (catId) => {
-                let path = [];
-                let current = allCategories.find(c => c.id === catId);
-                while (current) {
-                    path.unshift(current.name);
-                    let parent = allCategories.find(c => c.id === current.parent_id);
-                    current = parent;
-                }
-                return path.join(' > ');
-            };
-
-            // Process the businesses to add the category paths.
-            allBusinesses = data.map(business => {
-                const linkedCategoryIds = business.business_categories.map(bc => bc.category_id);
-                const categoryPaths = linkedCategoryIds.map(id => getFullPath(id));
-
-                return {
-                    ...business,
-                    categories: [...new Set(categoryPaths)]
-                };
-            });
-
-            console.log('Load complete, allBusinesses length:', allBusinesses.length);
-            filterListings();
-            if (allBusinesses.length === 0) {
-                console.log('No businesses loaded—check Supabase');
-            }
-        }
-
-
-
-
-    function repopulateCategories(filtered) {
-        categorySelect.innerHTML = '<option value="">All Categories</option>';
-        const levels = { mains: new Set(), subs: new Set(), tags: new Set() };
-        filtered.flatMap(b => b.categories || []).forEach(cat => {
-            const parts = cat.split(' > ');
-            if (parts[0]) levels.mains.add(parts[0]);
-            if (parts[1]) levels.subs.add(parts[1]);
-            if (parts[2]) levels.tags.add(parts[2]);
-        });
-
-        let optionsSet = new Set();
-        if (filterPath.length === 0) {
-            optionsSet = levels.mains;
-        } else if (filterPath.length === 1) {
-            const currentMain = filterPath[0];
-            filtered.flatMap(b => b.categories || []).forEach(cat => {
-                const parts = cat.split(' > ');
-                if (parts[0] === currentMain && parts[1]) optionsSet.add(parts[1]);
-            });
-        } else if (filterPath.length === 2) {
-            const currentSub = filterPath[1];
-            filtered.flatMap(b => b.categories || []).forEach(cat => {
-                const parts = cat.split(' > ');
-                if (parts[1] === currentSub && parts[2]) optionsSet.add(parts[2]);
-            });
-        }
-
-        Array.from(optionsSet).sort().forEach(optionName => {
-            const option = document.createElement('option');
-            option.value = optionName;
-            option.textContent = optionName;
-            categorySelect.appendChild(option);
-        });
-        console.log("✅ Dropdown repopulated for level", filterPath.length);
-    }
-
-    function displayListings(businesses) {
-            const grid = document.getElementById('listings-grid');
-            grid.innerHTML = '';
-            businesses.forEach(business => {
-                const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-lg shadow-md cursor-pointer flex flex-col'; // Added flex-col
-
-                // --- OLD HIERARCHICAL BADGE LOGIC (No changes here) ---
-                const levels = { mains: new Set(), subs: new Set(), tags: new Set() };
-                (business.categories || []).forEach(cat => {
-                    const parts = cat.split(' > ');
-                    levels.mains.add(parts[0]);
-                    if (parts[1]) levels.subs.add(parts[1]);
-                    if (parts[2]) levels.tags.add(parts[2]);
-                });
-                let badges = '';
-                if (filterPath.length === 0) {
-                    badges = Array.from(levels.mains).map(m => `<span data-category="${m}" class="category-badge inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${m}</span>`).join('');
-                } else if (filterPath.length === 1) {
-                    badges = Array.from(levels.subs).filter(s => s !== '').map(s => `<span data-category="${s}" class="category-badge inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${s}</span>`).join('');
-                } else if (filterPath.length === 2) {
-                    badges = Array.from(levels.tags).filter(t => t !== '').map(t => `<span data-category="${t}" class="category-badge inline-block bg-blue-800 rounded-full px-3 py-1 text-sm font-semibold text-yellow-300 cursor-pointer hover:bg-blue-900 mr-2 mb-2">${t}</span>`).join('');
-                }
-
-                // --- NEW ATTRIBUTE TAG BADGE LOGIC ---
-                // This is the new code block you were asking about.
-                const tagsHtml = (business.tags || []).map(tag =>
-                    `<span class="attribute-tag-badge inline-block bg-green-600 rounded-full px-2 py-1 text-xs font-semibold text-white">${tag}</span>`
-                ).join(' ');
-
-
-                // --- COMBINED INNERHTML ---
-                // Now we build the card's HTML with all the pieces.
-                card.innerHTML = `
-                    <div class="flex-grow">
-                        <img src="${business.logo_url || 'https://placehold.co/150x150/png?text=Logo'}" alt="${business.name || 'No Name'}" class="w-full h-32 object-contain rounded-lg mb-4" onerror="this.src='https://placehold.co/150x150/png?text=Logo';">
-                        <h2 class="text-xl font-semibold text-center">${business.name || 'No Name'}</h2>
-                        
-                        <!-- Hierarchical Category Badges -->
-                        <div class="flex justify-center flex-wrap mt-2 gap-2">
-                            ${badges}
-                        </div>
+    <!-- =================================================================== -->
+    <!-- --- FOOTER (Copied from homepage for consistency) --- -->
+    <!-- =================================================================== -->
+    <footer class="bg-gray-800 text-gray-400 mt-16">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About Section -->
+                <div class="md:col-span-2">
+                    <a href="/" class="flex items-center space-x-2">
+                        <img class="h-10 w-auto"
+                            src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                            alt="SupportLocalSLC Logo">
+                        <span class="text-white font-bold text-xl">SupportLocalSLC</span>
+                    </a>
+                    <p class="mt-4 text-sm">Your guide to the best local spots in Salt Lake County. Discover stories,
+                        support dreams.</p>
+                </div>
+                <!-- Navigation Links -->
+                <div>
+                    <h3 class="text-white font-semibold tracking-wider uppercase">Navigate</h3>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li><a href="/" class="hover:text-white">Home</a></li>
+                        <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
+                        <li><a href="#" class="hover:text-white">For Business Owners</a></li>
+                    </ul>
+                </div>
+                <!-- Legal & Connect -->
+                <div>
+                    <h3 class="text-white font-semibold tracking-wider uppercase">Legal</h3>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                    </ul>
+                    <h3 class="text-white font-semibold tracking-wider uppercase mt-6">Connect</h3>
+                    <div class="mt-4 flex space-x-4">
+                        <a href="#" class="hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="hover:text-white"><i class="fab fa-instagram"></i></a>
                     </div>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
+                <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
 
-                    <!-- This is the new section for the green attribute tags -->
-                    <div class="mt-auto pt-2 text-center">
-                        <div class="flex justify-center flex-wrap gap-1">
-                            ${tagsHtml}
-                        </div>
-                    </div>
-                `;
+    <script type="module">
+        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-                // --- EVENT LISTENER (No changes here ) ---
-                card.addEventListener('click', (event) => {
-                    if (event.target.closest('.category-badge') || event.target.closest('.attribute-tag-badge')) {
-                        // We also stop clicks on the new attribute tags from going to the business page
+        let allBusinesses = [];
+        let allCategories = [];
+
+        // --- Main Page Load ---
+               // Replace your entire DOMContentLoaded function with this one.
+                document.addEventListener('DOMContentLoaded', async () => {
+                    updateNavAuth(); // Setup header and nav listeners
+
+                    // --- THIS IS THE CORRECTED QUERY FOR YOUR ACTUAL SCHEMA ---
+                    const [businessesRes, categoriesRes] = await Promise.all([
+                        supabaseClient
+                            .from('businesses')
+                            .select(`
+                *,
+                business_categories ( categories ( id, name, parent_id ) )
+            `)
+                            .eq('territory', 'sandy')
+                            .eq('claim_status', 'approved'),
+                        supabaseClient
+                            .from('categories')
+                            .select('*')
+                            .order('name')
+                    ]);
+                    // --- END OF CORRECTION ---
+
+                    if (businessesRes.error || categoriesRes.error) {
+                        console.error("Error fetching data:", businessesRes.error || categoriesRes.error);
+                        document.getElementById('business-grid').innerHTML = '<p class="text-red-500 col-span-full text-center">Error loading data. Please try again.</p>';
                         return;
                     }
-                    window.location.href = getBusinessUrl('sandy', business.id || '#');
+
+                    // Process the data into a cleaner format
+                    allBusinesses = businessesRes.data.map(biz => ({
+                        ...biz,
+                        // Flatten the nested category structure into a simple array
+                        // This will contain BOTH categories and tags for now.
+                        all_linked_terms: biz.business_categories.map(bc => bc.categories)
+                    }));
+
+                    // We will separate out the main categories for the pills
+                    allCategories = categoriesRes.data.filter(c => c.parent_id !== null); // Assuming tags have a specific parent or are null
+
+                    renderCategoryPills();
+                    renderBusinessGrid(); // Initial render of all businesses
+
+                    // Add listeners to filter controls
+                    document.getElementById('search-input').addEventListener('input', renderBusinessGrid);
+                    document.getElementById('category-pills-container').addEventListener('click', handlePillClick);
                 });
 
-                grid.appendChild(card);
-            });
-
-            updateFilterBar();
-            repopulateCategories(businesses);
-        }
 
 
-    function advanceFilter(level) {
-        filterPath.push(level);
-        filterListings();
-        categorySelect.value = '';
-    }
+        // --- Rendering Functions ---
+            function renderCategoryPills() {
+                const container = document.getElementById('category-pills-container');
 
-    function backFilter() {
-        filterPath.pop();
-        filterListings();
-    }
+                // --- THIS IS THE FIX ---
+                // We filter the 'allCategories' array to only include items that ARE main categories.
+                // We are defining a main category as one that has a parent_id.
+                // We are defining a "Tag" as a category where parent_id is NULL.
+                const mainCategories = allCategories.filter(cat => cat.parent_id !== null);
 
-    function updateFilterBar() {
-        filterBar.innerHTML = '';
-        if (filterPath.length > 0) {
-            const pathText = filterPath.join(' → ');
-            filterBar.innerHTML = `<p class="text-gray-600">${pathText}</p>`;
-            const backBtn = document.createElement('button');
-            backBtn.textContent = 'Back';
-            backBtn.className = 'bg-gray-500 text-white p-2 rounded ml-2';
-            backBtn.onclick = backFilter;
-            filterBar.appendChild(backBtn);
-        }
-    }
+                const pillsHtml = mainCategories.map(cat =>
+                    `<button class="category-pill flex-shrink-0 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white" data-category-id="${cat.id}">
+            ${cat.name}
+        </button>`
+                ).join('');
 
-    function filterListings() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedCategory = filterPath.join(' > ');
-        console.log('Starting filter with selectedCategory:', selectedCategory);
-        const filtered = allBusinesses.filter(business => {
-            const matchesSearch = business.name.toLowerCase().includes(searchTerm) ||
-                (business.categories || []).some(cat => cat.toLowerCase().includes(searchTerm)) ||
-                (business.tags || []).some(tag => tag.toLowerCase().includes(searchTerm)); // <-- ADD THIS LINE
-
-            const matchesCategory = !selectedCategory || (business.categories || []).some(cat => cat.startsWith(selectedCategory) || cat === selectedCategory);
-            console.log(`Business: ${business.name || 'No Name'}, Categories: ${JSON.stringify(business.categories)}, Matches Category: ${matchesCategory}`);
-            return matchesSearch && matchesCategory;
-        });
-        console.log('Filtered businesses count:', filtered.length);
-        displayListings(filtered);
-    }
-
-    function filterToCategory(cat) {
-        filterPath = cat.split(' > ');
-        filterListings();
-    }
-
-    searchInput.addEventListener('input', filterListings);
-    categorySelect.addEventListener('change', () => {
-        const val = categorySelect.value;
-        if (val) {
-            advanceFilter(val);
-        }
-    });
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialCategory = urlParams.get('category');
-    if (initialCategory) {
-        filterToCategory(decodeURIComponent(initialCategory));
-    }
-    loadBusinesses().then(() => {
-        console.log('Load complete, allBusinesses length:', allBusinesses.length);
-        if (allBusinesses.length > 0) {
-            filterListings();
-        } else {
-            console.log('No businesses loaded—check Supabase');
-        }
-    });
-
-    // Add this listener somewhere after the grid element is defined in the DOM
-        const listingsGrid = document.getElementById('listings-grid');
-
-        listingsGrid.addEventListener('click', function (event) {
-            // Check if the clicked element is a category badge
-            const badge = event.target.closest('.category-badge');
-
-            if (badge) {
-                // Stop the click from bubbling up to the card's own click listener
-                event.stopPropagation();
-
-                // Get the category from the data attribute
-                const category = badge.dataset.category;
-
-                // Call your advanceFilter function directly
-                if (category) {
-                    advanceFilter(category);
-                }
+                // The "All" button remains the same.
+                container.innerHTML = `<button class="category-pill active flex-shrink-0 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full" data-category-id="all">All</button>` + pillsHtml;
             }
-        });
 
 
-    updateNavAuth();
-</script>
+        // Replace your entire renderBusinessGrid function with this one.
+            function renderBusinessGrid() {
+                const grid = document.getElementById('business-grid');
+                const searchTerm = document.getElementById('search-input').value.toLowerCase();
+                const activePill = document.querySelector('.category-pill.active');
+
+                // Get the category ID as a number, or 'all' as a string.
+                const activeCategoryId = activePill ? (activePill.dataset.categoryId === 'all' ? 'all' : parseInt(activePill.dataset.categoryId, 10)) : 'all';
+
+                const filteredBusinesses = allBusinesses.filter(biz => {
+                    // Search term filter (no changes here, this part is good)
+                    const matchesSearch = !searchTerm ||
+                        biz.name.toLowerCase().includes(searchTerm) ||
+                        (biz.tagline && biz.tagline.toLowerCase().includes(searchTerm));
+
+                    // --- THIS IS THE CORRECTED CATEGORY FILTER LOGIC ---
+                    const matchesCategory = activeCategoryId === 'all' ||
+                        (biz.all_linked_terms && biz.all_linked_terms.some(term => term && term.id === activeCategoryId));
+
+                    return matchesSearch && matchesCategory;
+                });
+
+                if (filteredBusinesses.length === 0) {
+                    grid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No businesses found matching your criteria.</p>';
+                    return;
+                }
+
+                // The card rendering HTML is correct, no changes needed here.
+                grid.innerHTML = filteredBusinesses.map(biz => `
+                    <a href="business.html?id=${biz.id}" class="block bg-white rounded-lg shadow-md overflow-hidden group border border-gray-200 hover:shadow-xl hover:border-blue-500 transition-all duration-300">
+                        <div class="h-40 bg-gray-50 flex items-center justify-center overflow-hidden">
+                            <img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}" alt="${biz.name} Logo" class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg truncate text-gray-800">${biz.name}</h3>
+                            <p class="text-sm text-gray-600 truncate">${biz.tagline || 'Local Sandy Business'}</p>
+                        </div>
+                    </a>
+                ` ).join('');
+            }
 
 
+        // --- Event Handlers ---
+        function handlePillClick(e) {
+            if (e.target.classList.contains('category-pill')) {
+                // Remove active state from all pills
+                document.querySelectorAll('.category-pill').forEach(pill => {
+                    pill.classList.remove('active', 'bg-blue-600', 'text-white');
+                    pill.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                // Add active state to the clicked pill
+                e.target.classList.add('active', 'bg-blue-600', 'text-white');
+                e.target.classList.remove('bg-gray-200', 'text-gray-700');
+
+                renderBusinessGrid(); // Re-render the grid with the new filter
+            }
+        }
+
+        // --- Navigation Auth Logic ---
+        function updateNavAuth() {
+            const authLink = document.getElementById('auth-link');
+            const mobileAuthLink = document.getElementById('mobile-auth-link');
+            const isLoggedIn = sessionStorage.getItem('supabase_session');
+
+            if (isLoggedIn) {
+                authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
+                mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
+            } else {
+                authLink.href = '/login.html'; authLink.textContent = 'Login';
+                mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
+            }
+
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+
+            document.addEventListener('click', (e) => {
+                const isDropdownToggle = e.target.matches('[data-toggle="dropdown"]');
+                if (!isDropdownToggle && e.target.closest('.dropdown') === null) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+                    return;
+                }
+                if (isDropdownToggle) {
+                    e.preventDefault();
+                    const dropdownMenu = e.target.nextElementSibling;
+                    dropdownMenu.classList.toggle('hidden');
+                }
+            });
+        }
+    </script>
 </body>
+
 </html>
