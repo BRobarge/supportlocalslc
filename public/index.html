@@ -4,78 +4,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SupportLocalSLC</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
-    <!-- Replace with your FontAwesome kit if using icons -->
-    <script type="module" src="/shared/config.js"></script>
+    <title>Support Local SLC - Find Deals, Support Community</title>
     <link href="/shared/output.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
+        crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .swiper-button-next,
+        .swiper-button-prev {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            color: #111827;
+            transition: transform 0.1s ease-in-out;
+        }
+
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+            transform: scale(1.1);
+        }
+
+        .swiper-button-next:after,
+        .swiper-button-prev:after {
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .swiper-button-disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .hero-bg {
+            background-image: url('https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .object-left-center {
+            object-position: left center;
+        }
+
+    </style>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-white font-sans">
 
-    <!-- Header with Branding -->
-    <header class="shadow-md">
-        <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
-            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg"
-                alt="Support Local SLC Banner" class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
+    <header x-data="{ mobileMenuOpen: false, directoryOpen: false, offersOpen: false }"
+        class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/"><img
+                    src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                    alt="SupportLocalSLC Logo" class="h-10"></a>
+            <div class="hidden lg:flex items-center space-x-8">
+                <div @click.away="directoryOpen = false" class="relative">
+                    <button @click="directoryOpen = !directoryOpen"
+                        class="flex items-center text-gray-700 hover:text-blue-800 font-semibold"><span>Directory</span><i
+                            class="fas fa-chevron-down ml-2 text-xs"></i></button>
+                    <div x-show="directoryOpen" x-transition
+                        class="absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-20"><a href="/sandy/index.html"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Sandy</a><a href="#"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Draper (coming soon )</a>
+                    </div>
+                </div>
+                <div @click.away="offersOpen = false" class="relative">
+                    <button @click="offersOpen = !offersOpen"
+                        class="flex items-center text-gray-700 hover:text-blue-800 font-semibold"><span>Offers</span><i
+                            class="fas fa-chevron-down ml-2 text-xs"></i></button>
+                    <div x-show="offersOpen" x-transition
+                        class="absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-20"><a
+                            href="/sandy/index.html?offers=true"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Offers in Sandy</a></div>
+                </div>
+                <a href="#" class="text-gray-700 hover:text-blue-800 font-semibold">For Business Owners</a>
+            </div>
+            <div class="flex items-center">
+                <a id="auth-link" href="/login.html"
+                    class="hidden lg:block bg-blue-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0">Login</a>
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden ml-4 text-2xl text-gray-800"><i
+                        :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i></button>
+            </div>
+        </nav>
+        <div x-show="mobileMenuOpen" class="lg:hidden">
+            <div class="px-5 pb-5 space-y-3"><a href="/sandy/index.html"
+                    class="block text-gray-700 font-semibold hover:text-blue-800">Directory</a><a
+                    href="/sandy/index.html?offers=true"
+                    class="block text-gray-700 font-semibold hover:text-blue-800">Offers</a><a href="#"
+                    class="block text-gray-700 font-semibold hover:text-blue-800">For Business Owners</a><a
+                    id="mobile-auth-link" href="/login.html" class="block pt-3 text-blue-600 font-bold">Login</a></div>
         </div>
     </header>
 
-    <!-- Mission Statement -->
-    <section class="container mx-auto p-4 text-center">
-        <h2 class="text-2xl font-semibold mb-4">Our Mission</h2>
-        <p class="text-gray-700 mb-4">We connect residents with small businesses through easy discovery, special offers,
-            and community building. Find local gems, claim deals, and help your neighborhood thrive!</p>
-    </section>
+    <main>
+        <!-- Hero Section -->
+        <section class="relative hero-bg text-white">
+            <div class="absolute inset-0 bg-gray-800 bg-opacity-70"></div>
+            <div class="relative container mx-auto px-6 py-24 text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">Discover Their Story.
+                    Support Their Dream.</h1>
+                <p class="mt-4 text-lg font-semibold max-w-3xl mx-auto">Go beyond the storefront. Connect with the passionate
+                    local owners that make our community unique, and enjoy exclusive offers as a thank you for your support.</p>
+                <div class="mt-8 max-w-2xl mx-auto">
+                    <div class="relative">
+                        <input type="search" placeholder="Discover a business, story, or offer..."
+                            class="w-full p-4 pr-12 rounded-lg text-gray-800 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <!-- Instructions/Video Section -->
-    <section class="container mx-auto p-4 text-center">
-        <h2 class="text-2xl font-semibold mb-4">How It Works</h2>
-        <p class="text-gray-700 mb-4">Watch this short video or follow the steps below to get started.</p>
-        <!-- Placeholder for video; replace src with your actual video URL -->
-        <video controls class="mx-auto w-full max-w-lg mb-4">
-            <source src="https://example.com/your-video.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <ul class="text-left max-w-lg mx-auto list-disc pl-6 text-gray-700">
-            <li>Select your city below to browse local businesses.</li>
-            <li>Use advanced filters to find categories, sub-categories, and tags.</li>
-            <li>Create a free account to claim offers and redeem them at businesses.</li>
-            <li>Business owners: Claim your listing and upgrade for more visibility!</li>
-        </ul>
-    </section>
+    
+        <!-- =================================================================== -->
+        <!-- --- FIX: SECTIONS ARE NOW IN THE CORRECT ORDER AND HAVE CORRECT BGs --- -->
+        <!-- =================================================================== -->
+    
+        <!-- Featured Listings Carousel -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Featured Businesses</h2>
+                <div class="swiper" id="featured-listings-swiper">
+                    <div class="swiper-wrapper pb-4" id="featured-listings-container"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+            </div>
+        </section>
+    
+        <!-- "For Business Owners" CTA -->
+        <section id="for-business" class="relative bg-white py-20 lg:py-24">
+        
+            <!-- Full-width Background Image -->
+            <div class="absolute inset-0 z-0">
+                <img class="w-full h-full object-cover object-center"
+                    src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/two-women-ready-to-serve-behind-the-counter-at-a-c-2024-10-19-13-01-44-utc.jpg"
+                    alt="Local business owners ready to serve customers">
+            </div>
+        
+            <!-- Dark Overlay for Readability -->
+            <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        
+            <!-- Centering Container for the Content -->
+            <div class="relative z-10 container mx-auto px-6 flex items-center min-h-[360px]">
+        
+                <!-- FIX: This div now has ml-auto to push it to the right -->
+                <div class="w-full max-w-xl lg:w-1/2 lg:ml-auto">
+                    <div class="bg-white/95 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-2xl">
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 text-center lg:text-left">Do you own a local
+                            business?</h2>
+                        <p class="mt-4 text-lg text-gray-600 text-center lg:text-left">Get discovered by your community. It's
+                            free to get started.</p>
+                        <div class="mt-8 text-center lg:text-left">
+                            <a href="/dashboard.html"
+                                class="inline-block bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition-transform hover:scale-105 text-lg">
+                                Add Your Business
+                            </a>
+                        </div>
+                    </div>
+                </div>
+        
+            </div>
+        </section>
 
-    <!-- City Selector -->
-    <section class="container mx-auto p-4 text-center">
-        <h2 class="text-2xl font-semibold mb-4">Choose Your City</h2>
-        <div class="flex flex-wrap justify-center gap-4">
-            <a href="/sandy/index.html" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">Sandy</a>
-            <!-- Add more cities as you expand, e.g.: <a href="/draper/index.html" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">Draper</a> -->
+
+
+
+
+    
+        <!-- Latest Offers Carousel -->
+        <section id="offers" class="py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Latest Offers</h2>
+                <div class="swiper" id="latest-offers-swiper">
+                    <div class="swiper-wrapper pb-4" id="latest-offers-container"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+            </div>
+        </section>
+    
+    </main>
+
+
+    <footer class="bg-gray-800 text-gray-400">
+        <div class="container mx-auto px-6 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div class="md:col-span-1"><img
+                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                        alt="SupportLocalSLC Logo" class="h-10 mb-4">
+                    <p class="text-sm">Your guide to the best local spots in Salt Lake County.</p>
+                </div>
+                <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div>
+                        <h4 class="font-semibold text-white mb-4">Navigate</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="hover:text-white">Home</a></li>
+                            <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
+                            <li><a href="#for-business" class="hover:text-white">For Business Owners</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-white mb-4">Legal</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                            <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-white mb-4">Connect</h4>
+                        <div class="flex space-x-4"><a href="#" class="text-xl hover:text-white"><i
+                                    class="fab fa-facebook-f"></i></a><a href="#" class="text-xl hover:text-white"><i
+                                    class="fab fa-instagram"></i></a></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
+            </div>
         </div>
-    </section>
-
-    <!-- Global Login/Create Account -->
-    <section class="container mx-auto p-4 text-center">
-        <h2 class="text-2xl font-semibold mb-4">Join the Community</h2>
-        <p class="text-gray-700 mb-4">Login or create a free account to claim offers and manage your favorites.</p>
-        <a href="/login.html" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600">Login / Sign
-            Up</a>
-    </section>
-
-    <!-- Business Funnel Link -->
-    <section class="container mx-auto p-4 text-center">
-        <h2 class="text-2xl font-semibold mb-4">For Business Owners</h2>
-        <p class="text-gray-700 mb-4">Claim your free listing, update details, and upgrade to reach more customers.</p>
-        <a href="/claim-business.html" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600">Claim
-            Your Business</a>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-blue-800 text-white p-4 text-center mt-8">
-        <p>&copy; 2025 SupportLocalSLC. All rights reserved.</p>
     </footer>
 
+    <script type="module">
+        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        // FIX: Corrected Swiper initialization
+        function initSwiper(selector) {
+            new Swiper(selector, {
+                slidesPerView: 1.2, spaceBetween: 16,
+                navigation: { nextEl: `${selector} .swiper-button-next`, prevEl: `${selector} .swiper-button-prev`, },
+                breakpoints: { 640: { slidesPerView: 2.5, spaceBetween: 20 }, 768: { slidesPerView: 3.5, spaceBetween: 24 }, 1280: { slidesPerView: 4.5, spaceBetween: 32 }, }
+            });
+        }
+
+        async function loadFeaturedListings() {
+            const container = document.getElementById('featured-listings-container');
+            container.innerHTML = '<p class="text-gray-400">Loading featured businesses...</p>';
+            const { data, error } = await supabaseClient.rpc('get_random_pro_businesses', { limit_count: 15 });
+            if (error || !data || data.length === 0) { container.innerHTML = '<p class="text-gray-400 col-span-full">No featured businesses to show right now.</p>'; return; }
+            container.innerHTML = data.map(biz => `<div class="swiper-slide"><a href="/${biz.territory}/business.html?id=${biz.id}" class="block bg-white rounded-xl shadow-md overflow-hidden group border border-gray-700 hover:shadow-lg hover:border-blue-500 transition-all duration-300"><div class="h-48 bg-gray-300 flex items-center justify-center overflow-hidden"><img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}" alt="${biz.name} Logo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"></div><div class="p-4"><h3 class="font-bold text-lg truncate text-gray-800">${biz.name}</h3><p class="text-sm text-gray-600 truncate">${biz.tagline || '&nbsp;'}</p></div></a></div>`).join('');
+            initSwiper('#featured-listings-swiper');
+        }
+
+        async function loadLatestOffers() {
+            const container = document.getElementById('latest-offers-container');
+            container.innerHTML = '<p class="text-gray-400">Loading latest offers...</p>';
+            // FIX: Using the new random offers function
+            const { data, error } = await supabaseClient.rpc('get_random_offers', { limit_count: 10 });
+            if (error || !data || data.length === 0) { container.innerHTML = '<p class="text-gray-400 col-span-full">No special offers available right now.</p>'; return; }
+            container.innerHTML = data.map(offer => `<div class="swiper-slide h-auto"><a href="/${offer.business_territory}/business.html?id=${offer.business_id}" class="block bg-white rounded-xl shadow-md h-full group border border-gray-700 hover:shadow-lg hover:border-blue-500 transition-all duration-300 p-4 flex flex-col"><div class="flex items-center mb-4"><img src="${offer.business_logo_url || 'https://placehold.co/100/EEE/31343C?text=Logo'}" alt="${offer.business_name} Logo" class="w-12 h-12 rounded-full object-cover mr-4 border-2 border-white flex-shrink-0"><p class="font-semibold text-gray-800 flex-grow truncate">${offer.business_name}</p></div><div class="flex-grow flex flex-col"><h3 class="font-bold text-lg text-gray-900 group-hover:text-blue-800 transition-colors">${offer.title}</h3><p class="text-sm text-gray-600 mt-2 line-clamp-3">${offer.description}</p></div></a></div>`).join('');
+            initSwiper('#latest-offers-swiper');
+        }
+
+        async function updateNavAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const authLink = document.getElementById('auth-link');
+            const mobileAuthLink = document.getElementById('mobile-auth-link');
+            if (session) {
+                authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
+                mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
+            } else {
+                authLink.href = '/login.html'; authLink.textContent = 'Login';
+                mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFeaturedListings();
+            loadLatestOffers();
+            updateNavAuth();
+        });
+    </script>
 </body>
 
 </html>
