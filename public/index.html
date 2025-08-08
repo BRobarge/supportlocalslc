@@ -49,7 +49,8 @@
         .object-left-center {
             object-position: left center;
         }
-
+        
+        
     </style>
 </head>
 
@@ -102,24 +103,88 @@
 
     <main>
         <!-- Hero Section -->
-        <section class="relative hero-bg text-white">
-            <div class="absolute inset-0 bg-gray-800 bg-opacity-70"></div>
-            <div class="relative container mx-auto px-6 py-24 text-center">
+        <section id="hero-section" class="relative text-white bg-cover bg-[center_30%] bg-fixed">
+        
+            <!-- The gradient overlay is a simple, single div -->
+            <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/60 to-blue-900/30"></div>
+        
+            <!-- The content is positioned on top -->
+            <div
+                class="relative z-10 container mx-auto px-6 py-24 text-center flex flex-col items-center justify-center min-h-[50vh]">
                 <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">Discover Their Story.
                     Support Their Dream.</h1>
-                <p class="mt-4 text-lg font-semibold max-w-3xl mx-auto">Go beyond the storefront. Connect with the passionate
+                <p class="mt-4 text-lg text-white max-w-3xl mx-auto">Go beyond the storefront. Connect with the passionate
                     local owners that make our community unique, and enjoy exclusive offers as a thank you for your support.</p>
-                <div class="mt-8 max-w-2xl mx-auto">
-                    <div class="relative">
-                        <input type="search" placeholder="Discover a business, story, or offer..."
-                            class="w-full p-4 pr-12 rounded-lg text-gray-800 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- --- Discover Your City Section --- -->
+        <!-- =================================================================== -->
+        <!-- FIX: Reduced vertical padding from py-12 to py-8 -->
+        <section id="city-selector" class="bg-white py-8">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl font-bold text-gray-800">Discover Your City</h2>
+                <p class="mt-2 text-gray-600">Select a community to start exploring local businesses and offers.</p>
+        
+                <div class="mt-8 flex justify-center">
+                    <!-- 
+                        FIX: Using `items-baseline` to align the text content of each button.
+                        The `min-h-[72px]` on the container ensures there's room for the badge.
+                    -->
+                    <div class="flex items-baseline space-x-4 overflow-x-auto pb-4 -mx-6 px-6 min-h-[72px]">
+        
+                        <!-- Active City Link -->
+                        <!-- FIX: Added `pt-3` to give it the same invisible top space as the others -->
+                        <div class="flex-shrink-0 pt-3">
+                            <a href="/sandy/index.html"
+                                class="block px-8 py-4 bg-blue-600 text-white font-bold text-lg rounded-lg shadow-md hover:bg-blue-700 transition-transform hover:scale-105">
+                                Sandy
+                            </a>
+                        </div>
+        
+                        <!-- Coming Soon City -->
+                        <!-- FIX: Using `pt-3 pr-3` for consistent spacing -->
+                        <div class="relative flex-shrink-0 pt-3 pr-3">
+                            <button disabled
+                                class="px-8 py-4 bg-gray-300 text-gray-500 font-bold text-lg rounded-lg cursor-not-allowed">Draper</button>
+                            <span
+                                class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full transform rotate-12">SOON</span>
+                        </div>
+        
+                        <div class="relative flex-shrink-0 pt-3 pr-3">
+                            <button disabled
+                                class="px-8 py-4 bg-gray-300 text-gray-500 font-bold text-lg rounded-lg cursor-not-allowed">Riverton</button>
+                            <span
+                                class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full transform rotate-12">SOON</span>
+                        </div>
+        
+                        <div class="relative flex-shrink-0 pt-3 pr-3">
+                            <button disabled
+                                class="px-8 py-4 bg-gray-300 text-gray-500 font-bold text-lg rounded-lg cursor-not-allowed">South
+                                Jordan</button>
+                            <span
+                                class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full transform rotate-12">SOON</span>
+                        </div>
+        
+                        <div class="relative flex-shrink-0 pt-3 pr-3">
+                            <button disabled
+                                class="px-8 py-4 bg-gray-300 text-gray-500 font-bold text-lg rounded-lg cursor-not-allowed">Midvale</button>
+                            <span
+                                class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full transform rotate-12">SOON</span>
+                        </div>
+        
                     </div>
                 </div>
             </div>
         </section>
 
-    
+
+
+
+
+
+
         <!-- =================================================================== -->
         <!-- --- FIX: SECTIONS ARE NOW IN THE CORRECT ORDER AND HAVE CORRECT BGs --- -->
         <!-- =================================================================== -->
@@ -243,6 +308,39 @@
             });
         }
 
+        // Add this new function inside your <script type="module">
+            // Replace your existing setupDynamicHero function with this one
+                function setupDynamicHero() {
+                        const heroImages = [
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/portrait-of-one-happy-young-hispanic-waiter-standi-2025-04-06-11-04-22-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/a-female-hairdresser-portrait-looking-confidence-2025-01-08-09-13-45-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/beautiful-young-couple-cooking-healthy-food-togeth-2025-03-16-03-18-24-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/family-portrait-of-senior-craftsman-with-daughter-2025-04-03-21-55-11-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/man-and-woman-in-the-pottery-shop-2025-03-13-05-42-26-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/portrait-of-male-and-female-coffee-shop-owners-sta-2024-10-22-05-35-40-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/portrait-of-two-women-starting-new-coffee-shop-or-2024-10-21-02-52-46-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/were-the-best-barbers-in-the-town-2025-04-06-08-12-55-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/young-pretty-dark-haired-asian-woman-owning-cafete-2024-10-17-16-30-29-utc.jpg',
+                        ];
+
+                        // Re-enable randomization to make the page feel fresh
+                        const randomIndex = Math.floor(Math.random() * heroImages.length);
+                        const selectedImage = heroImages[randomIndex];
+
+                        // Target the main <section> element
+                        const heroSection = document.getElementById('hero-section');
+
+                        if (heroSection) {
+                            // Set the background image style directly on the section
+                            heroSection.style.backgroundImage = `url('${selectedImage}')`;
+                        }
+                    }
+
+
+
+
+
+
         async function loadFeaturedListings() {
             const container = document.getElementById('featured-listings-container');
             container.innerHTML = '<p class="text-gray-400">Loading featured businesses...</p>';
@@ -262,20 +360,49 @@
             initSwiper('#latest-offers-swiper');
         }
 
-        async function updateNavAuth() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const authLink = document.getElementById('auth-link');
-            const mobileAuthLink = document.getElementById('mobile-auth-link');
-            if (session) {
-                authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
-                mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
-            } else {
-                authLink.href = '/login.html'; authLink.textContent = 'Login';
-                mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
+        // Replace the entire updateNavAuth function with this one
+            function updateNavAuth() {
+                const authLink = document.getElementById('auth-link');
+                const mobileAuthLink = document.getElementById('mobile-auth-link');
+                const isLoggedIn = sessionStorage.getItem('supabase_session');
+
+                if (isLoggedIn) {
+                    authLink.href = '/dashboard.html';
+                    authLink.textContent = 'Dashboard';
+                    mobileAuthLink.href = '/dashboard.html';
+                    mobileAuthLink.textContent = 'Dashboard';
+                } else {
+                    authLink.href = '/login.html';
+                    authLink.textContent = 'Login';
+                    mobileAuthLink.href = '/login.html';
+                    mobileAuthLink.textContent = 'Login';
+                }
+
+                // --- THIS IS THE FIX FOR MOBILE DROPDOWNS ---
+                // We select all dropdown toggles, both desktop and mobile
+                const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+                dropdownToggles.forEach(toggle => {
+                    const dropdownMenu = toggle.nextElementSibling;
+                    toggle.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        dropdownMenu.classList.toggle('hidden');
+                    });
+                });
+
+                // Close dropdowns if clicking outside
+                window.addEventListener('click', (e) => {
+                    dropdownToggles.forEach(toggle => {
+                        const dropdownMenu = toggle.nextElementSibling;
+                        if (!toggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                            dropdownMenu.classList.add('hidden');
+                        }
+                    });
+                });
             }
-        }
+
 
         document.addEventListener('DOMContentLoaded', () => {
+            setupDynamicHero();
             loadFeaturedListings();
             loadLatestOffers();
             updateNavAuth();
