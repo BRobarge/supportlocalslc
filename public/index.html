@@ -50,56 +50,100 @@
             object-position: left center;
         }
         
+        /* Add these inside your existing <style> block in the <head> */
+        .swiper-button-next,
+        .swiper-button-prev {
+            display: none !important;
+        }
+
         
     </style>
 </head>
 
 <body class="bg-white font-sans">
 
-    <header x-data="{ mobileMenuOpen: false, directoryOpen: false, offersOpen: false }"
-        class="bg-white shadow-sm sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <a href="/"><img
-                    src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                    alt="SupportLocalSLC Logo" class="h-10"></a>
-            <div class="hidden lg:flex items-center space-x-8">
-                <div @click.away="directoryOpen = false" class="relative">
-                    <button @click="directoryOpen = !directoryOpen"
-                        class="flex items-center text-gray-700 hover:text-blue-800 font-semibold"><span>Directory</span><i
-                            class="fas fa-chevron-down ml-2 text-xs"></i></button>
-                    <div x-show="directoryOpen" x-transition
-                        class="absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-20"><a href="/sandy/index.html"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Sandy</a><a href="#"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Draper (coming soon )</a>
+    <!-- =================================================================== -->
+    <!-- --- HEADER / NAVIGATION --- -->
+    <!-- =================================================================== -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex-shrink-0">
+                    <img class="h-12 w-auto"
+                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                        alt="SupportLocalSLC Logo">
+                </a>
+    
+                <!-- Desktop Navigation -->
+                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8">
+                    <!-- Directory Dropdown -->
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">
+                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
+                        </a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon )</a>
+                        </div>
+                    </div>
+                    <!-- Offers Dropdown -->
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">
+                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
+                        </a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html?filter=offers"
+                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                        </div>
+                    </div>
+                    <a href="#" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
+                </nav>
+    
+                <!-- Login/Dashboard Button (Desktop) -->
+                <div class="hidden lg:block">
+                    <a id="auth-link" href="/login.html"
+                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
+                </div>
+    
+                <!-- Mobile Menu Button (Hamburger) -->
+                <div class="lg:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+    
+            <!-- Mobile Menu (Hidden by default) -->
+            <nav id="mobile-menu" class="lg:hidden hidden mt-4">
+                <!-- Directory Dropdown (Mobile) -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold"
+                        data-toggle="dropdown">Directory <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
                     </div>
                 </div>
-                <div @click.away="offersOpen = false" class="relative">
-                    <button @click="offersOpen = !offersOpen"
-                        class="flex items-center text-gray-700 hover:text-blue-800 font-semibold"><span>Offers</span><i
-                            class="fas fa-chevron-down ml-2 text-xs"></i></button>
-                    <div x-show="offersOpen" x-transition
-                        class="absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-20"><a
-                            href="/sandy/index.html?offers=true"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Offers in Sandy</a></div>
+                <!-- Offers Dropdown (Mobile) -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">Offers
+                        <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                    </div>
                 </div>
-                <a href="#" class="text-gray-700 hover:text-blue-800 font-semibold">For Business Owners</a>
-            </div>
-            <div class="flex items-center">
-                <a id="auth-link" href="/login.html"
-                    class="hidden lg:block bg-blue-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0">Login</a>
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden ml-4 text-2xl text-gray-800"><i
-                        :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i></button>
-            </div>
-        </nav>
-        <div x-show="mobileMenuOpen" class="lg:hidden">
-            <div class="px-5 pb-5 space-y-3"><a href="/sandy/index.html"
-                    class="block text-gray-700 font-semibold hover:text-blue-800">Directory</a><a
-                    href="/sandy/index.html?offers=true"
-                    class="block text-gray-700 font-semibold hover:text-blue-800">Offers</a><a href="#"
-                    class="block text-gray-700 font-semibold hover:text-blue-800">For Business Owners</a><a
-                    id="mobile-auth-link" href="/login.html" class="block pt-3 text-blue-600 font-bold">Login</a></div>
+                <a href="#" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
+                <hr class="my-2">
+                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
+            </nav>
         </div>
     </header>
+
 
     <main>
         <!-- Hero Section -->
@@ -410,67 +454,49 @@
         }
 
         // Replace your entire updateNavAuth function with this one
-            function updateNavAuth() {
-                // --- Part 1: Handle Login/Dashboard Button State (No changes here) ---
-                const authLink = document.getElementById('auth-link');
-                const mobileAuthLink = document.getElementById('mobile-auth-link');
-                const isLoggedIn = sessionStorage.getItem('supabase_session');
+            // Replace your entire updateNavAuth function with this one.
+                function updateNavAuth() {
+                    // --- Part 1: Handle Login/Dashboard Button State (No changes needed) ---
+                    const authLink = document.getElementById('auth-link');
+                    const mobileAuthLink = document.getElementById('mobile-auth-link');
+                    const isLoggedIn = sessionStorage.getItem('supabase_session');
 
-                if (isLoggedIn) {
-                    authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
-                    mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
-                } else {
-                    authLink.href = '/login.html'; authLink.textContent = 'Login';
-                    mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
+                    if (isLoggedIn) {
+                        authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
+                        mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
+                    } else {
+                        authLink.href = '/login.html'; authLink.textContent = 'Login';
+                        mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
+                    }
+
+                    // --- Part 2: The Corrected Dropdown Logic ---
+                    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                    const mobileMenu = document.getElementById('mobile-menu');
+
+                    // Toggle the main mobile menu visibility
+                    mobileMenuBtn.addEventListener('click', () => {
+                        mobileMenu.classList.toggle('hidden');
+                    });
+
+                    // Use Event Delegation for all dropdowns (Desktop and Mobile)
+                    document.addEventListener('click', (e) => {
+                        const isDropdownToggle = e.target.matches('[data-toggle="dropdown"]');
+
+                        // If the click is not on a dropdown toggle, close all dropdowns
+                        if (!isDropdownToggle && e.target.closest('.dropdown') === null) {
+                            document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+                            return;
+                        }
+
+                        // If it IS a dropdown toggle, handle it
+                        if (isDropdownToggle) {
+                            e.preventDefault();
+                            const dropdownMenu = e.target.nextElementSibling;
+                            dropdownMenu.classList.toggle('hidden');
+                        }
+                    });
                 }
 
-                // --- Part 2: Dropdown Logic for Desktop AND Mobile ---
-
-                // Function to set up listeners for a given menu (desktop or mobile)
-                const setupDropdowns = (menuContainerSelector) => {
-                    const dropdownToggles = document.querySelectorAll(`${menuContainerSelector} .dropdown-toggle`);
-                    dropdownToggles.forEach(toggle => {
-                        const dropdownMenu = toggle.nextElementSibling;
-                        toggle.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            // Close other open dropdowns first
-                            document.querySelectorAll(`${menuContainerSelector} .dropdown-menu`).forEach(menu => {
-                                if (menu !== dropdownMenu) {
-                                    menu.classList.add('hidden');
-                                }
-                            });
-                            // Then toggle the current one
-                            dropdownMenu.classList.toggle('hidden');
-                        });
-                    });
-                };
-
-                // Setup for the desktop menu immediately
-                setupDropdowns('#desktop-nav');
-
-                // Setup for the mobile menu when the hamburger is clicked
-                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-                const mobileMenu = document.getElementById('mobile-menu');
-                mobileMenuBtn.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('hidden');
-                    // IMPORTANT: Setup dropdowns for the mobile menu *after* it becomes visible
-                    if (!mobileMenu.classList.contains('hidden')) {
-                        setupDropdowns('#mobile-menu');
-                    }
-                });
-
-                // Global click listener to close menus
-                window.addEventListener('click', (e) => {
-                    if (!e.target.closest('.dropdown') && !e.target.closest('#mobile-menu-btn')) {
-                        document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
-                    }
-                    if (!e.target.closest('nav')) {
-                        if (!mobileMenu.classList.contains('hidden')) {
-                            mobileMenu.classList.add('hidden');
-                        }
-                    }
-                });
-            }
 
 
 
