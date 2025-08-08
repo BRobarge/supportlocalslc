@@ -301,12 +301,37 @@
 
         // FIX: Corrected Swiper initialization
         function initSwiper(selector) {
-            new Swiper(selector, {
-                slidesPerView: 1.2, spaceBetween: 16,
-                navigation: { nextEl: `${selector} .swiper-button-next`, prevEl: `${selector} .swiper-button-prev`, },
-                breakpoints: { 640: { slidesPerView: 2.5, spaceBetween: 20 }, 768: { slidesPerView: 3.5, spaceBetween: 24 }, 1280: { slidesPerView: 4.5, spaceBetween: 32 }, }
-            });
-        }
+                new Swiper(selector, {
+                    // How many slides to show at once
+                    slidesPerView: 2.2, // Show 2.2 slides on mobile
+                    spaceBetween: 16,   // Space between slides
+
+                    // Responsive breakpoints
+                    breakpoints: {
+                        // when window width is >= 640px (sm)
+                        640: {
+                            slidesPerView: 3,
+                            spaceBetween: 20
+                        },
+                        // when window width is >= 1024px (lg)
+                        1024: {
+                            slidesPerView: 4,
+                            spaceBetween: 24
+                        }
+                    },
+
+                    // --- THIS IS THE FIX ---
+                    // Disable the navigation arrows
+                    navigation: false,
+
+                    // Enable the scrollbar
+                    scrollbar: {
+                        el: '.swiper-scrollbar',
+                        hide: false, // Make scrollbar always visible
+                        draggable: true,
+                    },
+                });
+            }
 
         // Add this new function inside your <script type="module">
             // Replace your existing setupDynamicHero function with this one
@@ -341,14 +366,38 @@
 
 
 
-        async function loadFeaturedListings() {
-            const container = document.getElementById('featured-listings-container');
-            container.innerHTML = '<p class="text-gray-400">Loading featured businesses...</p>';
-            const { data, error } = await supabaseClient.rpc('get_random_pro_businesses', { limit_count: 15 });
-            if (error || !data || data.length === 0) { container.innerHTML = '<p class="text-gray-400 col-span-full">No featured businesses to show right now.</p>'; return; }
-            container.innerHTML = data.map(biz => `<div class="swiper-slide"><a href="/${biz.territory}/business.html?id=${biz.id}" class="block bg-white rounded-xl shadow-md overflow-hidden group border border-gray-700 hover:shadow-lg hover:border-blue-500 transition-all duration-300"><div class="h-48 bg-gray-300 flex items-center justify-center overflow-hidden"><img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}" alt="${biz.name} Logo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"></div><div class="p-4"><h3 class="font-bold text-lg truncate text-gray-800">${biz.name}</h3><p class="text-sm text-gray-600 truncate">${biz.tagline || '&nbsp;'}</p></div></a></div>`).join('');
-            initSwiper('#featured-listings-swiper');
-        }
+        // Replace your entire loadFeaturedListings function with this one.
+            async function loadFeaturedListings() {
+                const container = document.getElementById('featured-listings-container');
+                container.innerHTML = '<p class="text-gray-400">Loading featured businesses...</p>';
+                const { data, error } = await supabaseClient.rpc('get_random_pro_businesses', { limit_count: 15 });
+                if (error || !data || data.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 col-span-full">No featured businesses to show right now.</p>';
+                    return;
+                }
+
+                // --- THIS IS THE CORRECTED LINE ---
+                container.innerHTML = data.map(biz =>
+                    `<div class="swiper-slide">
+                        <a href="/${biz.territory}/business.html?id=${biz.id}" class="block bg-white rounded-xl shadow-md overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-blue-500 transition-all duration-300">
+                            <div class="h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                <!-- FIX: Changed object-cover to object-contain and added p-2 -->
+                                <img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}" 
+                                    alt="${biz.name} Logo" 
+                                    class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300">
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg truncate text-gray-800">${biz.name}</h3>
+                                <p class="text-sm text-gray-600 truncate">${biz.tagline || '&nbsp;'}</p>
+                            </div>
+                        </a>
+                    </div>`
+                ).join('');
+                // --- END OF CORRECTION ---
+
+                initSwiper('#featured-listings-swiper');
+            }
+
 
         async function loadLatestOffers() {
             const container = document.getElementById('latest-offers-container');
@@ -360,45 +409,69 @@
             initSwiper('#latest-offers-swiper');
         }
 
-        // Replace the entire updateNavAuth function with this one
+        // Replace your entire updateNavAuth function with this one
             function updateNavAuth() {
+                // --- Part 1: Handle Login/Dashboard Button State (No changes here) ---
                 const authLink = document.getElementById('auth-link');
                 const mobileAuthLink = document.getElementById('mobile-auth-link');
                 const isLoggedIn = sessionStorage.getItem('supabase_session');
 
                 if (isLoggedIn) {
-                    authLink.href = '/dashboard.html';
-                    authLink.textContent = 'Dashboard';
-                    mobileAuthLink.href = '/dashboard.html';
-                    mobileAuthLink.textContent = 'Dashboard';
+                    authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
+                    mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
                 } else {
-                    authLink.href = '/login.html';
-                    authLink.textContent = 'Login';
-                    mobileAuthLink.href = '/login.html';
-                    mobileAuthLink.textContent = 'Login';
+                    authLink.href = '/login.html'; authLink.textContent = 'Login';
+                    mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
                 }
 
-                // --- THIS IS THE FIX FOR MOBILE DROPDOWNS ---
-                // We select all dropdown toggles, both desktop and mobile
-                const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-                dropdownToggles.forEach(toggle => {
-                    const dropdownMenu = toggle.nextElementSibling;
-                    toggle.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        dropdownMenu.classList.toggle('hidden');
-                    });
-                });
+                // --- Part 2: Dropdown Logic for Desktop AND Mobile ---
 
-                // Close dropdowns if clicking outside
-                window.addEventListener('click', (e) => {
+                // Function to set up listeners for a given menu (desktop or mobile)
+                const setupDropdowns = (menuContainerSelector) => {
+                    const dropdownToggles = document.querySelectorAll(`${menuContainerSelector} .dropdown-toggle`);
                     dropdownToggles.forEach(toggle => {
                         const dropdownMenu = toggle.nextElementSibling;
-                        if (!toggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                            dropdownMenu.classList.add('hidden');
-                        }
+                        toggle.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            // Close other open dropdowns first
+                            document.querySelectorAll(`${menuContainerSelector} .dropdown-menu`).forEach(menu => {
+                                if (menu !== dropdownMenu) {
+                                    menu.classList.add('hidden');
+                                }
+                            });
+                            // Then toggle the current one
+                            dropdownMenu.classList.toggle('hidden');
+                        });
                     });
+                };
+
+                // Setup for the desktop menu immediately
+                setupDropdowns('#desktop-nav');
+
+                // Setup for the mobile menu when the hamburger is clicked
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                const mobileMenu = document.getElementById('mobile-menu');
+                mobileMenuBtn.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                    // IMPORTANT: Setup dropdowns for the mobile menu *after* it becomes visible
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        setupDropdowns('#mobile-menu');
+                    }
+                });
+
+                // Global click listener to close menus
+                window.addEventListener('click', (e) => {
+                    if (!e.target.closest('.dropdown') && !e.target.closest('#mobile-menu-btn')) {
+                        document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+                    }
+                    if (!e.target.closest('nav')) {
+                        if (!mobileMenu.classList.contains('hidden')) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
                 });
             }
+
 
 
         document.addEventListener('DOMContentLoaded', () => {
