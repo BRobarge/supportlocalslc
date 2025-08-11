@@ -48,26 +48,76 @@
 <body class="bg-gray-100 font-sans">
 
     <!-- Header -->
-    <header class="shadow-md">
-        <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
-            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg"
-                alt="Support Local SLC Banner"
-                class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex-shrink-0">
+                    <img class="h-12 w-auto"
+                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                        alt="SupportLocalSLC Logo">
+                </a>
+    
+                <!-- Desktop Navigation -->
+                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8">
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">Directory <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
+                        </div>
+                    </div>
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">Offers <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html?filter=offers"
+                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                        </div>
+                    </div>
+                    <a href="#" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
+                </nav>
+    
+                <!-- Login/Dashboard Button (Desktop) -->
+                <div class="hidden lg:block">
+                    <a id="auth-link" href="/login.html"
+                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
+                </div>
+    
+                <!-- Mobile Menu Button (Hamburger) -->
+                <div class="lg:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800 focus:outline-none"><i
+                            class="fas fa-bars text-2xl"></i></button>
+                </div>
+            </div>
+    
+            <!-- Mobile Menu -->
+            <nav id="mobile-menu" class="lg:hidden hidden mt-4">
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold"
+                        data-toggle="dropdown">Directory <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">Offers
+                        <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                    </div>
+                </div>
+                <a href="#" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
+                <hr class="my-2">
+                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
+            </nav>
         </div>
     </header>
 
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
-        <a href="/sandy/index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-home text-2xl"></i><span class="text-sm font-semibold">Home</span>
-        </a>
-        <a id="auth-link" href="/login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-sign-in-alt text-2xl"></i><span class="text-sm font-semibold">Login</span>
-        </a>
-        <a href="/dashboard.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-user-cog text-2xl"></i><span class="text-sm font-semibold">Dashboard</span>
-        </a>
-    </nav>
 
     <!-- Main Content Area -->
     <main class="container mx-auto p-4 md:p-8" style="padding-bottom: 80px;">
@@ -92,9 +142,13 @@
 
         // --- Main Entry Point ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadBusiness();
-            updateNavAuth();
-        });
+                loadBusiness();
+                updateNavAuth();         // or updateNavAuth(user) if you have a user var
+                FontAwesome.dom.i2svg(); // <- add this line
+                wireLogoutButton();
+
+            });
+
 
         // ===================================================================================
         // --- DATA FETCHING & RENDERING ---
@@ -135,6 +189,56 @@
             currentPhotos = business.photos || [];
             renderBusinessProfile(business);
         }
+
+        function renderOffersGrid(offers = [], { claimedSet = new Set() } = {}) {
+                if (!offers || offers.length === 0) {
+                    return `
+                    <div class="bg-white rounded-lg shadow p-6 text-gray-500">
+                        No active offers right now.
+                    </div>`;
+                }
+
+                const items = offers.map(o => {
+                    // Try to detect “claimed” without breaking your current logic:
+                    const claimed = claimedSet.has?.(o.id) || o.claimed === true || o.already_claimed === true;
+                    const limit = Number.isFinite(o.claim_limit) ? o.claim_limit : null;
+                    const disabled = claimed || (limit && Number(o.claimed_count) >= limit);
+
+                    const btnLabel = claimed ? 'Claimed' : 'Claim Offer';
+                    const btnClass = disabled
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white';
+
+                    return `
+                        <article class="bg-white rounded-xl shadow-sm border hover:shadow-md transition p-5">
+                            <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h4 class="font-bold text-lg text-gray-900">${escapeHtml(o.title || 'Untitled Offer')}</h4>
+                                ${o.description ? `<p class="text-sm text-gray-600 mt-1">${escapeHtml(o.description)}</p>` : ''}
+
+                                <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                                ${limit ? `<span>Limit ${limit}</span>` : ''}
+                                ${o.is_first_time_only ? `<span>• First-time only</span>` : ''}
+                                ${o.expires_at ? `<span>• Expires ${escapeHtml(o.expires_at)}</span>` : ''}
+                                </div>
+
+                                ${claimed ? `<p class="text-sm text-blue-600 mt-3">You have already claimed this offer!</p>` : ''}
+                            </div>
+
+                            <button
+                                class="claim-offer-btn ${btnClass} font-semibold px-4 py-2 rounded-lg"
+                                data-offer-id="${o.id}"
+                                ${disabled ? 'disabled' : ''}>
+                                ${btnLabel}
+                            </button>
+                            </div>
+                        </article>`;
+                }).join('');
+
+                // 1 col on mobile, 2 cols on md+
+                return `<div class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">${items}</div>`;
+            }
+
 
         // In /public/sandy/business.html
             // Replace your entire renderBusinessProfile function with this one.
@@ -227,12 +331,46 @@
                             </div>
                         </div>
 
-                        <!-- Block 2: Offers, Story, Gallery (Mobile: Middle) -->
+                        <!-- Block 2: Tabs for Offers / Story / Gallery / Reviews -->
                         <div class="business-main-content">
-                            ${offersHtml}
-                            ${storyHtml}
-                            ${galleryHtml}
+
+                       <!-- Tabs header -->
+                        <div id="biz-tabs" class="mb-4 border-b border-gray-200">
+                        <div class="flex gap-4">
+                            <button data-tab="story"   class="tab-btn py-3 px-2 text-gray-600 hover:text-gray-800">Our Story</button>
+                            <button data-tab="offers"  class="tab-btn py-3 px-2 text-gray-600 hover:text-gray-800">Offers</button>
+                            <button data-tab="gallery" class="tab-btn py-3 px-2 text-gray-600 hover:text-gray-800">Gallery</button>
+                            <button data-tab="reviews" class="tab-btn py-3 px-2 text-gray-600 hover:text-gray-800">Reviews</button>
                         </div>
+                        </div>
+
+
+                        <!-- Tab panes -->
+                        <section id="tab-offers">
+                            ${offersHtml}
+                        </section>
+
+                        <section id="tab-story" class="hidden">
+                            ${storyHtml}
+                        </section>
+
+                        <section id="tab-gallery" class="hidden">
+                            ${galleryHtml}
+                        </section>
+
+                        <section id="tab-reviews" class="hidden">
+                            <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-xl font-bold mb-2">Reviews</h3>
+                            <p class="text-gray-600 mb-4">Reviews are coming soon. We’re building a simple, fair system for locals to share their experiences.</p>
+                            <div class="flex items-center gap-2 text-gray-500">
+                                <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
+                                <span class="text-sm ml-2">(No reviews yet)</span>
+                            </div>
+                            </div>
+                        </section>
+
+                        </div>
+
 
                         <!-- Block 3: Map, Hours (Mobile: Bottom) -->
                         <div class="business-sidebar-bottom">
@@ -252,6 +390,8 @@
                 // --- Post-render Population ---
                 displayHours(business.hours_data);
                 displayOffers(business.offers); // This was missing before
+                initBizTabs();
+
             }
 
 
@@ -296,16 +436,20 @@
         }
 
         // In business.html, replace your entire displayOffers function
-            async function displayOffers(offers) {
+           async function displayOffers(offers) {
                 const container = document.getElementById('offers-section');
                 if (!container) return;
 
+                // empty state
                 if (!offers || offers.length === 0) {
-                    container.style.display = 'none';
+                    container.innerHTML = `
+      <div class="bg-white rounded-lg shadow p-6 text-gray-500">
+        No active offers right now.
+      </div>`;
                     return;
                 }
 
-                // --- NEW: Check which offers the current user has already claimed ---
+                // Which offers has the current user already claimed?
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 let userClaimedOfferIds = new Set();
                 if (user) {
@@ -313,73 +457,118 @@
                         .from('claimed_offers')
                         .select('offer_id')
                         .eq('user_id', user.id);
-                    if (claimed) {
-                        userClaimedOfferIds = new Set(claimed.map(c => c.offer_id));
-                    }
+                    if (claimed) userClaimedOfferIds = new Set(claimed.map(c => c.offer_id));
                 }
-                // --- END OF NEW PART ---
 
-                let offersHtml = `
-                    <div class="space-y-4">
-                `;
+                // Build the grid (1 column on mobile, 2 on desktop)
+                let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
 
                 offers.forEach(offer => {
-                    const claimedCount = offer.offer_claim_counts[0]?.claim_count || 0;
+                    const claimedCount = offer.offer_claim_counts?.[0]?.claim_count || 0;
                     const hasClaimsLeft = !offer.claim_limit || claimedCount < offer.claim_limit;
                     const isExpired = offer.expires_at && new Date(offer.expires_at) < new Date();
+                    const isAlreadyClaimed = userClaimedOfferIds.has(offer.id);
+                    const canClaim = !isExpired && hasClaimsLeft && !isAlreadyClaimed;
 
-                    // --- NEW: Check if this specific offer has been claimed by the user ---
-                    const isAlreadyClaimedByUser = userClaimedOfferIds.has(offer.id);
-                    const canClaim = hasClaimsLeft && !isExpired && !isAlreadyClaimedByUser;
-
-                    let statusHtml = '';
-                    let buttonHtml = '';
-                    let cardBg = 'bg-yellow-50';
-                    let borderColor = 'border-yellow-400';
-
-                    if (canClaim) {
-                        if (offer.claim_limit) {
-                            const remaining = offer.claim_limit - claimedCount;
-                            statusHtml = `<p class="text-sm text-green-700 font-bold mt-2">Only ${remaining} left!</p>`;
-                        }
-                        buttonHtml = `<button class="claim-offer-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg" data-offer-id="${offer.id}">Claim Offer</button>`;
-                    } else {
-                        cardBg = 'bg-gray-100';
-                        borderColor = 'border-gray-300';
-                        if (isAlreadyClaimedByUser) {
-                            statusHtml = `<p class="text-sm text-blue-700 font-bold mt-2">You have already claimed this offer!</p>`;
-                        } else if (isExpired) {
-                            statusHtml = `<p class="text-sm text-red-700 font-bold mt-2">Offer expired on ${new Date(offer.expires_at).toLocaleDateString()}</p>`;
-                        } else {
-                            statusHtml = `<p class="text-sm text-red-700 font-bold mt-2">Maximum claims reached!</p>`;
-                        }
-                        buttonHtml = `<button class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg cursor-not-allowed" disabled>Claimed</button>`;
+                    // status text (left side under content)
+                    let status = '';
+                    if (isAlreadyClaimed) {
+                        status = 'You have already claimed this offer!';
+                    } else if (isExpired) {
+                        status = `Expired on ${new Date(offer.expires_at).toLocaleDateString()}`;
+                    } else if (!hasClaimsLeft) {
+                        status = 'Maximum claims reached!';
+                    } else if (offer.claim_limit) {
+                        status = `Only ${offer.claim_limit - claimedCount} left!`;
                     }
 
-                    const expirationHtml = offer.expires_at ? `<p class="text-xs text-gray-600 mt-1">Expires: ${new Date(offer.expires_at).toLocaleDateString()}</p>` : '';
+                    const btnDisabled = !canClaim;
+                    const btnLabel = isAlreadyClaimed ? 'Claimed' : 'Claim Offer';
+                    const btnClass = btnDisabled
+                        ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white';
 
-                    offersHtml += `
-                        <div class="${cardBg} border-l-4 ${borderColor} p-4 rounded-r-lg shadow">
-                            <h3 class="text-lg font-bold text-gray-900">${offer.title}</h3>
-                            <p class="text-sm text-gray-700 mt-1">${offer.description}</p>
-                            ${expirationHtml}
-                            ${statusHtml}
-                            <div class="mt-4">${buttonHtml}</div>
-                        </div>
-                    `;
+                    html += `
+                        <article class="bg-white rounded-xl shadow-sm border hover:shadow-md transition p-5 flex flex-col justify-between">
+                            <div>
+                            <h3 class="font-bold text-lg text-gray-900">${offer.title || 'Untitled Offer'}</h3>
+                            ${offer.description ? `<p class="text-sm text-gray-700 mt-1">${offer.description}</p>` : ''}
+
+                            <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                ${offer.claim_limit ? `<span class="px-2 py-1 bg-gray-100 rounded">Limit ${offer.claim_limit}</span>` : ''}
+                                ${offer.is_first_time_only ? `<span class="px-2 py-1 bg-gray-100 rounded">First-time only</span>` : ''}
+                                ${offer.expires_at ? `<span class="px-2 py-1 bg-gray-100 rounded">Expires ${new Date(offer.expires_at).toLocaleDateString()}</span>` : ''}
+                            </div>
+                            </div>
+
+                            <div class="mt-4 flex items-center justify-between">
+                            <span class="text-sm ${canClaim ? 'text-green-700' : 'text-red-700'}">${status || ''}</span>
+                            <button
+                                class="claim-offer-btn ${btnClass} font-semibold px-4 py-2 rounded-lg"
+                                data-offer-id="${offer.id}"
+                                ${btnDisabled ? 'disabled' : ''}>
+                                ${btnLabel}
+                            </button>
+                            </div>
+                        </article>
+                        `;
                 });
 
-                offersHtml += `</div>`;
-                container.innerHTML = offersHtml;
+                html += `</div>`;
+                container.innerHTML = html;
 
+                // keep your claim flow working
                 container.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('claim-offer-btn')) {
-                        e.target.disabled = true; // Immediately disable on click
-                        const offerId = e.target.dataset.offerId;
-                        handleClaimOffer(offerId);
-                    }
+                    const btn = e.target.closest('.claim-offer-btn');
+                    if (!btn) return;
+                    btn.disabled = true;
+                    const offerId = btn.dataset.offerId;
+                    if (typeof handleClaimOffer === 'function') handleClaimOffer(offerId);
                 });
             }
+
+
+            function initBizTabs() {
+                    const tabs = document.getElementById('biz-tabs');
+                    if (!tabs) return;
+
+                    const panes = {
+                        offers: document.getElementById('tab-offers'),
+                        story: document.getElementById('tab-story'),
+                        gallery: document.getElementById('tab-gallery'),
+                        reviews: document.getElementById('tab-reviews'),
+                    };
+
+                    const setActive = (name) => {
+                        Object.entries(panes).forEach(([k, el]) => {
+                            if (!el) return;
+                            el.classList.toggle('hidden', k !== name);
+                        });
+                        tabs.querySelectorAll('.tab-btn').forEach(btn => {
+                            const on = btn.dataset.tab === name;
+                            btn.classList.toggle('text-blue-600', on);
+                            btn.classList.toggle('border-blue-600', on);
+                            btn.classList.toggle('border-b-2', on);
+                            btn.classList.toggle('font-semibold', on);
+                            btn.classList.toggle('text-gray-600', !on);
+                        });
+                    };
+
+                    tabs.addEventListener('click', (e) => {
+                        const btn = e.target.closest('[data-tab]');
+                        if (!btn) return;
+                        const name = btn.dataset.tab;
+                        setActive(name);
+                        history.replaceState(null, '', `#${name}`); // keep the hash in the URL
+                    });
+
+                    const hash = (location.hash || '#story').slice(1);
+                    const hasStory = !!document.querySelector('#tab-story .ql-editor, #tab-story [data-story], #tab-story p');
+                    const hasOffers = !!document.querySelector('#tab-offers .claim-offer-btn, #tab-offers article');
+                    const first = panes[hash] ? hash : (hasStory ? 'story' : (hasOffers ? 'offers' : 'gallery'));
+                    setActive(first);
+
+                }
 
 
 
@@ -491,32 +680,134 @@
             modalContainer.appendChild(modal);
         };
 
-        async function updateNavAuth() {
-            const authLink = document.getElementById('auth-link');
-            if (!authLink) return;
-            const iconElement = authLink.querySelector('i');
-            const textSpan = authLink.querySelector('span');
+        function updateNavAuth(user) {
+                const authLink = document.getElementById('auth-link');
+                const mobileAuthLink = document.getElementById('mobile-auth-link');
 
-            // Check for session by trying to get user data
-            const { data: { session } } = await supabaseClient.auth.getSession();
-
-            if (session) {
-                authLink.href = '#';
-                authLink.onclick = async (e) => {
-                    e.preventDefault();
-                    await supabaseClient.auth.signOut();
-                    window.location.reload(); // Reload to reflect logged-out state
+                const setLoggedIn = () => {
+                    if (authLink) { authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard'; }
+                    if (mobileAuthLink) { mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard'; }
                 };
-                if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
-                if (textSpan) textSpan.textContent = 'Logout';
-            } else {
-                authLink.href = '/login.html';
-                authLink.onclick = null;
-                if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
-                if (textSpan) textSpan.textContent = 'Login';
+                const setLoggedOut = () => {
+                    if (authLink) { authLink.href = '/login.html'; authLink.textContent = 'Login'; }
+                    if (mobileAuthLink) { mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login'; }
+                };
+
+                // Prefer Supabase auth; fallback to sessionStorage flag used on home
+                const apply = async () => {
+                    try {
+                        if (!user) {
+                            const { data: { user: u } } = await supabaseClient.auth.getUser();
+                            user = u || null;
+                        }
+                        user ? setLoggedIn() : setLoggedOut();
+                    } catch { setLoggedOut(); }
+                };
+                apply();
+
+                // Mobile menu + dropdowns
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (mobileMenuBtn && mobileMenu && !mobileMenuBtn.dataset.bound) {
+                    mobileMenuBtn.dataset.bound = '1';
+                    mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+                }
+
+                document.addEventListener('click', (e) => {
+                    const isToggle = e.target.matches('[data-toggle="dropdown"]');
+                    if (!isToggle && e.target.closest('.dropdown') === null) {
+                        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+                        return;
+                    }
+                    if (isToggle) {
+                        e.preventDefault();
+                        const menu = e.target.nextElementSibling;
+                        if (menu) menu.classList.toggle('hidden');
+                    }
+                });
             }
-        }
+
+            async function wireLogoutButton() {
+                    // Only show if logged in
+                    const { data: { user } } = await supabaseClient.auth.getUser();
+                    if (!user) return;
+
+                    if (document.getElementById('logout-btn')) return; // don't dup
+
+                    // Try to place it right after the "Dashboard" button in the header
+                    const dashBtn = Array.from(document.querySelectorAll('header a, header button'))
+                        .find(el => /dashboard/i.test(el.textContent));
+
+                    const btn = document.createElement('button');
+                    btn.id = 'logout-btn';
+                    btn.className = 'ml-3 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100';
+                    btn.textContent = 'Logout';
+
+                    if (dashBtn && dashBtn.parentNode) {
+                        dashBtn.parentNode.insertBefore(btn, dashBtn.nextSibling);
+                    } else {
+                        // fallback: stick it at the end of the header container
+                        (document.querySelector('header .container') || document.querySelector('header'))?.appendChild(btn);
+                    }
+
+                    btn.addEventListener('click', async () => {
+                        try {
+                            btn.disabled = true;
+                            btn.textContent = 'Logging out...';
+                            await supabaseClient.auth.signOut();
+                            window.location.href = '/'; // send them home (change if you want)
+                        } catch (err) {
+                            console.error(err);
+                            btn.disabled = false;
+                            btn.textContent = 'Logout';
+                            alert('Could not log out. Please try again.');
+                        }
+                    });
+                }
+
+
     </script>
+
+    <footer class="bg-gray-800 text-gray-400 mt-16">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <a href="/" class="flex items-center space-x-2">
+                        <img class="h-10 w-auto"
+                            src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                            alt="SupportLocalSLC Logo">
+                        <span class="text-white font-bold text-xl">SupportLocalSLC</span>
+                    </a>
+                    <p class="mt-4 text-sm">Your guide to the best local spots in Salt Lake County. Discover stories,
+                        support dreams.</p>
+                </div>
+                <div>
+                    <h3 class="text-white font-semibold tracking-wider uppercase">Navigate</h3>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li><a href="/" class="hover:text-white">Home</a></li>
+                        <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
+                        <li><a href="#" class="hover:text-white">For Business Owners</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white font-semibold tracking-wider uppercase">Legal</h3>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                    </ul>
+                    <h3 class="text-white font-semibold tracking-wider uppercase mt-6">Connect</h3>
+                    <div class="mt-4 flex space-x-4">
+                        <a href="#" class="hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="hover:text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
+                <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
 
 </body>
 

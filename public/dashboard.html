@@ -6,33 +6,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SupportLocalSLC</title>
     <link href="/shared/output.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
+    <script data-auto-replace-svg="false" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .tab-button {
+            padding: 8px 16px;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #4B5563;
+        }
+
+        .tab-button.active-tab {
+            border-bottom-color: #3B82F6;
+            color: #1F2937;
+        }
+    </style>
 </head>
 
-<body class="bg-gray-100 font-sans pb-60">
-    <header class="shadow-md">
-        <div class="w-full h-40 md:h-48 lg:h-auto overflow-hidden">
-            <img src="https://storage.googleapis.com/msgsndr/ZPvezSzdrR59azHbDrVt/media/687154c0f85f420c26bbfd37.jpeg"
-                alt="Support Local SLC Banner"
-                class="w-full h-full object-cover object-bottom lg:h-auto lg:object-contain">
+<body class="bg-gray-100 font-sans">
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex-shrink-0">
+                    <img class="h-12 w-auto"
+                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                        alt="SupportLocalSLC Logo">
+                </a>
+    
+                <!-- Desktop Navigation -->
+                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8">
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">Directory <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
+                        </div>
+                    </div>
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">Offers <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html?filter=offers"
+                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                        </div>
+                    </div>
+                    <a href="#" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
+                </nav>
+    
+                <!-- Login/Dashboard Button (Desktop) -->
+                <div class="hidden lg:block">
+                    <a id="auth-link" href="/login.html"
+                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
+                </div>
+    
+                <!-- Mobile Menu Button (Hamburger) -->
+                <div class="lg:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800 focus:outline-none"><i
+                            class="fas fa-bars text-2xl"></i></button>
+                </div>
+            </div>
+    
+            <!-- Mobile Menu -->
+            <nav id="mobile-menu" class="lg:hidden hidden mt-4">
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold"
+                        data-toggle="dropdown">Directory <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">Offers
+                        <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                    </div>
+                </div>
+                <a href="#" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
+                <hr class="my-2">
+                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
+            </nav>
         </div>
     </header>
-    <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
-        <a href="index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-home text-2xl"></i>
-            <span class="text-sm font-semibold">Home</span>
-        </a>
-        <a id="auth-link" href="login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-sign-in-alt text-2xl"></i>
-            <span class="text-sm font-semibold">Login</span>
-        </a>
-        <a href="dashboard.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
-            <i class="fas fa-user-cog text-2xl"></i>
-            <span class="text-sm font-semibold">Dashboard</span>
-        </a>
-    </nav>
+
         <!-- In /public/dashboard.html -->
         <!-- In /public/dashboard.html -->
         <main class="container mx-auto p-4 md:p-8">
@@ -301,8 +363,12 @@
 
             setupModal();
             setupDashboardTabs(profile.roles, profile.managed_territories);
-            updateNavAuth();
+            updateNavAuth();               // or updateNavAuth(user); either is fine
+            FontAwesome.dom.i2svg();       // <- add this line
+            wireLogoutButton();
+
         });
+
 
         // ===================================================================================
         // --- TAB & VIEW RENDERING LOGIC ---
@@ -560,31 +626,127 @@
             saveBtn.disabled = false;
         }
 
-        async function loadClaimedOffers() {
-            const listContainer = document.getElementById('claimed-offers-list');
-            if (!listContainer) return;
-            const { data: claims, error } = await supabaseClient.from('claimed_offers').select(`*, offers (*, businesses (name))`).eq('user_id', currentUser.id).order('created_at', { ascending: false });
-            if (error) { listContainer.innerHTML = '<p class="text-red-500">Could not load offers.</p>'; return; }
-            if (!claims || claims.length === 0) { listContainer.innerHTML = '<p class="text-gray-500 text-center py-4">You haven\'t claimed any offers yet.</p>'; return; }
-            listContainer.innerHTML = '';
-            claims.forEach(claim => {
-                const offer = claim.offers;
-                const business = offer.businesses;
-                const isExpired = new Date(claim.expires_at) < new Date();
-                const statusColor = claim.status === 'redeemed' ? 'bg-green-100 text-green-800' : (isExpired ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800');
-                const statusText = claim.status === 'redeemed' ? `Redeemed on ${new Date(claim.redeemed_at).toLocaleDateString()}` : (isExpired ? 'Expired' : 'Claimed');
-                const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-lg shadow-md';
-                card.innerHTML = `<div class="flex justify-between items-start"><div><p class="text-sm font-semibold text-gray-600">${business.name}</p><h3 class="text-lg font-bold text-gray-900">${offer.title}</h3></div><div class="text-sm font-bold px-3 py-1 rounded-full ${statusColor}">${statusText}</div></div><div class="mt-2 border-t pt-2"><p class="text-sm text-gray-600">${offer.description}</p><div class="mt-3 flex justify-between items-end"><div class="text-xs text-gray-500"><p>Claimed: ${new Date(claim.claimed_at).toLocaleDateString()}</p><p>Expires: ${new Date(claim.expires_at).toLocaleDateString()}</p></div>${claim.status === 'claimed' && !isExpired ? `<button class="redeem-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg" data-claim-id="${claim.id}">Redeem Now</button>` : ''}</div></div>`;
-                listContainer.appendChild(card);
-            });
-            listContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('redeem-btn')) {
-                    const claimId = e.target.dataset.claimId;
-                    handleRedeemOffer(claimId);
-                }
-            });
-        }
+           
+                // helper to print dates safely
+                    function fmt(d) {
+                        if (!d) return '';
+                        const dt = new Date(d);
+                        return isNaN(dt) ? '' : dt.toLocaleDateString();
+                    }
+
+                    async function loadClaimedOffers() {
+                        const list = document.getElementById('claimed-offers-list');
+                        if (!list) return;
+
+                        list.innerHTML = `<p class="text-gray-500">Loading your claimed offers...</p>`;
+
+                        const { data: { user } } = await supabaseClient.auth.getUser();
+                        if (!user) {
+                            list.innerHTML = `<p class="text-gray-500">Please log in to see your claimed offers.</p>`;
+                            return;
+                        }
+
+                        // Claims + offer + business (no joins to non-existent views)
+                        const { data: claims, error } = await supabaseClient
+                            .from('claimed_offers')
+                            .select(`
+                            id, status, created_at, redeemed_at, expires_at, offer_id,
+                            offers (
+                                id, title, description, claim_limit, is_first_time_only, expires_at,
+                                businesses ( id, name )
+                            )
+                            `)
+                            .eq('user_id', user.id)
+                            .order('created_at', { ascending: false });
+
+                        if (error) {
+                            console.error(error);
+                            list.innerHTML = `<p class="text-red-500">Could not load offers.</p>`;
+                            return;
+                        }
+                        if (!claims || claims.length === 0) {
+                            list.innerHTML = `<p class="text-gray-500 text-center py-6">You haven’t claimed any offers yet.</p>`;
+                            return;
+                        }
+
+                        // Render cards (same look as business page). No "Only X left!" line here.
+                        let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-6">`;
+
+                        claims.forEach(claim => {
+                            const offer = claim.offers || {};
+                            const biz = offer.businesses || {};
+
+                            const expired = (claim.expires_at && new Date(claim.expires_at) < new Date()) ||
+                                (offer.expires_at && new Date(offer.expires_at) < new Date());
+                            const redeemed = claim.status === 'redeemed' || !!claim.redeemed_at;
+                            const canRedeem = !expired && !redeemed;
+
+                            const chipClass = redeemed
+                                ? 'bg-green-100 text-green-800'
+                                : expired
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-blue-100 text-blue-800';
+
+                            const chipText = redeemed
+                                ? `Redeemed ${fmt(claim.redeemed_at)}`
+                                : expired
+                                    ? 'Expired'
+                                    : 'Claimed';
+
+                            html += `
+                                <article class="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 md:p-7">
+                                    <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 leading-snug">${offer.title || 'Untitled Offer'}</h3>
+                                        ${biz.name ? `<p class="text-sm text-gray-500 mt-0.5">${biz.name}</p>` : ''}
+                                        ${offer.description ? `<p class="mt-2 text-gray-700 text-sm leading-relaxed">${offer.description}</p>` : ''}
+
+                                        <div class="mt-3 flex flex-wrap gap-2">
+                                        ${offer.claim_limit ? `<span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">Limit ${offer.claim_limit}</span>` : ''}
+                                        ${offer.is_first_time_only ? `<span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">First-time only</span>` : ''}
+                                        ${offer.expires_at ? `<span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">Expires ${fmt(offer.expires_at)}</span>` : ''}
+                                        </div>
+
+                                        <div class="mt-3 grid grid-cols-2 gap-x-6 text-xs text-gray-500">
+                                        <div>Claimed: <span class="font-medium text-gray-700">${fmt(claim.created_at)}</span></div>
+                                        ${claim.expires_at ? `<div>Expires: <span class="font-medium text-gray-700">${fmt(claim.expires_at)}</span></div>` : ''}
+                                        </div>
+                                    </div>
+
+                                    <!-- Right-side action column: prevent shrinking so button doesn't wrap -->
+                                    <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${chipClass}">${chipText}</span>
+
+                                        ${canRedeem
+                                                                ? `<button class="redeem-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg whitespace-nowrap min-w-[120px] text-center"
+                                                    data-claim-id="${claim.id}">Redeem Now</button>`
+                                                                : `<button class="bg-gray-200 text-gray-600 font-semibold px-4 py-2 rounded-lg cursor-not-allowed whitespace-nowrap min-w-[120px] text-center" disabled>
+                                            ${redeemed ? 'Redeemed' : 'Not Available'}
+                                            </button>`
+                                                            }
+                                    </div>
+                                    </div>
+                                </article>
+                                `;
+                        });
+
+                        html += `</div>`;
+                        list.innerHTML = html;
+
+                        // Restore your existing redeem flow
+                        if (!list.dataset.bound) {
+                            list.addEventListener('click', (e) => {
+                                const btn = e.target.closest('.redeem-btn');
+                                if (!btn) return;
+                                const id = btn.dataset.claimId;
+                                if (typeof handleRedeemOffer === 'function') handleRedeemOffer(id);
+                            });
+                            list.dataset.bound = '1';
+                        }
+                    }
+
+
+
 
         async function handleRedeemOffer(claimId) {
             const enteredPin = prompt("Please have the business owner enter their 4-digit PIN:");
@@ -597,29 +759,53 @@
             }
         }
 
-        async function updateNavAuth() {
-            const storedSession = sessionStorage.getItem('supabase_session');
-            const authLink = document.getElementById('auth-link');
-            if (!authLink) return;
-            const iconElement = authLink.querySelector('svg, i');
-            const textSpan = authLink.querySelector('span');
-            if (storedSession) {
-                authLink.href = '#';
-                authLink.onclick = async (e) => {
-                    e.preventDefault();
-                    await supabaseClient.auth.signOut();
-                    sessionStorage.removeItem('supabase_session');
-                    window.location.href = '/login.html';
+        function updateNavAuth(user) {
+                const authLink = document.getElementById('auth-link');
+                const mobileAuthLink = document.getElementById('mobile-auth-link');
+
+                const setLoggedIn = () => {
+                    if (authLink) { authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard'; }
+                    if (mobileAuthLink) { mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard'; }
                 };
-                if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
-                if (textSpan) textSpan.textContent = 'Logout';
-            } else {
-                authLink.href = '/login.html';
-                authLink.onclick = null;
-                if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
-                if (textSpan) textSpan.textContent = 'Login';
+                const setLoggedOut = () => {
+                    if (authLink) { authLink.href = '/login.html'; authLink.textContent = 'Login'; }
+                    if (mobileAuthLink) { mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login'; }
+                };
+
+                // Prefer Supabase auth; fallback to sessionStorage flag used on home
+                const apply = async () => {
+                    try {
+                        if (!user) {
+                            const { data: { user: u } } = await supabaseClient.auth.getUser();
+                            user = u || null;
+                        }
+                        user ? setLoggedIn() : setLoggedOut();
+                    } catch { setLoggedOut(); }
+                };
+                apply();
+
+                // Mobile menu + dropdowns
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (mobileMenuBtn && mobileMenu && !mobileMenuBtn.dataset.bound) {
+                    mobileMenuBtn.dataset.bound = '1';
+                    mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+                }
+
+                document.addEventListener('click', (e) => {
+                    const isToggle = e.target.matches('[data-toggle="dropdown"]');
+                    if (!isToggle && e.target.closest('.dropdown') === null) {
+                        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+                        return;
+                    }
+                    if (isToggle) {
+                        e.preventDefault();
+                        const menu = e.target.nextElementSibling;
+                        if (menu) menu.classList.toggle('hidden');
+                    }
+                });
             }
-        }
+
 
         async function sendGHLNotification(eventType, details) {
             try {
@@ -632,12 +818,90 @@
                 console.error('GHL notify error:', err);
             }
         }
+
+        async function wireLogoutButton() {
+                // Only show if logged in
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) return;
+
+                if (document.getElementById('logout-btn')) return; // don't dup
+
+                // Try to place it right after the "Dashboard" button in the header
+                const dashBtn = Array.from(document.querySelectorAll('header a, header button'))
+                    .find(el => /dashboard/i.test(el.textContent));
+
+                const btn = document.createElement('button');
+                btn.id = 'logout-btn';
+                btn.className = 'ml-3 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100';
+                btn.textContent = 'Logout';
+
+                if (dashBtn && dashBtn.parentNode) {
+                    dashBtn.parentNode.insertBefore(btn, dashBtn.nextSibling);
+                } else {
+                    // fallback: stick it at the end of the header container
+                    (document.querySelector('header .container') || document.querySelector('header'))?.appendChild(btn);
+                }
+
+                btn.addEventListener('click', async () => {
+                    try {
+                        btn.disabled = true;
+                        btn.textContent = 'Logging out...';
+                        await supabaseClient.auth.signOut();
+                        window.location.href = '/'; // send them home (change if you want)
+                    } catch (err) {
+                        console.error(err);
+                        btn.disabled = false;
+                        btn.textContent = 'Logout';
+                        alert('Could not log out. Please try again.');
+                    }
+                });
+            }
+
     </script>
 
 
 
 
     <!-- This is the end of the script tag. -->
+        <footer class="bg-gray-800 text-gray-400 mt-16">
+            <div class="container mx-auto px-6 py-12">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div class="md:col-span-2">
+                        <a href="/" class="flex items-center space-x-2">
+                            <img class="h-10 w-auto"
+                                src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                                alt="SupportLocalSLC Logo">
+                            <span class="text-white font-bold text-xl">SupportLocalSLC</span>
+                        </a>
+                        <p class="mt-4 text-sm">Your guide to the best local spots in Salt Lake County. Discover stories,
+                            support dreams.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-semibold tracking-wider uppercase">Navigate</h3>
+                        <ul class="mt-4 space-y-2 text-sm">
+                            <li><a href="/" class="hover:text-white">Home</a></li>
+                            <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
+                            <li><a href="#" class="hover:text-white">For Business Owners</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-semibold tracking-wider uppercase">Legal</h3>
+                        <ul class="mt-4 space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                            <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                        </ul>
+                        <h3 class="text-white font-semibold tracking-wider uppercase mt-6">Connect</h3>
+                        <div class="mt-4 flex space-x-4">
+                            <a href="#" class="hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="hover:text-white"><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
+                    <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
+                </div>
+            </div>
+        </footer>
 
 </body>
 
