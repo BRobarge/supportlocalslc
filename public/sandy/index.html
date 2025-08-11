@@ -10,7 +10,6 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Custom scrollbar for category pills */
         .category-pills::-webkit-scrollbar {
             height: 8px;
         }
@@ -33,38 +32,27 @@
 
 <body class="bg-gray-100">
 
-    <!-- =================================================================== -->
-    <!-- --- HEADER / NAVIGATION (Copied from homepage for consistency ) --- -->
-    <!-- =================================================================== -->
+    <!-- Header / Navigation -->
     <header class="bg-white shadow-md sticky top-0 z-40">
         <div class="container mx-auto px-6 py-3">
             <div class="flex justify-between items-center">
-                <!-- Logo -->
                 <a href="/" class="flex-shrink-0">
                     <img class="h-12 w-auto"
                         src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
                         alt="SupportLocalSLC Logo">
                 </a>
-
-                <!-- Desktop Navigation -->
                 <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8">
-                    <!-- Directory Dropdown -->
                     <div class="relative dropdown">
                         <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
+                            data-toggle="dropdown">Directory <i class="fas fa-chevron-down text-xs ml-1"></i></a>
                         <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
                             <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
                             <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon )</a>
                         </div>
                     </div>
-                    <!-- Offers Dropdown -->
                     <div class="relative dropdown">
                         <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
+                            data-toggle="dropdown">Offers <i class="fas fa-chevron-down text-xs ml-1"></i></a>
                         <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
                             <a href="/sandy/index.html?filter=offers"
                                 class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
@@ -74,24 +62,16 @@
                     </div>
                     <a href="#" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
                 </nav>
-
-                <!-- Login/Dashboard Button (Desktop) -->
                 <div class="hidden lg:block">
                     <a id="auth-link" href="/login.html"
                         class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
                 </div>
-
-                <!-- Mobile Menu Button (Hamburger) -->
                 <div class="lg:hidden">
-                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800 focus:outline-none">
-                        <i class="fas fa-bars text-2xl"></i>
-                    </button>
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800 focus:outline-none"><i
+                            class="fas fa-bars text-2xl"></i></button>
                 </div>
             </div>
-
-            <!-- Mobile Menu (Hidden by default) -->
             <nav id="mobile-menu" class="lg:hidden hidden mt-4">
-                <!-- Directory Dropdown (Mobile) -->
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold"
                         data-toggle="dropdown">Directory <i class="fas fa-chevron-down text-xs ml-1"></i></a>
@@ -100,7 +80,6 @@
                         <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
                     </div>
                 </div>
-                <!-- Offers Dropdown (Mobile) -->
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold"
                         data-toggle="dropdown">Offers <i class="fas fa-chevron-down text-xs ml-1"></i></a>
@@ -117,42 +96,30 @@
     </header>
 
     <main class="container mx-auto p-4 md:p-8">
-        <!-- Page Header -->
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-800">Sandy Directory</h1>
             <p class="text-lg text-gray-600 mt-2">Discover the best local businesses in Sandy.</p>
         </div>
 
-        <!-- Search and Filter Controls -->
         <div class="bg-white p-4 rounded-lg shadow-md mb-8 sticky top-[76px] z-30">
-            <!-- Primary Search Bar -->
             <div class="relative mb-4">
-                <input type="search" id="search-input" placeholder="Search by business name or keyword..."
+                <input type="search" id="search-input" placeholder="Search by business name, category, or tag..."
                     class="w-full p-3 pl-10 border border-gray-300 rounded-lg">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
             </div>
-
-            <!-- Category Pills -->
             <div id="category-pills-container" class="category-pills flex items-center space-x-3 overflow-x-auto pb-3">
-                <!-- Pills will be loaded here -->
                 <p class="text-gray-500">Loading categories...</p>
             </div>
         </div>
 
-        <!-- Business Listings Grid -->
         <div id="business-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Business cards will be loaded here -->
             <p class="text-gray-500 col-span-full">Loading businesses...</p>
         </div>
     </main>
 
-    <!-- =================================================================== -->
-    <!-- --- FOOTER (Copied from homepage for consistency) --- -->
-    <!-- =================================================================== -->
     <footer class="bg-gray-800 text-gray-400 mt-16">
         <div class="container mx-auto px-6 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- About Section -->
                 <div class="md:col-span-2">
                     <a href="/" class="flex items-center space-x-2">
                         <img class="h-10 w-auto"
@@ -163,7 +130,6 @@
                     <p class="mt-4 text-sm">Your guide to the best local spots in Salt Lake County. Discover stories,
                         support dreams.</p>
                 </div>
-                <!-- Navigation Links -->
                 <div>
                     <h3 class="text-white font-semibold tracking-wider uppercase">Navigate</h3>
                     <ul class="mt-4 space-y-2 text-sm">
@@ -172,7 +138,6 @@
                         <li><a href="#" class="hover:text-white">For Business Owners</a></li>
                     </ul>
                 </div>
-                <!-- Legal & Connect -->
                 <div>
                     <h3 class="text-white font-semibold tracking-wider uppercase">Legal</h3>
                     <ul class="mt-4 space-y-2 text-sm">
@@ -198,96 +163,93 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         let allBusinesses = [];
-        let allCategories = [];
+        let mainCategories = [];
 
-        // --- Main Page Load ---
-               // Replace your entire DOMContentLoaded function with this one.
-                document.addEventListener('DOMContentLoaded', async () => {
-                    updateNavAuth(); // Setup header and nav listeners
+        // In /public/sandy/index.html
+            document.addEventListener('DOMContentLoaded', async () => {
+                updateNavAuth();
 
-                    // --- THIS IS THE CORRECTED QUERY FOR YOUR ACTUAL SCHEMA ---
-                    const [businessesRes, categoriesRes] = await Promise.all([
-                        supabaseClient
-                            .from('businesses')
-                            .select(`
+                const [businessesRes, allCategoriesRes] = await Promise.all([
+                    supabaseClient
+                        .from('businesses')
+                        .select(`
                 *,
-                business_categories ( categories ( id, name, parent_id ) )
+                business_categories ( categories ( id, name, parent_id ) ),
+                business_tags ( tags ( id, name ) )
             `)
-                            .eq('territory', 'sandy')
-                            .eq('claim_status', 'approved'),
-                        supabaseClient
-                            .from('categories')
-                            .select('*')
-                            .order('name')
-                    ]);
-                    // --- END OF CORRECTION ---
+                        .eq('territory', 'sandy')
+                        .eq('claim_status', 'approved'),
+                    supabaseClient
+                        .from('categories')
+                        .select('id, name, parent_id')
+                ]);
 
-                    if (businessesRes.error || categoriesRes.error) {
-                        console.error("Error fetching data:", businessesRes.error || categoriesRes.error);
-                        document.getElementById('business-grid').innerHTML = '<p class="text-red-500 col-span-full text-center">Error loading data. Please try again.</p>';
-                        return;
-                    }
+                if (businessesRes.error || allCategoriesRes.error) {
+                    console.error("Error fetching data:", businessesRes.error || allCategoriesRes.error);
+                    document.getElementById('business-grid').innerHTML = '<p class="text-red-500 col-span-full text-center">Error loading data. Please try again.</p>';
+                    return;
+                }
 
-                    // Process the data into a cleaner format
-                    allBusinesses = businessesRes.data.map(biz => ({
+                const allCategoriesMap = new Map(allCategoriesRes.data.map(c => [c.id, c]));
+
+                allBusinesses = businessesRes.data.map(biz => {
+                    const processedCategories = biz.business_categories.map(bc => {
+                        const category = bc.categories;
+                        let mainParentId = category.parent_id;
+                        let current = category;
+                        while (current && current.parent_id) {
+                            mainParentId = current.parent_id;
+                            current = allCategoriesMap.get(current.parent_id);
+                        }
+                        return { ...category, mainParentId: mainParentId || category.id };
+                    });
+
+                    return {
                         ...biz,
-                        // Flatten the nested category structure into a simple array
-                        // This will contain BOTH categories and tags for now.
-                        all_linked_terms: biz.business_categories.map(bc => bc.categories)
-                    }));
-
-                    // We will separate out the main categories for the pills
-                    allCategories = categoriesRes.data.filter(c => c.parent_id !== null); // Assuming tags have a specific parent or are null
-
-                    renderCategoryPills();
-                    renderBusinessGrid(); // Initial render of all businesses
-
-                    // Add listeners to filter controls
-                    document.getElementById('search-input').addEventListener('input', renderBusinessGrid);
-                    document.getElementById('category-pills-container').addEventListener('click', handlePillClick);
+                        categories: processedCategories,
+                        tags: biz.business_tags.map(bt => bt.tags)
+                    };
                 });
 
+                mainCategories = allCategoriesRes.data.filter(c => c.parent_id === null);
+
+                renderCategoryPills();
+                renderBusinessGrid();
+
+                document.getElementById('search-input').addEventListener('input', renderBusinessGrid);
+                document.getElementById('category-pills-container').addEventListener('click', handlePillClick);
+            });
 
 
-        // --- Rendering Functions ---
-            function renderCategoryPills() {
-                const container = document.getElementById('category-pills-container');
 
-                // --- THIS IS THE FIX ---
-                // We filter the 'allCategories' array to only include items that ARE main categories.
-                // We are defining a main category as one that has a parent_id.
-                // We are defining a "Tag" as a category where parent_id is NULL.
-                const mainCategories = allCategories.filter(cat => cat.parent_id !== null);
+        function renderCategoryPills() {
+            const container = document.getElementById('category-pills-container');
+            const pillsHtml = mainCategories.map(cat =>
+                `<button class="category-pill flex-shrink-0 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white" data-category-id="${cat.id}">
+                    ${cat.name}
+                </button>`
+            ).join('');
+            container.innerHTML = `<button class="category-pill active flex-shrink-0 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full" data-category-id="all">All</button>` + pillsHtml;
+        }
 
-                const pillsHtml = mainCategories.map(cat =>
-                    `<button class="category-pill flex-shrink-0 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white" data-category-id="${cat.id}">
-            ${cat.name}
-        </button>`
-                ).join('');
-
-                // The "All" button remains the same.
-                container.innerHTML = `<button class="category-pill active flex-shrink-0 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full" data-category-id="all">All</button>` + pillsHtml;
-            }
-
-
-        // Replace your entire renderBusinessGrid function with this one.
+        // In /public/sandy/index.html
             function renderBusinessGrid() {
                 const grid = document.getElementById('business-grid');
                 const searchTerm = document.getElementById('search-input').value.toLowerCase();
                 const activePill = document.querySelector('.category-pill.active');
-
-                // Get the category ID as a number, or 'all' as a string.
                 const activeCategoryId = activePill ? (activePill.dataset.categoryId === 'all' ? 'all' : parseInt(activePill.dataset.categoryId, 10)) : 'all';
 
                 const filteredBusinesses = allBusinesses.filter(biz => {
-                    // Search term filter (no changes here, this part is good)
-                    const matchesSearch = !searchTerm ||
-                        biz.name.toLowerCase().includes(searchTerm) ||
-                        (biz.tagline && biz.tagline.toLowerCase().includes(searchTerm));
+                    const searchCorpus = [
+                        biz.name,
+                        biz.tagline,
+                        ...biz.categories.map(c => c.name),
+                        ...biz.tags.map(t => t.name)
+                    ].join(' ').toLowerCase();
+                    const matchesSearch = !searchTerm || searchCorpus.includes(searchTerm);
 
-                    // --- THIS IS THE CORRECTED CATEGORY FILTER LOGIC ---
                     const matchesCategory = activeCategoryId === 'all' ||
-                        (biz.all_linked_terms && biz.all_linked_terms.some(term => term && term.id === activeCategoryId));
+                        biz.categories.some(cat => cat.mainParentId === activeCategoryId);
 
                     return matchesSearch && matchesCategory;
                 });
@@ -297,38 +259,42 @@
                     return;
                 }
 
-                // The card rendering HTML is correct, no changes needed here.
-                grid.innerHTML = filteredBusinesses.map(biz => `
-                    <a href="business.html?id=${biz.id}" class="block bg-white rounded-lg shadow-md overflow-hidden group border border-gray-200 hover:shadow-xl hover:border-blue-500 transition-all duration-300">
-                        <div class="h-40 bg-gray-50 flex items-center justify-center overflow-hidden">
-                            <img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}" alt="${biz.name} Logo" class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="font-bold text-lg truncate text-gray-800">${biz.name}</h3>
-                            <p class="text-sm text-gray-600 truncate">${biz.tagline || 'Local Sandy Business'}</p>
-                        </div>
-                    </a>
-                ` ).join('');
+                grid.innerHTML = filteredBusinesses.map(biz => {
+                    const tagsHtml = (biz.tags || []).map(tag =>
+                        `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">${tag.name}</span>`
+                    ).join('');
+
+                    return `
+                        <a href="business.html?id=${biz.id}" class="flex flex-col bg-white rounded-lg shadow-md overflow-hidden group border border-gray-200 hover:shadow-xl hover:border-blue-500 transition-all duration-300">
+                            <div class="h-40 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                <img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}" alt="${biz.name} Logo" class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300">
+                            </div>
+                            <div class="p-4 flex flex-col flex-grow">
+                                <h3 class="font-bold text-lg truncate text-gray-800">${biz.name}</h3>
+                                <p class="text-sm text-gray-600 truncate flex-grow">${biz.tagline || 'Local Sandy Business'}</p>
+                                <div class="mt-2 pt-2 border-t border-gray-100">
+                                    <div class="h-[22px] overflow-hidden whitespace-nowrap">${tagsHtml || ''}</div>
+                                </div>
+                            </div>
+                        </a>
+                    `}).join('');
             }
 
 
-        // --- Event Handlers ---
+
+
         function handlePillClick(e) {
             if (e.target.classList.contains('category-pill')) {
-                // Remove active state from all pills
                 document.querySelectorAll('.category-pill').forEach(pill => {
                     pill.classList.remove('active', 'bg-blue-600', 'text-white');
                     pill.classList.add('bg-gray-200', 'text-gray-700');
                 });
-                // Add active state to the clicked pill
                 e.target.classList.add('active', 'bg-blue-600', 'text-white');
                 e.target.classList.remove('bg-gray-200', 'text-gray-700');
-
-                renderBusinessGrid(); // Re-render the grid with the new filter
+                renderBusinessGrid();
             }
         }
 
-        // --- Navigation Auth Logic ---
         function updateNavAuth() {
             const authLink = document.getElementById('auth-link');
             const mobileAuthLink = document.getElementById('mobile-auth-link');
