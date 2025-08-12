@@ -4,30 +4,26 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Terms of Service • SupportLocalSLC</title>
+    <title>Privacy Policy • SupportLocalSLC</title>
     <link href="/shared/output.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
         crossorigin="anonymous"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-white font-sans">
 
-    <!-- Header -->
+    <!-- HEADER / NAV (same as Terms) -->
     <header class="bg-white shadow-md sticky top-0 z-40">
         <div class="container mx-auto px-6 py-3">
             <div class="flex justify-between items-center">
-                <!-- Logo -->
                 <a href="/" class="flex-shrink-0">
                     <img class="h-12 w-auto"
                         src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
                         alt="SupportLocalSLC Logo">
                 </a>
 
-                <!-- Desktop Nav -->
                 <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8">
-                    <!-- Directory -->
                     <div class="relative dropdown">
                         <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
                             data-toggle="dropdown">
@@ -35,11 +31,10 @@
                         </a>
                         <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
                             <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
-                            <a class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
                         </div>
                     </div>
 
-                    <!-- Offers -->
                     <div class="relative dropdown">
                         <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
                             data-toggle="dropdown">
@@ -48,37 +43,30 @@
                         <div class="dropdown-menu hidden absolute mt-2 w-56 bg-white rounded-lg shadow-xl py-2">
                             <a href="/sandy/index.html?filter=offers"
                                 class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
-                            <a class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                            <a href="#" class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers
+                                (Soon)</a>
                         </div>
                     </div>
 
                     <a href="#for-business" class="text-gray-600 hover:text-blue-600 font-semibold">For Business
                         Owners</a>
+                    <a id="auth-link" href="/login.html"
+                        class="inline-flex items-center px-4 py-2 rounded-md bg-blue-900 text-white font-semibold">Login</a>
                 </nav>
 
-                <!-- Desktop Auth -->
-                <div class="hidden lg:block">
-                    <a id="auth-link" href="/login.html"
-                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
-                </div>
-
-                <!-- Mobile hamburger -->
-                <div class="lg:hidden">
-                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800 focus:outline-none">
-                        <i class="fas fa-bars text-2xl"></i>
-                    </button>
-                </div>
+                <button id="mobile-menu-btn" class="lg:hidden text-2xl text-gray-700" aria-label="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
 
-            <!-- Mobile Menu -->
-            <nav id="mobile-menu" class="lg:hidden hidden mt-4">
+            <nav id="mobile-menu" class="lg:hidden hidden mt-3 border-t pt-3 space-y-2">
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
                         Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
                     </a>
                     <div class="dropdown-menu hidden pl-4">
                         <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
-                        <a class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</a>
                     </div>
                 </div>
                 <div class="dropdown">
@@ -87,106 +75,101 @@
                     </a>
                     <div class="dropdown-menu hidden pl-4">
                         <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
-                        <a class="block py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
+                        <a href="#" class="block py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</a>
                     </div>
                 </div>
                 <a href="#for-business" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
-                <hr class="my-2" />
+                <hr class="my-2">
                 <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
             </nav>
         </div>
     </header>
 
-    <!-- Page content -->
-    <main class="container mx-auto px-6 py-12">
-        <h1 class="text-3xl font-extrabold text-gray-900">Terms of Service</h1>
-        <p class="mt-2 text-sm text-gray-500">Effective: July 2025</p>
+    <!-- PAGE CONTENT -->
+    <main class="container mx-auto px-6 py-10">
+        <h1 class="text-3xl font-bold text-gray-900">Privacy Policy</h1>
+        <p class="text-sm text-gray-500 mt-1">Last updated: August 11, 2025</p>
 
-        <section class="prose prose-slate max-w-none mt-8">
+        <div class="prose prose-slate max-w-none mt-8">
+            <h2>Overview</h2>
+            <p>This policy explains what we collect, how we use it, and your choices. We keep it simple and practical
+                for a local directory.</p>
 
-
-            <p>Welcome to SupportLocalSLC (“we,” “us,” “our”). These Terms of Service (“Terms”) apply to your access to
-                and use of the SupportLocalSLC website, dashboards, and related services (the “Service”). By using the
-                Service, you agree to these Terms.</p>
-
-            <h2>1) Accounts & Eligibility</h2>
+            <h2>What we collect</h2>
             <ul>
-                <li><strong>Supporter first:</strong> All new accounts begin as supporter accounts. Business access is
-                    granted when you claim or create a business from inside the dashboard.</li>
-                <li><strong>Accuracy:</strong> You’re responsible for maintaining accurate account information and for
-                    all activity under your account.</li>
+                <li><strong>Account data:</strong> name, email, and auth data (via email/password or Google OAuth).</li>
+                <li><strong>Business content:</strong> details you submit for your listing (texts, images, offers).</li>
+                <li><strong>Usage data:</strong> basic logs and device info needed to run the site and keep it secure.
+                </li>
+                <li><strong>Pre-populated listings:</strong> we may seed listings from public sources and later verify
+                    with owners.</li>
             </ul>
 
-            <h2>2) Pre-Populated Listings & Claiming</h2>
-            <p>We may seed the directory with business listings created from publicly available sources. If you’re an
-                owner or authorized representative, you can verify your relationship and <strong>claim</strong> the
-                listing inside the dashboard. We may ask for proof of affiliation and may deny or revoke claims we
-                cannot verify.</p>
-
-            <h2>3) Your Content & License</h2>
+            <h2>How we use data</h2>
             <ul>
-                <li>You retain ownership of content you submit (text, images, logos, offers, etc.).</li>
-                <li>You grant us a worldwide, non-exclusive, royalty-free license to host, store, reproduce, display,
-                    and distribute that content for operating and promoting the Service.</li>
-                <li>You represent that you have necessary rights to the content and that it’s not illegal, misleading,
-                    or infringing.</li>
-                <li>We may edit, refuse, or remove content at our discretion to keep the directory safe, accurate, and
-                    useful.</li>
+                <li>Operate the site, show listings and offers, and enable claiming a business.</li>
+                <li>Communicate with you about your account or important changes.</li>
+                <li>Prevent abuse and keep the Service secure.</li>
             </ul>
 
-            <h2>4) Offers, Coupons, and Restrictions</h2>
-            <p>Businesses are responsible for honoring offers they publish and for clearly stating restrictions (e.g.,
-                “cannot be combined,” “one per customer”). We provide tools to make this easy, but the business is
-                ultimately responsible for its terms.</p>
-
-            <h2>5) Payments & Plans</h2>
+            <h2>Service providers</h2>
+            <p>We use trusted providers to run the Service:</p>
             <ul>
-                <li>We may offer paid tiers or add-ons. Prices, features, and billing terms are shown at checkout and
-                    may change from time to time.</li>
-                <li>Payments are processed by our payment provider. By submitting payment details you agree to their
-                    terms.</li>
-                <li>Unless stated otherwise, subscriptions renew automatically until canceled. Cancel in your dashboard
-                    to stop future charges.</li>
+                <li><strong>Supabase</strong> (auth, database, storage, OAuth callback)</li>
+                <li><strong>Vercel</strong> (site hosting and deployment)</li>
+                <li><strong>Google</strong> (Google Sign-In, if enabled)</li>
+                <!-- Add analytics or email provider here when you add them -->
             </ul>
 
-            <h2>6) Prohibited Activities</h2>
+            <h2>Cookies</h2>
+            <p>We use essential cookies for login and basic site functionality. If we add analytics later, we will note
+                it here and give you a clear opt-out.</p>
+
+            <h2>Data sharing</h2>
             <ul>
-                <li>Scraping, harvesting, or bulk exporting data without our prior written consent.</li>
-                <li>Reverse engineering, bypassing access controls, or interfering with the Service.</li>
-                <li>Posting illegal, deceptive, infringing, hateful, or harmful content.</li>
-                <li>Impersonating others or misrepresenting affiliation with a business.</li>
+                <li>We do <strong>not</strong> sell personal information.</li>
+                <li>We share data with service providers only to operate the Service under our instructions.</li>
+                <li>We may disclose if required by law or to protect rights and safety.</li>
             </ul>
 
-            <h2>7) Intellectual Property</h2>
-            <p>The Service, including our branding, UI, and data schema, is protected by IP laws. You may not copy,
-                modify, or create derivative works of the Service except as permitted by these Terms.</p>
+            <h2>Retention</h2>
+            <p>We keep account data while your account is active. We retain some records as needed for security, legal,
+                or operational reasons.</p>
 
-            <h2>8) Termination</h2>
-            <p>We may suspend or terminate access if you violate these Terms or create risk or liability for us or
-                others. You may stop using the Service at any time.</p>
+            <h2>Your choices</h2>
+            <ul>
+                <li>Access, update, or delete your account data by emailing us.</li>
+                <li>Unpublish or edit your business listing from your dashboard.</li>
+                <li>Request account deletion: email <a
+                        href="mailto:admin@robargemarketing.com">admin@robargemarketing.com</a> with the subject “Delete
+                    my account.” We’ll verify and process it.</li>
+            </ul>
 
-            <h2>9) Disclaimers & Limitation of Liability</h2>
-            <p>The Service is provided “as is” without warranties. To the fullest extent permitted by law, we won’t be
-                liable for indirect, incidental, special, consequential, or punitive damages, or for lost profits,
-                revenues, or data.</p>
+            <h2>Children</h2>
+            <p>The Service is not directed to children under 13. If we learn we collected personal information from a
+                child under 13, we will delete it.</p>
 
-            <h2>10) Changes</h2>
-            <p>We may update these Terms from time to time. When we do, we’ll update the effective date. Continued use
-                after changes means you accept the updated Terms.</p>
+            <h2>State/region rights</h2>
+            <p>Depending on your location, you may have additional rights (for example, to know, access, correct, or
+                delete data). We honor valid requests—email us and we’ll walk you through it.</p>
 
-            <h2>11) Governing Law</h2>
-            <p>These Terms are governed by the laws of the State of Utah (without regard to conflict of law rules).</p>
+            <h2>Security</h2>
+            <p>We take reasonable measures to protect information, but no method is perfectly secure.</p>
 
-            <h2>12) Contact</h2>
-            <p>Questions? <a href="mailto:admin@robargemarketing.com">admin@robargemarketing.com</a></p>
-        </section>
+            <h2>Changes</h2>
+            <p>We may update this policy by posting a new “Last updated” date. If changes are significant, we’ll try to
+                give you a heads up.</p>
+
+            <h2>Contact</h2>
+            <p>Questions? Email <a href="mailto:admin@robargemarketing.com">admin@robargemarketing.com</a>.</p>
+        </div>
     </main>
 
-    <!-- Footer -->
+    <!-- FOOTER (same as Terms) -->
     <footer class="bg-gray-800 text-gray-400">
         <div class="container mx-auto px-6 py-16">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
-                <div class="md:col-span-1">
+                <div>
                     <img src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
                         alt="SupportLocalSLC Logo" class="h-10 mb-4">
                     <p class="text-sm">Your guide to the best local spots in Salt Lake County.</p>
@@ -222,42 +205,33 @@
         </div>
     </footer>
 
-    <!-- Minimal nav JS (matches your index) -->
-    <script>
+    <script type="module">
         function updateNavAuth() {
             const authLink = document.getElementById('auth-link');
             const mobileAuthLink = document.getElementById('mobile-auth-link');
             const isLoggedIn = sessionStorage.getItem('supabase_session');
-
             if (authLink && mobileAuthLink) {
                 if (isLoggedIn) {
                     authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
                     mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
-                } else {
+                }
+                else {
                     authLink.href = '/login.html'; authLink.textContent = 'Login';
                     mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
                 }
             }
         }
-
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-        }
+        mobileMenuBtn?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
         document.addEventListener('click', (e) => {
             const isToggle = e.target.matches('[data-toggle="dropdown"]');
             if (!isToggle && e.target.closest('.dropdown') === null) {
                 document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
                 return;
             }
-            if (isToggle) {
-                e.preventDefault();
-                const menu = e.target.nextElementSibling;
-                if (menu) menu.classList.toggle('hidden');
-            }
+            if (isToggle) { e.preventDefault(); e.target.nextElementSibling?.classList.toggle('hidden'); }
         });
-
         document.addEventListener('DOMContentLoaded', updateNavAuth);
     </script>
 </body>
