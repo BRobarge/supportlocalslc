@@ -44,6 +44,10 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/supabase-init.js"></script>
+    <script type="module" src="/shared/auth-nav.js"></script>
+    <script src="/shared/header-nav.js"></script>
+
 </head>
 <body class="bg-gray-100 font-sans">
 
@@ -141,7 +145,8 @@
         // ===================================================================================
         const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        const supabaseClient = window.supabaseClient;
+
 
         let currentPhotos = []; // To store photo URLs for the modal
 
@@ -770,7 +775,42 @@
                     });
                 }
 
+                // Header menu wiring (safe to include on multiple pages)
+                    (function () {
+                        if (window.__sl_header_nav) return; // avoid duplicates
+                        window.__sl_header_nav = true;
 
+                        document.addEventListener('click', (e) => {
+                            // Mobile hamburger
+                            const hamburger = e.target.closest('#mobile-menu-btn');
+                            if (hamburger) {
+                                const mm = document.getElementById('mobile-menu');
+                                if (mm) mm.classList.toggle('hidden');
+                                return;
+                            }
+
+                            // Dropdown toggles (use closest so clicks on the <i> chevron still work)
+                            const toggle = e.target.closest('[data-toggle="dropdown"]');
+                            if (toggle) {
+                                e.preventDefault();
+
+                                // Close other open menus
+                                document.querySelectorAll('.dropdown-menu').forEach(m => {
+                                    if (m !== toggle.nextElementSibling) m.classList.add('hidden');
+                                });
+
+                                // Toggle this one
+                                toggle.nextElementSibling?.classList.toggle('hidden');
+                                return;
+                            }
+
+                            // Clicked outside any dropdown? Close all.
+                            if (!e.target.closest('.dropdown')) {
+                                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+                            }
+                        });
+                    })();
+                
     </script>
 
     <footer class="bg-gray-800 text-gray-400 mt-16">

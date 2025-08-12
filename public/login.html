@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/supabase-init.js"></script>
 </head>
 
 <body class="bg-white font-sans text-slate-900">
@@ -130,8 +131,23 @@
                     </div>
                 </label>
                 <!-- Keep your preferred button color -->
-                <button type="submit"
-                    class="w-full rounded-lg bg-blue-900 text-yellow-300 font-semibold py-2.5 hover:bg-blue-800">Login</button>
+                <button type="submit" class="w-full rounded-lg bg-blue-900 text-yellow-300 font-semibold py-2.5 hover:bg-blue-800">
+                    Login
+                </button>
+                
+                <!-- subtle divider -->
+                <div class="mt-3 text-center text-sm text-slate-500">or</div>
+                
+                <!-- magic link button -->
+                <button type="button" id="login-magic"
+                    class="w-full mt-2 rounded-lg bg-blue-900 text-yellow-300 font-semibold py-2.5 hover:bg-blue-800">
+                    Email me a magic link
+                </button>
+                
+                <p class="mt-2 text-xs text-slate-500 text-center">
+                    We’ll email you a one-time sign-in link.
+                </p>
+
                 <div class="flex items-center justify-between text-sm">
                     <button type="button" id="forgot" class="underline">Forgot password?</button>
                 </div>
@@ -169,6 +185,18 @@
                 <button type="submit"
                     class="w-full rounded-lg bg-blue-900 text-yellow-300 font-semibold py-2.5 hover:bg-blue-800">Create
                     account</button>
+                    <!-- subtle divider -->
+                    <div class="mt-3 text-center text-sm text-slate-500">or</div>
+                    
+                    <!-- magic link button -->
+                    <button type="button" id="signup-magic"
+                        class="w-full mt-2 rounded-lg bg-blue-900 text-yellow-300 font-semibold py-2.5 hover:bg-blue-800">
+                        Email me a magic link
+                    </button>
+                    
+                    <p class="mt-2 text-xs text-slate-500 text-center">
+                        No password needed. We’ll create your account after you click the link.
+                    </p>
                 <div class="pt-2">
                     <button type="button" id="signup-google"
                         class="w-full rounded-lg border border-slate-300 py-2.5 text-sm font-semibold hover:bg-slate-50 flex items-center justify-center gap-2">
@@ -227,138 +255,246 @@
     <!-- SCRIPT                                                         -->
     <!-- ============================================================= -->
     <script type="module">
-        // Supabase
-        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co'
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw'
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey)
+        // ===== Supabase client =====
+        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+        const sb = window.supabaseClient || supabase.createClient(supabaseUrl, supabaseAnonKey);
+        window.supabaseClient = sb;
+
+        // ===== Helpers =====
+        const $ = (sel, root = document) => root.querySelector(sel);
+        const successBox = $('#success-message');
+        const errorBox = $('#error-message');
+        const showSuccess = (m) => { if (!successBox || !errorBox) return; successBox.textContent = m; successBox.classList.remove('hidden'); errorBox.classList.add('hidden'); }
+        const showError = (m) => { if (!successBox || !errorBox) return; errorBox.textContent = m; errorBox.classList.remove('hidden'); successBox.classList.add('hidden'); }
+        const hideMsg = () => { if (!successBox || !errorBox) return; successBox.classList.add('hidden'); errorBox.classList.add('hidden'); }
 
         // Tabs
-        const tabLogin = document.getElementById('tab-login')
-        const tabSignup = document.getElementById('tab-signup')
-        const panelLogin = document.getElementById('panel-login')
-        const panelSignup = document.getElementById('panel-signup')
         function setTab(which) {
-            const isLogin = which === 'login'
-            tabLogin.setAttribute('aria-selected', isLogin)
-            tabSignup.setAttribute('aria-selected', !isLogin)
-            tabLogin.classList.toggle('bg-white', isLogin)
-            tabLogin.classList.toggle('text-slate-600', !isLogin)
-            tabLogin.classList.toggle('shadow', isLogin)
-            tabSignup.classList.toggle('bg-white', !isLogin)
-            tabSignup.classList.toggle('text-slate-600', isLogin)
-            tabSignup.classList.toggle('shadow', !isLogin)
-            panelLogin.classList.toggle('hidden', !isLogin)
-            panelSignup.classList.toggle('hidden', isLogin)
-            hideMsg()
-        }
-        tabLogin.addEventListener('click', () => setTab('login'))
-        tabSignup.addEventListener('click', () => setTab('signup'))
-
-        // Messages
-        const successBox = document.getElementById('success-message')
-        const errorBox = document.getElementById('error-message')
-        const showSuccess = (m) => { successBox.textContent = m; successBox.classList.remove('hidden'); errorBox.classList.add('hidden') }
-        const showError = (m) => { errorBox.textContent = m; errorBox.classList.remove('hidden'); successBox.classList.add('hidden') }
-        const hideMsg = () => { successBox.classList.add('hidden'); errorBox.classList.add('hidden') }
-
-        // Password toggles
-        function togglePassword(btnId, inputId) {
-            const btn = document.getElementById(btnId)
-            const input = document.getElementById(inputId)
-            btn.addEventListener('click', () => {
-                const isPwd = input.type === 'password'
-                input.type = isPwd ? 'text' : 'password'
-                btn.innerHTML = isPwd ? '<i class="far fa-eye-slash"></i>' : '<i class="far fa-eye"></i>'
-            })
-        }
-        togglePassword('login-toggle-pass', 'login-password')
-        togglePassword('signup-toggle-pass', 'signup-password')
-
-        // Login
-        document.getElementById('panel-login').addEventListener('submit', async (e) => {
-            e.preventDefault(); hideMsg()
-            const email = document.getElementById('login-email').value.trim()
-            const password = document.getElementById('login-password').value
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password })
-            if (error) { showError(error.message); return }
-            sessionStorage.setItem('supabase_session', JSON.stringify(data.session))
-            // Backstop: ensure profile exists with default role
-            try { await supabaseClient.from('profiles').upsert({ id: data.user.id, email, role: 'supporter' }, { onConflict: 'id' }) } catch { }
-            window.location.href = '/dashboard.html'
-        })
-
-        // Forgot password
-        document.getElementById('forgot').addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value.trim()
-            if (!email) { showError('Enter your email above, then click again.'); return }
-            const redirectTo = `${window.location.origin}/reset.html`
-            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo })
-            if (error) { showError(error.message); return }
-            showSuccess('Password reset email sent. Check your inbox.')
-        })
-
-        // Google OAuth
-        async function signInWithGoogle() {
-            const redirectTo = `${window.location.origin}/dashboard.html`
-            const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
-            if (error) showError(error.message)
-        }
-        document.getElementById('login-google').addEventListener('click', signInWithGoogle)
-        document.getElementById('signup-google').addEventListener('click', signInWithGoogle)
-
-        // Signup
-        document.getElementById('panel-signup').addEventListener('submit', async (e) => {
-            e.preventDefault(); hideMsg()
-            const email = document.getElementById('signup-email').value.trim()
-            const password = document.getElementById('signup-password').value
-            const emailRedirectTo = `${window.location.origin}/login.html`
-            const { data, error } = await supabaseClient.auth.signUp({
-                email, password, options: { data: { role: 'supporter' }, emailRedirectTo }
-            })
-            if (error) { showError(error.message); return }
-            try { await supabaseClient.from('profiles').upsert({ id: data.user?.id, email, role: 'supporter' }) } catch { }
-            setTab('login'); showSuccess('Sign up successful. Confirm your email, then log in.')
-        })
-
-            // If already logged in, bounce to dashboard
-            (async () => {
-                const { data } = await supabaseClient.auth.getSession()
-                if (data.session) {
-                    sessionStorage.setItem('supabase_session', JSON.stringify(data.session))
-                    window.location.href = '/dashboard.html'
-                }
-            })()
-
-        // Header: mobile menu + dropdowns + auth link text
-        function wireHeader() {
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn')
-            const mobileMenu = document.getElementById('mobile-menu')
-            mobileMenuBtn?.addEventListener('click', () => mobileMenu.classList.toggle('hidden'))
-
-            document.addEventListener('click', (e) => {
-                const isToggle = e.target.matches('[data-toggle="dropdown"]')
-                if (!isToggle && e.target.closest('.dropdown') === null) {
-                    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'))
-                    return
-                }
-                if (isToggle) {
-                    e.preventDefault(); e.target.nextElementSibling?.classList.toggle('hidden')
-                }
-            })
-
-            const authLink = document.getElementById('auth-link')
-            const mobileAuthLink = document.getElementById('mobile-auth-link')
-            const isLoggedIn = sessionStorage.getItem('supabase_session')
-            if (isLoggedIn) {
-                if (authLink) { authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard' }
-                if (mobileAuthLink) { mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard' }
-            } else {
-                if (authLink) { authLink.href = '/login.html'; authLink.textContent = 'Login' }
-                if (mobileAuthLink) { mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login' }
+            const isLogin = which === 'login';
+            const tabLogin = $('#tab-login'), tabSignup = $('#tab-signup');
+            const panelLogin = $('#panel-login'), panelSignup = $('#panel-signup');
+            if (tabLogin && tabSignup) {
+                tabLogin.setAttribute('aria-selected', isLogin);
+                tabSignup.setAttribute('aria-selected', !isLogin);
+                tabLogin.classList.toggle('bg-white', isLogin);
+                tabLogin.classList.toggle('text-slate-600', !isLogin);
+                tabLogin.classList.toggle('shadow', isLogin);
+                tabSignup.classList.toggle('bg-white', !isLogin);
+                tabSignup.classList.toggle('text-slate-600', isLogin);
+                tabSignup.classList.toggle('shadow', !isLogin);
             }
+            if (panelLogin && panelSignup) {
+                panelLogin.classList.toggle('hidden', !isLogin);
+                panelSignup.classList.toggle('hidden', isLogin);
+            }
+            hideMsg();
         }
-        wireHeader()
+
+        // ===== Click handling (delegated) =====
+        document.addEventListener('click', async (e) => {
+            // Tabs
+            if (e.target.closest('#tab-login')) { e.preventDefault(); setTab('login'); return; }
+            if (e.target.closest('#tab-signup')) { e.preventDefault(); setTab('signup'); return; }
+
+            // Password toggles
+            if (e.target.closest('#login-toggle-pass')) { const i = $('#login-password'); if (i) { i.type = i.type === 'password' ? 'text' : 'password'; } return; }
+            if (e.target.closest('#signup-toggle-pass')) { const i = $('#signup-password'); if (i) { i.type = i.type === 'password' ? 'text' : 'password'; } return; }
+
+            // Forgot password
+            if (e.target.closest('#forgot')) {
+                e.preventDefault();
+                const email = ($('#login-email')?.value || '').trim();
+                if (!email) { showError('Enter your email above, then click again.'); return; }
+                const redirectTo = `${window.location.origin}/reset.html`;
+                const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+                if (error) { showError(error.message); return; }
+                showSuccess('Password reset email sent. Check your inbox.');
+                return;
+            }
+
+            // Google OAuth (login OR signup buttons)
+            if (e.target.closest('#login-google, #signup-google')) {
+                e.preventDefault();
+                const redirectTo = window.location.origin + '/dashboard.html';
+                const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+                if (error) showError(error.message);
+                return;
+            }
+
+            // LOGIN magic link
+            if (e.target.closest('#login-magic')) {
+                const email = (document.getElementById('login-email')?.value || '').trim();
+                if (!email) { showError('Enter your email first.'); return; }
+
+                const btn = e.target.closest('#login-magic');
+                btn.disabled = true; const prev = btn.textContent; btn.textContent = 'Sending…';
+
+                const redirectTo = window.location.origin + '/dashboard.html';
+                const { error } = await supabaseClient.auth.signInWithOtp({
+                    email,
+                    options: { emailRedirectTo: redirectTo }
+                });
+
+                btn.disabled = false; btn.textContent = prev;
+                if (error) { showError(error.message); return; }
+                showSuccess('Magic link sent. Check your inbox.');
+                return;
+            }
+
+            // SIGNUP magic link
+            if (e.target.closest('#signup-magic')) {
+                const email = (document.getElementById('signup-email')?.value || '').trim();
+                if (!email) { showError('Enter your email first.'); return; }
+
+                const btn = e.target.closest('#signup-magic');
+                btn.disabled = true; const prev = btn.textContent; btn.textContent = 'Sending…';
+
+                const redirectTo = window.location.origin + '/dashboard.html';
+                const { error } = await supabaseClient.auth.signInWithOtp({
+                    email,
+                    options: { emailRedirectTo: redirectTo }
+                });
+
+                btn.disabled = false; btn.textContent = prev;
+                if (error) { showError(error.message); return; }
+                showSuccess('Magic link sent. Check your inbox.');
+                return;
+            }
+
+            // Mobile hamburger + dropdowns
+            if (e.target.closest('#mobile-menu-btn')) {
+                $('#mobile-menu')?.classList.toggle('hidden'); return;
+            }
+            const toggle = e.target.closest('[data-toggle="dropdown"]');
+            if (toggle) { e.preventDefault(); toggle.nextElementSibling?.classList.toggle('hidden'); return; }
+            if (!e.target.closest('.dropdown')) { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden')); }
+        });
+
+        // ===== Form submits (delegated) =====
+        document.addEventListener('submit', async (e) => {
+            const form = e.target;
+            // Login form
+            if (form && form.id === 'panel-login') {
+                e.preventDefault(); hideMsg();
+                const email = ($('#login-email')?.value || '').trim();
+                const password = $('#login-password')?.value || '';
+                const { data, error } = await sb.auth.signInWithPassword({ email, password });
+                if (error) { showError(error.message); return; }
+                try { await sb.from('profiles').upsert({ id: data.user.id, email, role: 'supporter' }, { onConflict: 'id' }); } catch { }
+                window.location.href = '/dashboard.html';
+                return;
+            }
+            // Signup form
+            if (form && form.id === 'panel-signup') {
+                e.preventDefault(); hideMsg();
+                const email = ($('#signup-email')?.value || '').trim();
+                const password = $('#signup-password')?.value || '';
+                const emailRedirectTo = `${window.location.origin}/login.html`;
+                const { data, error } = await sb.auth.signUp({ email, password, options: { data: { role: 'supporter' }, emailRedirectTo } });
+                if (error) { showError(error.message); return; }
+                try { await sb.from('profiles').upsert({ id: data.user?.id, email, role: 'supporter' }) } catch { }
+                setTab('login'); showSuccess('Sign up successful. Confirm your email, then log in.');
+                return;
+            }
+        });
+
+         document.addEventListener('click', async (e) => {
+               // LOGIN magic link
+                    if (e.target.closest('#login-magic')) {
+                        const email = (document.getElementById('login-email')?.value || '').trim();
+                        if (!email) { showError('Enter your email first.'); return; }
+
+                        const btn = e.target.closest('#login-magic');
+                        btn.disabled = true; const prev = btn.textContent; btn.textContent = 'Sending…';
+
+                        const redirectTo = window.location.origin + '/dashboard.html';
+                        const { error } = await supabaseClient.auth.signInWithOtp({
+                            email,
+                            options: { emailRedirectTo: redirectTo }
+                        });
+
+                        btn.disabled = false; btn.textContent = prev;
+                        if (error) { showError(error.message); return; }
+                        showSuccess('Magic link sent. Check your inbox.');
+                        return;
+                    }
+
+             // SIGNUP magic link
+                    if (e.target.closest('#signup-magic')) {
+                        const email = (document.getElementById('signup-email')?.value || '').trim();
+                        if (!email) { showError('Enter your email first.'); return; }
+
+                        const btn = e.target.closest('#signup-magic');
+                        btn.disabled = true; const prev = btn.textContent; btn.textContent = 'Sending…';
+
+                        const redirectTo = window.location.origin + '/dashboard.html';
+                        const { error } = await supabaseClient.auth.signInWithOtp({
+                            email,
+                            options: { emailRedirectTo: redirectTo }
+                        });
+
+                        btn.disabled = false; btn.textContent = prev;
+                        if (error) { showError(error.message); return; }
+                        showSuccess('Magic link sent. Check your inbox.');
+                        return;
+                    }
+
+            });
+
+
+        // ===== On load =====
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => setTab('login'), { once: true });
+        } else {
+            setTab('login');
+        }
+
+        // Bounce if already logged in
+        (async () => {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) window.location.href = '/dashboard.html';
+        })();
+
+         // Header menu wiring (safe to include on multiple pages)
+            (function () {
+                if (window.__sl_header_nav) return; // avoid duplicates
+                window.__sl_header_nav = true;
+
+                document.addEventListener('click', (e) => {
+                    // Mobile hamburger
+                    const hamburger = e.target.closest('#mobile-menu-btn');
+                    if (hamburger) {
+                        const mm = document.getElementById('mobile-menu');
+                        if (mm) mm.classList.toggle('hidden');
+                        return;
+                    }
+
+                    // Dropdown toggles (use closest so clicks on the <i> chevron still work)
+                    const toggle = e.target.closest('[data-toggle="dropdown"]');
+                    if (toggle) {
+                        e.preventDefault();
+
+                        // Close other open menus
+                        document.querySelectorAll('.dropdown-menu').forEach(m => {
+                            if (m !== toggle.nextElementSibling) m.classList.add('hidden');
+                        });
+
+                        // Toggle this one
+                        toggle.nextElementSibling?.classList.toggle('hidden');
+                        return;
+                    }
+
+                    // Clicked outside any dropdown? Close all.
+                    if (!e.target.closest('.dropdown')) {
+                        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+                    }
+                });
+            })();
+
+           
     </script>
+
 </body>
 
 </html>

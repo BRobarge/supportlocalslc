@@ -12,6 +12,11 @@
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/supabase-init.js"></script>
+    <script type="module" src="/shared/auth-nav.js"></script>
+    <script src="/shared/header-nav.js"></script>
+
+
     <style>
         .swiper-button-next,
         .swiper-button-prev {
@@ -337,7 +342,8 @@
     <script type="module">
         const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        const supabaseClient = window.supabaseClient;
+
 
         // FIX: Corrected Swiper initialization
         function initSwiper(selector) {
@@ -449,49 +455,7 @@
             initSwiper('#latest-offers-swiper');
         }
 
-        // Replace your entire updateNavAuth function with this one
-            // Replace your entire updateNavAuth function with this one.
-                function updateNavAuth() {
-                    // --- Part 1: Handle Login/Dashboard Button State (No changes needed) ---
-                    const authLink = document.getElementById('auth-link');
-                    const mobileAuthLink = document.getElementById('mobile-auth-link');
-                    const isLoggedIn = sessionStorage.getItem('supabase_session');
-
-                    if (isLoggedIn) {
-                        authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
-                        mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
-                    } else {
-                        authLink.href = '/login.html'; authLink.textContent = 'Login';
-                        mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
-                    }
-
-                    // --- Part 2: The Corrected Dropdown Logic ---
-                    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-                    const mobileMenu = document.getElementById('mobile-menu');
-
-                    // Toggle the main mobile menu visibility
-                    mobileMenuBtn.addEventListener('click', () => {
-                        mobileMenu.classList.toggle('hidden');
-                    });
-
-                    // Use Event Delegation for all dropdowns (Desktop and Mobile)
-                    document.addEventListener('click', (e) => {
-                        const isDropdownToggle = e.target.matches('[data-toggle="dropdown"]');
-
-                        // If the click is not on a dropdown toggle, close all dropdowns
-                        if (!isDropdownToggle && e.target.closest('.dropdown') === null) {
-                            document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
-                            return;
-                        }
-
-                        // If it IS a dropdown toggle, handle it
-                        if (isDropdownToggle) {
-                            e.preventDefault();
-                            const dropdownMenu = e.target.nextElementSibling;
-                            dropdownMenu.classList.toggle('hidden');
-                        }
-                    });
-                }
+                  
 
 
 
@@ -500,8 +464,44 @@
             setupDynamicHero();
             loadFeaturedListings();
             loadLatestOffers();
-            updateNavAuth();
         });
+
+         // Header menu wiring (safe to include on multiple pages)
+            (function () {
+                if (window.__sl_header_nav) return; // avoid duplicates
+                window.__sl_header_nav = true;
+
+                document.addEventListener('click', (e) => {
+                    // Mobile hamburger
+                    const hamburger = e.target.closest('#mobile-menu-btn');
+                    if (hamburger) {
+                        const mm = document.getElementById('mobile-menu');
+                        if (mm) mm.classList.toggle('hidden');
+                        return;
+                    }
+
+                    // Dropdown toggles (use closest so clicks on the <i> chevron still work)
+                    const toggle = e.target.closest('[data-toggle="dropdown"]');
+                    if (toggle) {
+                        e.preventDefault();
+
+                        // Close other open menus
+                        document.querySelectorAll('.dropdown-menu').forEach(m => {
+                            if (m !== toggle.nextElementSibling) m.classList.add('hidden');
+                        });
+
+                        // Toggle this one
+                        toggle.nextElementSibling?.classList.toggle('hidden');
+                        return;
+                    }
+
+                    // Clicked outside any dropdown? Close all.
+                    if (!e.target.closest('.dropdown')) {
+                        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+                    }
+                });
+            })();
+
     </script>
 </body>
 
