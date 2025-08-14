@@ -405,36 +405,32 @@
             }
         }
 
-        function updateNavAuth() {
-            const authLink = document.getElementById('auth-link');
-            const mobileAuthLink = document.getElementById('mobile-auth-link');
-            const isLoggedIn = sessionStorage.getItem('supabase_session');
+        function updateNavAuth(user) {
+                const authLink = document.getElementById('auth-link');
+                const mobileAuthLink = document.getElementById('mobile-auth-link');
 
-            if (isLoggedIn) {
-                authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
-                mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
-            } else {
-                authLink.href = '/login.html'; authLink.textContent = 'Login';
-                mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
+                const setLoggedIn = () => {
+                    if (authLink) { authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard'; }
+                    if (mobileAuthLink) { mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard'; }
+                };
+                const setLoggedOut = () => {
+                    if (authLink) { authLink.href = '/login.html'; authLink.textContent = 'Login'; }
+                    if (mobileAuthLink) { mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login'; }
+                };
+
+                (async () => {
+                    try {
+                        if (!user) {
+                            const { data: { user: u } } = await supabaseClient.auth.getUser();
+                            user = u || null;
+                        }
+                        user ? setLoggedIn() : setLoggedOut();
+                    } catch {
+                        setLoggedOut();
+                    }
+                })();
             }
 
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-
-            document.addEventListener('click', (e) => {
-                const isDropdownToggle = e.target.matches('[data-toggle="dropdown"]');
-                if (!isDropdownToggle && e.target.closest('.dropdown') === null) {
-                    document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
-                    return;
-                }
-                if (isDropdownToggle) {
-                    e.preventDefault();
-                    const dropdownMenu = e.target.nextElementSibling;
-                    dropdownMenu.classList.toggle('hidden');
-                }
-            });
-        }
 
          // Header menu wiring (safe to include on multiple pages)
             (function () {

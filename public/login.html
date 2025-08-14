@@ -399,46 +399,68 @@
             }
         });
 
+        // put this once, above your document.addEventListener
+            if (!window.__magicLinkWired) {
+                window.__magicLinkWired = true;
+
+                document.addEventListener('click', async (e) => {
+                    // ... your existing handler code, including the MAGIC LINK block ...
+                });
+            }
+
+
          document.addEventListener('click', async (e) => {
-               // LOGIN magic link
-                    if (e.target.closest('#login-magic')) {
-                        const email = (document.getElementById('login-email')?.value || '').trim();
-                        if (!email) { showError('Enter your email first.'); return; }
+               // MAGIC LINK (login + signup) — replaces both old blocks
+             if (e.target.closest('#login-magic, #signup-magic')) {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 hideMsg(); // clear any old banner
 
-                        const btn = e.target.closest('#login-magic');
-                        btn.disabled = true; const prev = btn.textContent; btn.textContent = 'Sending…';
+                 const emailInputId = e.target.closest('#login-magic') ? 'login-email' : 'signup-email';
+                 const email = (document.getElementById(emailInputId)?.value || '').trim();
+                 if (!email) { showError('Enter your email first.'); return; }
 
-                        const redirectTo = window.location.origin + '/dashboard.html';
-                        const { error } = await supabaseClient.auth.signInWithOtp({
-                            email,
-                            options: { emailRedirectTo: redirectTo }
-                        });
+                 const btn = e.target.closest('#login-magic, #signup-magic');
+                 const prev = btn.textContent;
+                 btn.disabled = true;
+                 btn.textContent = 'Sending…';
 
-                        btn.disabled = false; btn.textContent = prev;
-                        if (error) { showError(error.message); return; }
-                        showSuccess('Magic link sent. Check your inbox.');
-                        return;
-                    }
+                 const redirectTo = window.location.origin + '/dashboard.html';
+                 const { error } = await supabaseClient.auth.signInWithOtp({
+                     email,
+                     options: { emailRedirectTo: redirectTo }
+                 });
 
-             // SIGNUP magic link
-                    if (e.target.closest('#signup-magic')) {
-                        const email = (document.getElementById('signup-email')?.value || '').trim();
-                        if (!email) { showError('Enter your email first.'); return; }
+                 if (error) {
+                     // Handle Supabase rate limit (429) nicely
+                     if (error.status === 429 || /rate limit/i.test(error.message)) {
+                         showError('We just sent you a link. Please wait 60s before requesting another.');
+                         let s = 60;
+                         const timer = setInterval(() => {
+                             s--;
+                             btn.textContent = `Wait ${s}s`;
+                             if (s <= 0) {
+                                 clearInterval(timer);
+                                 btn.disabled = false;
+                                 btn.textContent = prev;
+                                 hideMsg();
+                             }
+                         }, 1000);
+                         return;
+                     }
+                     btn.disabled = false;
+                     btn.textContent = prev;
+                     showError(error.message || 'Could not send magic link.');
+                     return;
+                 }
 
-                        const btn = e.target.closest('#signup-magic');
-                        btn.disabled = true; const prev = btn.textContent; btn.textContent = 'Sending…';
+                 // Success
+                 btn.textContent = prev;
+                 showSuccess('Magic link sent. Check your inbox.');
+                 setTimeout(() => { btn.disabled = false; }, 3000);
+                 return;
+             }
 
-                        const redirectTo = window.location.origin + '/dashboard.html';
-                        const { error } = await supabaseClient.auth.signInWithOtp({
-                            email,
-                            options: { emailRedirectTo: redirectTo }
-                        });
-
-                        btn.disabled = false; btn.textContent = prev;
-                        if (error) { showError(error.message); return; }
-                        showSuccess('Magic link sent. Check your inbox.');
-                        return;
-                    }
 
             });
 

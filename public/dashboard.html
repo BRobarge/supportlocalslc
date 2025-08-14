@@ -773,47 +773,27 @@
                 const mobileAuthLink = document.getElementById('mobile-auth-link');
 
                 const setLoggedIn = () => {
-                    if (authLink) { authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard'; }
-                    if (mobileAuthLink) { mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard'; }
+                    authLink && (authLink.href = '/dashboard.html', authLink.textContent = 'Dashboard');
+                    mobileAuthLink && (mobileAuthLink.href = '/dashboard.html', mobileAuthLink.textContent = 'Dashboard');
                 };
                 const setLoggedOut = () => {
-                    if (authLink) { authLink.href = '/login.html'; authLink.textContent = 'Login'; }
-                    if (mobileAuthLink) { mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login'; }
+                    authLink && (authLink.href = '/login.html', authLink.textContent = 'Login');
+                    mobileAuthLink && (mobileAuthLink.href = '/login.html', mobileAuthLink.textContent = 'Login');
                 };
 
-                // Prefer Supabase auth; fallback to sessionStorage flag used on home
-                const apply = async () => {
+                (async () => {
                     try {
                         if (!user) {
                             const { data: { user: u } } = await supabaseClient.auth.getUser();
                             user = u || null;
                         }
                         user ? setLoggedIn() : setLoggedOut();
-                    } catch { setLoggedOut(); }
-                };
-                apply();
-
-                // Mobile menu + dropdowns
-                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-                const mobileMenu = document.getElementById('mobile-menu');
-                if (mobileMenuBtn && mobileMenu && !mobileMenuBtn.dataset.bound) {
-                    mobileMenuBtn.dataset.bound = '1';
-                    mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-                }
-
-                document.addEventListener('click', (e) => {
-                    const isToggle = e.target.matches('[data-toggle="dropdown"]');
-                    if (!isToggle && e.target.closest('.dropdown') === null) {
-                        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
-                        return;
+                    } catch {
+                        setLoggedOut();
                     }
-                    if (isToggle) {
-                        e.preventDefault();
-                        const menu = e.target.nextElementSibling;
-                        if (menu) menu.classList.toggle('hidden');
-                    }
-                });
+                })();
             }
+
 
 
         async function sendGHLNotification(eventType, details) {
@@ -866,56 +846,42 @@
                 });
             }
 
-             // Header menu wiring (safe to include on multiple pages)
-                (function () {
-                    if (window.__sl_header_nav) return; // avoid duplicates
-                    window.__sl_header_nav = true;
-
-                    document.addEventListener('click', (e) => {
-                        // Mobile hamburger
-                        const hamburger = e.target.closest('#mobile-menu-btn');
-                        if (hamburger) {
-                            const mm = document.getElementById('mobile-menu');
-                            if (mm) mm.classList.toggle('hidden');
-                            return;
-                        }
-
-                        // Dropdown toggles (use closest so clicks on the <i> chevron still work)
-                        const toggle = e.target.closest('[data-toggle="dropdown"]');
-                        if (toggle) {
-                            e.preventDefault();
-
-                            // Close other open menus
-                            document.querySelectorAll('.dropdown-menu').forEach(m => {
-                                if (m !== toggle.nextElementSibling) m.classList.add('hidden');
-                            });
-
-                            // Toggle this one
-                            toggle.nextElementSibling?.classList.toggle('hidden');
-                            return;
-                        }
-
-                        // Clicked outside any dropdown? Close all.
-                        if (!e.target.closest('.dropdown')) {
-                            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
-                        }
-                    });
-                })();
-
-                 const sb = window.supabaseClient; // reuse the global client
+                const sb = window.supabaseClient;
 
                     (async () => {
                         const { data: { session } } = await sb.auth.getSession();
                         const user = session?.user;
                         if (!user) return;
 
-                        try {
-                            await sb.from('profiles').upsert(
-                                { id: user.id, email: user.email, role: 'supporter' },
-                                { onConflict: 'id' }
-                            );
-                        } catch { }
-                    })();
+                        await sb.from('profiles').upsert(
+                            { id: user.id, email: user.email }, 
+                            { onConflict: 'id' }
+                        );
+
+                        // Now read the row safely
+                        const { data: profile, error } = await sb
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', user.id)
+                            .maybeSingle();
+
+                        if (error || !profile) {
+                            console.error('profile load error', error);
+                            // show your existing “Could not load user profile” UI here
+                            return;
+                        }
+
+                        // Normalize role no matter how the column is named
+                        const role =
+                            profile.role ??
+                            (Array.isArray(profile.roles) ? profile.roles[0] : undefined) ??
+                            'supporter';
+
+                        // TODO: continue rendering dashboard with `profile` + `role`
+                        // e.g., document.getElementById('welcome-name').textContent = profile.first_name || profile.email;
+                    })(
+                    
+                );
 
     </script>
 
