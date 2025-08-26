@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>For Business Owners • SupportLocalSLC</title>
+
+    <!-- Tailwind output -->
+    <link rel="stylesheet" href="/shared/output.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <!-- Supabase + shared nav -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/supabase-init.js"></script>
+    <script defer src="/shared/include.js"></script>
+    <script type="module" src="/shared/auth-nav.js"></script>
+    <script src="/shared/header-nav.js"></script>
+
+    
+</head>
+
+<body class="bg-slate-50 min-h-screen flex flex-col">
+    <!-- Header (same as other pages) -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div data-include="header"></div>
+    </header>
+
+    <main class="flex-1">
+        <!-- Hero -->
+        <section class="bg-blue-900 text-yellow-300">
+            <div class="max-w-6xl mx-auto px-4 py-14">
+                <h1 class="text-3xl sm:text-4xl font-bold">Tools that help locals find you</h1>
+                <p class="mt-2 text-yellow-200">Start free. Upgrade anytime.</p>
+                <div class="mt-6">
+                    <a href="#plans"
+                        class="inline-block rounded-lg bg-yellow-300 text-blue-900 font-semibold px-5 py-2.5 hover:opacity-90">See
+                        plans</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Plans -->
+        <section id="plans" class="max-w-6xl mx-auto px-4 py-12">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-slate-900">Choose the Plan That's Right for You</h2>
+                <p class="text-slate-600 mt-2 max-w-2xl mx-auto">Start for free to tell your story. Upgrade when you're ready to
+                    turn our audience into your customers.</p>
+            </div>
+        
+            <div class="mt-10 flex items-center justify-center space-x-4">
+                <span class="font-semibold text-slate-800">Monthly</span>
+                <label for="billing-toggle" class="relative inline-flex cursor-pointer items-center">
+                    <input type="checkbox" id="billing-toggle" class="peer sr-only" />
+                    <div
+                        class="h-7 w-12 rounded-full bg-slate-300 after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-full">
+                    </div>
+                </label>
+                <span class="font-semibold text-slate-500">Annual <span class="text-green-600">(2 Months Free)</span></span>
+            </div>
+        
+            <div class="mt-8 grid gap-8 sm:grid-cols-1 lg:grid-cols-3 items-start">
+        
+                <div class="rounded-2xl border border-slate-300 bg-white p-8 shadow-sm h-full flex flex-col">
+                    <h3 class="text-2xl font-semibold text-slate-900">Free</h3>
+                    <p class="text-slate-600 mt-1">Get your story on the platform.</p>
+                    <div class="mt-6 text-4xl font-bold text-slate-900">$0 <span class="text-lg font-medium text-slate-500">/
+                            forever</span></div>
+                    <a href="/dashboard.html" id="cta-free"
+                        class="w-full mt-8 rounded-lg bg-slate-600 text-white font-semibold py-3 text-center hover:bg-slate-700">Get
+                        Started for Free</a>
+                    <ul class="mt-8 space-y-3 text-sm text-slate-700 flex-grow">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Full "Our Story"
+                            Profile Page</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Receive & View
+                            Customer Reviews</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Basic Business
+                            Info & Social Links</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Up to 5 Photos
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> 1 Business
+                            Category</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Up to 5 Attribute
+                            Tags</li>
+                    </ul>
+                </div>
+        
+                <div class="relative rounded-2xl border-2 border-blue-600 bg-white p-8 shadow-xl h-full flex flex-col">
+                    <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
+                        <span
+                            class="inline-flex items-center rounded-full bg-blue-600 px-4 py-1 text-sm font-semibold text-white">MOST
+                            POPULAR</span>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-slate-900">Essentials</h3>
+                    <p class="text-blue-600 mt-1">Turn visitors into customers.</p>
+                    <div class="mt-6 text-4xl font-bold text-slate-900">
+                        $<span id="price-essentials">49</span> <span class="text-lg font-medium text-slate-500"
+                            id="period-essentials">/ mo</span>
+                    </div>
+                    <button
+                        class="w-full mt-8 rounded-lg bg-blue-600 text-white font-semibold py-3 text-center hover:bg-blue-700 cta-upgrade"
+                        data-plan="essentials-monthly" id="cta-essentials">Choose Essentials</button>
+                    <ul class="mt-8 space-y-3 text-sm text-slate-700 flex-grow">
+                        <li class="font-bold">Everything in Free, plus:</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i> Create up to 3
+                            Active Offers</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i> "Follow" Button
+                            Enabled</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i> Reply to Customer
+                            Reviews</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i> Enhanced Search
+                            Placement</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i> Up to 15 Photos
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i> Up to 3 Business
+                            Categories</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-blue-500 mr-3"></i> Up to 15 Attribute
+                            Tags</li>
+                    </ul>
+                </div>
+        
+                <div
+                    class="rounded-2xl border border-transparent bg-slate-800 p-8 shadow-sm h-full flex flex-col ring-2 ring-yellow-400">
+                    <h3 class="text-2xl font-semibold text-white">Pro</h3>
+                    <p class="text-slate-400 mt-1">Dominate your local market.</p>
+                    <div class="mt-6 text-4xl font-bold text-white">
+                        $<span id="price-pro">99</span> <span class="text-lg font-medium text-slate-400" id="period-pro">/
+                            mo</span>
+                    </div>
+                    <button
+                        class="w-full mt-8 rounded-lg bg-yellow-300 text-blue-900 font-semibold py-3 text-center hover:opacity-90 cta-upgrade"
+                        data-plan="pro-monthly" id="cta-pro">Go Pro</button>
+                    <ul class="mt-8 space-y-3 text-sm text-slate-300 flex-grow">
+                        <li class="font-bold text-white">Everything in Essentials, plus:</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-3"></i> Top-Tier Search
+                            Placement</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-3"></i> Homepage "Featured
+                            Business" Slot</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-3"></i> Follower
+                            Notifications (Coming Soon!)</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-3"></i> Advanced Analytics
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-3"></i> Unlimited Photos
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-3"></i> Up to 7 Business
+                            Categories</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-400 mr-3"></i> Unlimited
+                            Attribute Tags</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    ]</main>
+
+    <footer class="bg-blue-900 text-yellow-300">
+        <div data-include="footer"></div>
+    </footer>
+
+    <!-- Page JS: simple routing for the CTAs -->
+    <script type="module">
+
+        window.SUPABASE_URL = "https://kozlfywdsqjndcsibgtw.supabase.co";
+        window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw";
+        // Single source of truth client for this page
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        // ----- CONFIG -----
+        const SUPABASE_URL = window.SUPABASE_URL;
+        const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY;
+
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            console.error("[owners] Missing SUPABASE_URL or SUPABASE_ANON_KEY on window. Make sure /shared/supabase-init.js sets them.");
+            // Bail early to avoid undefined errors
+        }
+
+        // Create a local client for this page (don’t rely on window.supabase)
+        const sb = (SUPABASE_URL && SUPABASE_ANON_KEY)
+            ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+            : undefined;
+
+        // ----- DOM -----
+        const toggle = document.getElementById('billing-toggle');
+
+        const priceEssentialsEl = document.getElementById('price-essentials');
+        const periodEssentialsEl = document.getElementById('period-essentials');
+        const ctaEssentialsEl = document.getElementById('cta-essentials');
+
+        const priceProEl = document.getElementById('price-pro');
+        const periodProEl = document.getElementById('period-pro');
+        const ctaProEl = document.getElementById('cta-pro');
+
+        const elAccount = document.getElementById("account-panel");
+        const elSigninPrompt = document.getElementById("signin-prompt");
+        const elPlanHost = document.getElementById("plan-badge-host");
+
+        // ----- HELPERS -----
+        function fmtDate(iso) {
+            if (!iso) return "";
+            const d = new Date(iso);
+            return isNaN(d) ? "" : d.toLocaleDateString();
+        }
+
+        // ----- CHECKOUT -----
+        async function startCheckout(plan) {
+            if (!sb) return alert("Setup error: Supabase client missing.");
+            // Require auth
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) {
+                const next = encodeURIComponent('/owners.html#billing');
+                window.location.href = `/login.html?next=${next}`;
+                return;
+            }
+
+            // Call your Edge Function
+            try {
+                const url = `${SUPABASE_URL}/functions/v1/create-checkout`;
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                        "apikey": SUPABASE_ANON_KEY,
+                        "authorization": `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ plan }) // 'essentials-monthly' | 'essentials-annual' | 'pro-monthly' | 'pro-annual'
+                });
+                const json = await res.json();
+                if (json?.url) {
+                    window.location.href = json.url; // Stripe Checkout
+                } else {
+                    console.error(json);
+                    alert(json?.error || "Checkout error. Please try again.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Checkout failed. Try again.");
+            }
+        }
+
+        // Wire CTA buttons (event delegation)
+        document.addEventListener('click', (e) => {
+            // Free: just send them to dashboard (or login → dashboard)
+            if (e.target.closest('#cta-free')) {
+                e.preventDefault();
+                window.location.href = '/dashboard.html';
+                return;
+            }
+            // Paid upgrades
+            const up = e.target.closest('.cta-upgrade');
+            if (up) {
+                e.preventDefault();
+                startCheckout(up.dataset.plan);
+            }
+        });
+
+        // ----- PRICING TOGGLE -----
+        const monthlyPrices = { essentials: 49, pro: 99 };
+        const annualPrices = { essentials: 499, pro: 999 };
+
+        if (toggle) {
+            toggle.addEventListener('change', () => {
+                const annual = toggle.checked;
+
+                if (priceEssentialsEl) priceEssentialsEl.textContent = (annual ? annualPrices.essentials : monthlyPrices.essentials);
+                if (periodEssentialsEl) periodEssentialsEl.textContent = annual ? '/ yr' : '/ mo';
+                if (ctaEssentialsEl) ctaEssentialsEl.dataset.plan = annual ? 'essentials-annual' : 'essentials-monthly';
+
+                if (priceProEl) priceProEl.textContent = (annual ? annualPrices.pro : monthlyPrices.pro);
+                if (periodProEl) periodProEl.textContent = annual ? '/ yr' : '/ mo';
+                if (ctaProEl) ctaProEl.dataset.plan = annual ? 'pro-annual' : 'pro-monthly';
+            });
+            // Initialize defaults just in case
+            toggle.dispatchEvent(new Event('change'));
+        }
+
+        // ----- ACCOUNT PANEL (only if logged in) -----
+        async function render() {
+            if (!sb) return; // Avoid null refs if config missing
+
+            const { data: { session } } = await sb.auth.getSession();
+
+            if (session) {
+                elAccount?.classList.remove("hidden");
+                elSigninPrompt?.classList.add("hidden");
+                await renderPlanBadge(session);
+            } else {
+                elAccount?.classList.add("hidden");
+                elSigninPrompt?.classList.remove("hidden");
+            }
+        }
+
+        async function renderPlanBadge(session) {
+            if (!elPlanHost || !sb) return;
+
+            const { data: profile, error } = await sb
+                .from("profiles")
+                .select("membership_level, plan_status, stripe_current_period_end")
+                .eq("id", session.user.id)
+                .single();
+
+            if (error) {
+                console.error(error);
+                elPlanHost.innerHTML = `<div class="text-sm text-red-600">Could not load plan.</div>`;
+                return;
+            }
+
+            const level = profile?.membership_level || "free";
+            const status = profile?.plan_status || "inactive";
+            const renews = fmtDate(profile?.stripe_current_period_end);
+
+            const color =
+                level === "Pro" ? "bg-purple-100 text-purple-800" :
+                    level === "essentials" ? "bg-blue-100 text-blue-800" :
+                        "bg-gray-100 text-gray-700";
+
+            const label =
+                level === "Pro" ? "Pro" :
+                    level === "essentials" ? "Essentials" :
+                        "Free";
+
+            elPlanHost.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${color}">
+              Current plan: ${label} ${status === "active" ? "" : `(${status})`}
+            </span>
+            ${renews ? `<span class="text-xs text-gray-500">Renews on ${renews}</span>` : ""}
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button id="btn-manage-billing" class="px-3 py-2 rounded-md bg-slate-800 text-white text-sm hover:bg-slate-700">
+              Manage billing
+            </button>
+            ${level === "Pro" ? `
+              <button id="btn-downgrade" class="px-3 py-2 rounded-md bg-white border text-sm hover:bg-gray-50">
+                Downgrade to Essentials
+              </button>` : ""}
+          </div>
+        `;
+
+            // Manage billing → Stripe portal
+            document.getElementById("btn-manage-billing")?.addEventListener("click", async () => {
+                try {
+                    const url = `${SUPABASE_URL}/functions/v1/create-portal-session`;
+                    const res = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "content-type": "application/json",
+                            "apikey": SUPABASE_ANON_KEY,
+                            "authorization": `Bearer ${session.access_token}`,
+                        },
+                    });
+                    const json = await res.json();
+                    if (json.url) location.href = json.url;
+                    else alert(json.error || "Could not open portal");
+                } catch (e) {
+                    console.error(e); alert("Could not open portal");
+                }
+            });
+
+            // Downgrade (Pro → Essentials) with proration
+            document.getElementById("btn-downgrade")?.addEventListener("click", async () => {
+                if (!confirm("Downgrade to Essentials now? Proration will apply.")) return;
+                try {
+                    const url = `${SUPABASE_URL}/functions/v1/downgrade-subscription`;
+                    const res = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "content-type": "application/json",
+                            "apikey": SUPABASE_ANON_KEY,
+                            "authorization": `Bearer ${session.access_token}`,
+                        },
+                    });
+                    const json = await res.json();
+                    if (json.ok) {
+                        alert("Downgrade requested. We’ll refresh your plan once Stripe confirms.");
+                        setTimeout(render, 1500); // webhook will also update
+                    } else {
+                        alert(json.error || "Could not downgrade");
+                    }
+                } catch (e) {
+                    console.error(e); alert("Could not downgrade");
+                }
+            });
+        }
+
+        // First paint
+        await render();
+
+        // Keep in sync with auth changes (guard if sb missing)
+        if (sb?.auth?.onAuthStateChange) {
+            sb.auth.onAuthStateChange((_event, _session) => { render(); });
+        }
+    </script>
+
+
+</body>
+
+</html>

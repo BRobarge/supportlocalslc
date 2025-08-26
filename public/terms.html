@@ -10,6 +10,9 @@
         crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/supabase-init.js"></script>
+    <script type="module" src="/shared/auth-nav.js"></script>
+    
 </head>
 
 <body class="bg-gray-50 text-gray-800">
@@ -217,39 +220,32 @@
 
     <!-- Minimal nav JS (matches your index) -->
     <script>
-        function updateNavAuth() {
-            const authLink = document.getElementById('auth-link');
-            const mobileAuthLink = document.getElementById('mobile-auth-link');
-            const isLoggedIn = sessionStorage.getItem('supabase_session');
+        function updateNavAuth(user) {
+                const authLink = document.getElementById('auth-link');
+                const mobileAuthLink = document.getElementById('mobile-auth-link');
 
-            if (authLink && mobileAuthLink) {
-                if (isLoggedIn) {
-                    authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard';
-                    mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard';
-                } else {
-                    authLink.href = '/login.html'; authLink.textContent = 'Login';
-                    mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login';
-                }
-            }
-        }
+                const setLoggedIn = () => {
+                    if (authLink) { authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard'; }
+                    if (mobileAuthLink) { mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard'; }
+                };
+                const setLoggedOut = () => {
+                    if (authLink) { authLink.href = '/login.html'; authLink.textContent = 'Login'; }
+                    if (mobileAuthLink) { mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login'; }
+                };
 
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-        }
-        document.addEventListener('click', (e) => {
-            const isToggle = e.target.matches('[data-toggle="dropdown"]');
-            if (!isToggle && e.target.closest('.dropdown') === null) {
-                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
-                return;
+                (async () => {
+                    try {
+                        if (!user) {
+                            const { data: { user: u } } = await supabaseClient.auth.getUser();
+                            user = u || null;
+                        }
+                        user ? setLoggedIn() : setLoggedOut();
+                    } catch {
+                        setLoggedOut();
+                    }
+                })();
             }
-            if (isToggle) {
-                e.preventDefault();
-                const menu = e.target.nextElementSibling;
-                if (menu) menu.classList.toggle('hidden');
-            }
-        });
+
 
         document.addEventListener('DOMContentLoaded', updateNavAuth);
     </script>

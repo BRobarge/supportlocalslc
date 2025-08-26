@@ -10,6 +10,10 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/shared/supabase-init.js"></script>
+    <script src="/shared/header-nav.js"></script>
+    <script defer src="/shared/include.js"></script>
+    <script type="module" src="/shared/auth-nav.js"></script>
+   
 </head>
 
 <body class="bg-white font-sans text-slate-900">
@@ -17,78 +21,7 @@
     <!-- HEADER (matches new Index layout)                             -->
     <!-- ============================================================= -->
     <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="container mx-auto px-6 py-3">
-            <div class="flex items-center">
-                <!-- Logo -->
-                <a href="/" class="flex-shrink-0">
-                    <img class="h-12 w-auto"
-                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                        alt="SupportLocalSLC Logo">
-                </a>
-    
-                <!-- Desktop Nav (right-aligned) -->
-                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8 ml-auto">
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-56 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html?filter=offers"
-                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <a href="/#for-business" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
-    
-                    <!-- Login/Dashboard -->
-                    <a id="auth-link" href="/login.html"
-                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
-                </nav>
-    
-                <!-- Mobile hamburger -->
-                <button id="mobile-menu-btn" class="lg:hidden ml-auto text-gray-600 hover:text-gray-800 focus:outline-none">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
-            </div>
-    
-            <!-- Mobile Menu -->
-            <nav id="mobile-menu" class="lg:hidden hidden mt-4 w-64 ml-auto text-right">
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <a href="/#for-business" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
-                <hr class="my-2" />
-                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
-            </nav>
-        </div>
+        <div data-include="header"></div>
     </header>
 
     <!-- ============================================================= -->
@@ -213,42 +146,7 @@
     <!-- FOOTER (matches new Index layout)                             -->
     <!-- ============================================================= -->
     <footer class="bg-gray-800 text-gray-400">
-        <div class="container mx-auto px-6 py-16">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
-                <div class="md:col-span-1">
-                    <img src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                        alt="SupportLocalSLC Logo" class="h-10 mb-4" />
-                    <p class="text-sm">Your guide to the best local spots in Salt Lake County.</p>
-                </div>
-                <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
-                    <div>
-                        <h4 class="font-semibold text-white mb-4">Navigate</h4>
-                        <ul class="space-y-3 text-sm">
-                            <li><a href="/" class="hover:text-white">Home</a></li>
-                            <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
-                            <li><a href="/#for-business" class="hover:text-white">For Business Owners</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-white mb-4">Legal</h4>
-                        <ul class="space-y-3 text-sm">
-                            <li><a href="/terms.html" class="hover:text-white">Terms of Service</a></li>
-                            <li><a href="/privacy.html" class="hover:text-white">Privacy Policy</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-white mb-4">Connect</h4>
-                        <div class="flex space-x-4">
-                            <a href="#" class="text-xl hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="text-xl hover:text-white"><i class="fab fa-instagram"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-gray-700 pt-8 text-center text-sm">
-                <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
-            </div>
-        </div>
+        <div data-include="footer"></div>
     </footer>
 
     <!-- ============================================================= -->
@@ -362,15 +260,7 @@
                 return;
             }
 
-            // Mobile hamburger + dropdowns
-            if (e.target.closest('#mobile-menu-btn')) {
-                $('#mobile-menu')?.classList.toggle('hidden'); return;
-            }
-            const toggle = e.target.closest('[data-toggle="dropdown"]');
-            if (toggle) { e.preventDefault(); toggle.nextElementSibling?.classList.toggle('hidden'); return; }
-            if (!e.target.closest('.dropdown')) { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden')); }
-        });
-
+            
         // ===== Form submits (delegated) =====
         document.addEventListener('submit', async (e) => {
             const form = e.target;
@@ -478,42 +368,7 @@
             if (session) window.location.href = '/dashboard.html';
         })();
 
-         // Header menu wiring (safe to include on multiple pages)
-            (function () {
-                if (window.__sl_header_nav) return; // avoid duplicates
-                window.__sl_header_nav = true;
-
-                document.addEventListener('click', (e) => {
-                    // Mobile hamburger
-                    const hamburger = e.target.closest('#mobile-menu-btn');
-                    if (hamburger) {
-                        const mm = document.getElementById('mobile-menu');
-                        if (mm) mm.classList.toggle('hidden');
-                        return;
-                    }
-
-                    // Dropdown toggles (use closest so clicks on the <i> chevron still work)
-                    const toggle = e.target.closest('[data-toggle="dropdown"]');
-                    if (toggle) {
-                        e.preventDefault();
-
-                        // Close other open menus
-                        document.querySelectorAll('.dropdown-menu').forEach(m => {
-                            if (m !== toggle.nextElementSibling) m.classList.add('hidden');
-                        });
-
-                        // Toggle this one
-                        toggle.nextElementSibling?.classList.toggle('hidden');
-                        return;
-                    }
-
-                    // Clicked outside any dropdown? Close all.
-                    if (!e.target.closest('.dropdown')) {
-                        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
-                    }
-                });
-            })();
-
+        }); 
            
     </script>
 

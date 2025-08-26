@@ -60,7 +60,7 @@ async function onLogout() {
     try {
         await client.auth.signOut();
     } finally {
-        window.location.href = '/';
+        window.location.replace('/login.html');
     }
 }
 
@@ -81,4 +81,7 @@ client.auth.onAuthStateChange((_evt, session) => {
     const loggedIn = !!session?.user;
     setAuthLinks(loggedIn);
     ensureLogoutButtons(loggedIn);
+    if (!loggedIn && window.location.pathname === '/dashboard.html') {
+        window.location.replace('/login.html');
+    }
 });

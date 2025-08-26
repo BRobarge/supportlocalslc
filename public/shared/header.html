@@ -1,0 +1,75 @@
+<header class="bg-white shadow-md sticky top-0 z-40">
+    <div class="container mx-auto px-6 py-3">
+        <div class="flex items-center">
+            <!-- Logo -->
+            <a href="/" class="flex-shrink-0">
+                <img class="h-12 w-auto"
+                    src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                    alt="SupportLocalSLC Logo">
+            </a>
+
+            <!-- Desktop Nav (right-aligned) -->
+            <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8 ml-auto">
+                <div class="relative dropdown">
+                    <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                        data-toggle="dropdown">
+                        Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
+                    </a>
+                    <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                        <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
+                        <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
+                    </div>
+                </div>
+
+                <div class="relative dropdown">
+                    <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                        data-toggle="dropdown">
+                        Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
+                    </a>
+                    <div class="dropdown-menu hidden absolute mt-2 w-56 bg-white rounded-lg shadow-xl py-2">
+                        <a href="/sandy/index.html?offers=1"
+                            class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
+                        <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</span>
+                    </div>
+                </div>
+
+                <a href="/owners.html" id="owners-link">For Business Owners</a>
+
+
+                <!-- Login/Dashboard -->
+                <a id="auth-link" href="/login.html"
+                    class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
+            </nav>
+
+            <!-- Mobile hamburger -->
+            <button id="mobile-menu-btn" class="block lg:hidden ml-auto text-gray-600 hover:text-gray-800 focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <nav id="mobile-menu" class="lg:hidden hidden mt-4 w-64 ml-auto text-right">
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
+                    Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
+                </a>
+                <div class="dropdown-menu hidden pl-4">
+                    <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
+                    <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
+                </div>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
+                    Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
+                </a>
+                <div class="dropdown-menu hidden pl-4">
+                    <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
+                    <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
+                </div>
+            </div>
+            <a href="/owners.html" id="mobile-owners-link">For Business Owners</a>
+            <hr class="my-2" />
+            <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
+        </nav>
+    </div>
+</header>

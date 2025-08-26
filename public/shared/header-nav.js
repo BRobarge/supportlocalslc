@@ -1,7 +1,9 @@
-// — SupportLocalSLC: header nav (desktop + mobile), scoped & safe —
-(function () {
-    if (window.__sl_header_nav) return;
-    window.__sl_header_nav = true;
+// /shared/header-nav.js
+
+function initializeHeader() {
+    // Prevent this from running more than once
+    if (window.__sl_header_initialized) return;
+    window.__sl_header_initialized = true;
 
     function closeAllExcept(menuToKeep) {
         document.querySelectorAll('.dropdown-menu').forEach(m => {
@@ -27,7 +29,7 @@
         // 3) Only handle clicks that happen INSIDE a .dropdown container
         const container = e.target.closest('.dropdown');
         if (!container) {
-            // Clicked elsewhere → close everything and let normal links (like logo) work
+            // Clicked elsewhere → close everything
             closeAllExcept(null);
             return;
         }
@@ -36,7 +38,7 @@
         const menu = container.querySelector('.dropdown-menu');
         if (!menu) return;
 
-        // Prevent navigation on the label (so "Directory"/"Offers" open the menu instead of navigating)
+        // Prevent navigation on the label
         const labelLink = e.target.closest('a[href], button');
         if (labelLink) e.preventDefault();
 
@@ -49,4 +51,7 @@
         const toggle = container.querySelector('[data-toggle="dropdown"], .dropdown-toggle');
         if (toggle) toggle.setAttribute('aria-expanded', (!wasOpen).toString());
     });
-})();
+}
+
+// Immediately try to initialize, in case this script is loaded on a page without the include.js file.
+initializeHeader();

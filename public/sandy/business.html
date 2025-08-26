@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Business Details - SupportLocalSLC</title>
     <link href="../shared/output.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/supabase-init.js"></script>
+    <script defer src="/shared/include.js"></script>
+    <script type="module" src="/shared/auth-nav.js"></script>
+
     <style>
         /* Mobile-First Layout (Default) */
         .business-layout-grid {
@@ -15,116 +21,40 @@
         }
     
         /* Desktop Layout (using CSS Grid) */
-            @media (min-width: 1024px) {
-                .business-layout-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    /* CORRECTED: This puts the main content on the left and the sidebar on the right */
-                    grid-template-areas:
-                        "main-content main-content sidebar-top"
-                        "main-content main-content sidebar-bottom";
-                    gap: 2rem;
-                }
-                /* ... */
-            }
-
-    
-            .business-sidebar {
-                grid-area: sidebar-top;
+        @media (min-width: 1024px) {
+            .business-layout-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                /* CORRECTED: This puts the main content on the left and the sidebar on the right */
+                grid-template-areas:
+                    "main-content main-content sidebar-top"
+                    "main-content main-content sidebar-bottom";
+                gap: 2rem;
             }
     
-            .business-main-content {
-                grid-area: main-content;
-            }
+            /* ... */
+        }
     
-            .business-sidebar-bottom {
-                grid-area: sidebar-bottom;
-            }
-        
+    
+        .business-sidebar {
+            grid-area: sidebar-top;
+        }
+    
+        .business-main-content {
+            grid-area: main-content;
+        }
+    
+        .business-sidebar-bottom {
+            grid-area: sidebar-bottom;
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/shared/supabase-init.js"></script>
-    <script type="module" src="/shared/auth-nav.js"></script>
-    <script src="/shared/header-nav.js"></script>
-
+    
 </head>
 <body class="bg-gray-100 font-sans">
 
     <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="container mx-auto px-6 py-3">
-            <div class="flex items-center">
-                <!-- Logo -->
-                <a href="/" class="flex-shrink-0">
-                    <img class="h-12 w-auto"
-                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                        alt="SupportLocalSLC Logo">
-                </a>
-    
-                <!-- Desktop Nav (right-aligned) -->
-                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8 ml-auto">
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-56 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html?filter=offers"
-                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <a href="/#for-business" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
-    
-                    <!-- Login/Dashboard -->
-                    <a id="auth-link" href="/login.html"
-                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
-                </nav>
-    
-                <!-- Mobile hamburger -->
-                <button id="mobile-menu-btn" class="lg:hidden ml-auto text-gray-600 hover:text-gray-800 focus:outline-none">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
-            </div>
-    
-            <!-- Mobile Menu -->
-            <nav id="mobile-menu" class="lg:hidden hidden mt-4 w-64 ml-auto text-right">
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <a href="/#for-business" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
-                <hr class="my-2" />
-                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
-            </nav>
-        </div>
+        <div data-include="header"></div>
     </header>
 
 
@@ -793,44 +723,8 @@
                 
     </script>
 
-    <footer class="bg-gray-800 text-gray-400 mt-16">
-        <div class="container mx-auto px-6 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="md:col-span-2">
-                    <a href="/" class="flex items-center space-x-2">
-                        <img class="h-10 w-auto"
-                            src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                            alt="SupportLocalSLC Logo">
-                        <span class="text-white font-bold text-xl">SupportLocalSLC</span>
-                    </a>
-                    <p class="mt-4 text-sm">Your guide to the best local spots in Salt Lake County. Discover stories,
-                        support dreams.</p>
-                </div>
-                <div>
-                    <h3 class="text-white font-semibold tracking-wider uppercase">Navigate</h3>
-                    <ul class="mt-4 space-y-2 text-sm">
-                        <li><a href="/" class="hover:text-white">Home</a></li>
-                        <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
-                        <li><a href="#" class="hover:text-white">For Business Owners</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white font-semibold tracking-wider uppercase">Legal</h3>
-                    <ul class="mt-4 space-y-2 text-sm">
-                        <li><a href="/terms.html" class="hover:text-white">Terms of Service</a></li>
-                        <li><a href="/privacy.html" class="hover:text-white">Privacy Policy</a></li>
-                    </ul>
-                    <h3 class="text-white font-semibold tracking-wider uppercase mt-6">Connect</h3>
-                    <div class="mt-4 flex space-x-4">
-                        <a href="#" class="hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="hover:text-white"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
-                <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
-            </div>
-        </div>
+    <footer class="bg-gray-800 text-gray-400">
+        <div data-include="footer"></div>
     </footer>
 
 

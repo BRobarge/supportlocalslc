@@ -13,10 +13,9 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/shared/supabase-init.js"></script>
+    <script defer src="/shared/include.js"></script>
     <script type="module" src="/shared/auth-nav.js"></script>
-    <script src="/shared/header-nav.js"></script>
-
-
+   
     <style>
         .swiper-button-next,
         .swiper-button-prev {
@@ -71,95 +70,35 @@
     <!-- --- HEADER / NAVIGATION --- -->
     <!-- =================================================================== -->
     <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="container mx-auto px-6 py-3">
-            <div class="flex items-center">
-                <!-- Logo -->
-                <a href="/" class="flex-shrink-0">
-                    <img class="h-12 w-auto"
-                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                        alt="SupportLocalSLC Logo">
-                </a>
-    
-                <!-- Desktop Nav (right-aligned) -->
-                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8 ml-auto">
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-56 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html?filter=offers"
-                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <a href="/#for-business" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
-    
-                    <!-- Login/Dashboard -->
-                    <a id="auth-link" href="/login.html"
-                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
-                </nav>
-    
-                <!-- Mobile hamburger -->
-                <button id="mobile-menu-btn" class="lg:hidden ml-auto text-gray-600 hover:text-gray-800 focus:outline-none">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
-            </div>
-    
-            <!-- Mobile Menu -->
-            <nav id="mobile-menu" class="lg:hidden hidden mt-4 w-64 ml-auto text-right">
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <a href="/#for-business" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
-                <hr class="my-2" />
-                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
-            </nav>
-        </div>
+        <div data-include="header"></div>
     </header>
-
 
     <main>
         <!-- Hero Section -->
-        <section id="hero-section" class="relative text-white bg-cover bg-[center_30%] bg-fixed">
+        <section id="hero-section" class="relative text-white bg-cover bg-[center_30%] bg-scroll lg:bg-fixed">
         
             <!-- The gradient overlay is a simple, single div -->
             <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/60 to-blue-900/30"></div>
         
             <!-- The content is positioned on top -->
             <div
-                class="relative z-10 container mx-auto px-6 py-24 text-center flex flex-col items-center justify-center min-h-[50vh]">
+                class="relative z-10 container mx-auto px-6 py-24 text-center flex flex-col items-center justify-center min-h-[50vh] lg:min-h-[65vh]">
                 <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">Discover Their Story.
                     Support Their Dream.</h1>
                 <p class="mt-4 text-lg text-white max-w-3xl mx-auto">Go beyond the storefront. Connect with the passionate
                     local owners that make our community unique, and enjoy exclusive offers as a thank you for your support.</p>
+            </div>
+        </section>
+
+        <!-- Featured Listings Carousel -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Featured Businesses</h2>
+                <div class="swiper" id="featured-listings-swiper">
+                    <div class="swiper-wrapper pb-4" id="featured-listings-container"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
             </div>
         </section>
 
@@ -224,27 +163,18 @@
             </div>
         </section>
 
-
-
-
-
-
-
-        <!-- =================================================================== -->
-        <!-- --- FIX: SECTIONS ARE NOW IN THE CORRECT ORDER AND HAVE CORRECT BGs --- -->
-        <!-- =================================================================== -->
-    
-        <!-- Featured Listings Carousel -->
-        <section class="py-16 bg-white">
+        <!-- Latest Offers Carousel -->
+        <section id="offers" class="py-16 bg-white">
             <div class="container mx-auto px-6">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Featured Businesses</h2>
-                <div class="swiper" id="featured-listings-swiper">
-                    <div class="swiper-wrapper pb-4" id="featured-listings-container"></div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Latest Offers</h2>
+                <div class="swiper" id="latest-offers-swiper">
+                    <div class="swiper-wrapper pb-4" id="latest-offers-container"></div>
                     <div class="swiper-button-next"></div>
                     <div class="swiper-button-prev"></div>
                 </div>
             </div>
         </section>
+       
     
         <!-- "For Business Owners" CTA -->
         <section id="for-business" class="relative bg-white py-20 lg:py-24">
@@ -270,7 +200,7 @@
                         <p class="mt-4 text-lg text-gray-600 text-center lg:text-left">Get discovered by your community. It's
                             free to get started.</p>
                         <div class="mt-8 text-center lg:text-left">
-                            <a href="/dashboard.html"
+                            <a href="/owners.html"
                                 class="inline-block bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition-transform hover:scale-105 text-lg">
                                 Add Your Business
                             </a>
@@ -280,63 +210,12 @@
         
             </div>
         </section>
-
-
-
-
-
-    
-        <!-- Latest Offers Carousel -->
-        <section id="offers" class="py-16 bg-white">
-            <div class="container mx-auto px-6">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Latest Offers</h2>
-                <div class="swiper" id="latest-offers-swiper">
-                    <div class="swiper-wrapper pb-4" id="latest-offers-container"></div>
-                    <div class="swiper-button-next"></div>
-                    <div class="swiper-button-prev"></div>
-                </div>
-            </div>
-        </section>
     
     </main>
 
 
     <footer class="bg-gray-800 text-gray-400">
-        <div class="container mx-auto px-6 py-16">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
-                <div class="md:col-span-1"><img
-                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                        alt="SupportLocalSLC Logo" class="h-10 mb-4">
-                    <p class="text-sm">Your guide to the best local spots in Salt Lake County.</p>
-                </div>
-                <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
-                    <div>
-                        <h4 class="font-semibold text-white mb-4">Navigate</h4>
-                        <ul class="space-y-3 text-sm">
-                            <li><a href="#" class="hover:text-white">Home</a></li>
-                            <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
-                            <li><a href="#for-business" class="hover:text-white">For Business Owners</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-white mb-4">Legal</h4>
-                        <ul class="space-y-3 text-sm">
-                            <li><a href="/terms.html" class="hover:text-white">Terms of Service</a></li>
-                            <li><a href="/privacy.html" class="hover:text-white">Privacy Policy</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-white mb-4">Connect</h4>
-                        <div class="flex space-x-4"><a href="#" class="text-xl hover:text-white"><i
-                                    class="fab fa-facebook-f"></i></a><a href="#" class="text-xl hover:text-white"><i
-                                    class="fab fa-instagram"></i></a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-gray-700 pt-8 text-center text-sm">
-                <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
-            </div>
-        </div>
+        <div data-include="footer"></div>
     </footer>
 
     <script type="module">
@@ -347,62 +226,127 @@
 
         // FIX: Corrected Swiper initialization
         function initSwiper(selector) {
-                new Swiper(selector, {
-                    // How many slides to show at once
-                    slidesPerView: 2.2, // Show 2.2 slides on mobile
-                    spaceBetween: 16,   // Space between slides
+                const wrapper = document.querySelector(`${selector} .swiper-wrapper`);
+                const slideCount = wrapper ? wrapper.children.length : 0;
+                const enableLoop = slideCount >= 5;
 
-                    // Responsive breakpoints
+                const swiper = new Swiper(selector, {
+                    slidesPerView: 2.2,
+                    spaceBetween: 16,
                     breakpoints: {
-                        // when window width is >= 640px (sm)
-                        640: {
-                            slidesPerView: 3,
-                            spaceBetween: 20
-                        },
-                        // when window width is >= 1024px (lg)
-                        1024: {
-                            slidesPerView: 4,
-                            spaceBetween: 24
-                        }
+                        640: { slidesPerView: 3, spaceBetween: 20 },
+                        1024: { slidesPerView: 4, spaceBetween: 24 },
                     },
 
-                    // --- THIS IS THE FIX ---
-                    // Disable the navigation arrows
-                    navigation: false,
+                    // continuous pan once we start it
+                    loop: enableLoop,
+                    speed: 12000,
 
-                    // Enable the scrollbar
+                    // START DISABLED so first card isn’t missed
+                    autoplay: {
+                        enabled: false,              // <-- key fix
+                        delay: 0,                    // continuous when started
+                        disableOnInteraction: true,  // stop if user touches/scrolls/etc
+                        pauseOnMouseEnter: true,
+                    },
+
+                    allowTouchMove: true,
+                    grabCursor: true,
+
+                    navigation: false,
                     scrollbar: {
                         el: '.swiper-scrollbar',
-                        hide: false, // Make scrollbar always visible
+                        hide: false,
                         draggable: true,
                     },
                 });
+
+                // Stop on any user gesture and mark as interacted
+                const host = document.querySelector(selector);
+                if (host) {
+                    ['touchstart', 'pointerdown', 'mousedown', 'wheel', 'keydown'].forEach(evt => {
+                        host.addEventListener(evt, () => {
+                            host.dataset.userInteracted = '1';
+                            try { swiper.autoplay && swiper.autoplay.stop(); } catch { }
+                        }, { once: true, passive: true });
+                    });
+                }
+
+                return swiper;
             }
+
+
+            function enableAutoplayWhenVisible(swiper, selector) {
+                    // Respect reduced motion
+                    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+                    const el = document.querySelector(selector);
+                    if (!el || !swiper?.autoplay) return;
+
+                    let startTimer = null;
+
+                    const startWithDelay = () => {
+                        if (el.dataset.userInteracted === '1') return; // never restart after user interaction
+                        clearTimeout(startTimer);
+                        startTimer = setTimeout(() => {
+                            if (el.dataset.userInteracted === '1') return;
+                            if (!swiper.autoplay.running) {
+                                // ensure continuous mode, then start
+                                swiper.params.autoplay.delay = 0;
+                                try { swiper.autoplay.start(); } catch { }
+                            }
+                        }, 1000); // 1s grace so first card is visible
+                    };
+
+                    const stopNow = () => {
+                        clearTimeout(startTimer);
+                        try { swiper.autoplay.stop(); } catch { }
+                    };
+
+                    const io = new IntersectionObserver((entries) => {
+                        for (const e of entries) {
+                            if (e.isIntersecting) startWithDelay();
+                            else stopNow();
+                        }
+                    }, { threshold: 0.2 });
+
+                    io.observe(el);
+                }
+
+
+
 
         // Add this new function inside your <script type="module">
             // Replace your existing setupDynamicHero function with this one
-                function setupDynamicHero() {
+                // A smarter hero function that requests optimized images
+                    function setupDynamicHero() {
                         const heroImages = [
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/portrait-of-one-happy-young-hispanic-waiter-standi-2025-04-06-11-04-22-utc.jpg',
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/a-female-hairdresser-portrait-looking-confidence-2025-01-08-09-13-45-utc.jpg',
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/beautiful-young-couple-cooking-healthy-food-togeth-2025-03-16-03-18-24-utc.jpg',
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/family-portrait-of-senior-craftsman-with-daughter-2025-04-03-21-55-11-utc.jpg',
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/man-and-woman-in-the-pottery-shop-2025-03-13-05-42-26-utc.jpg',
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/portrait-of-male-and-female-coffee-shop-owners-sta-2024-10-22-05-35-40-utc.jpg',
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/portrait-of-two-women-starting-new-coffee-shop-or-2024-10-21-02-52-46-utc.jpg',
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/were-the-best-barbers-in-the-town-2025-04-06-08-12-55-utc.jpg',
-                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/young-pretty-dark-haired-asian-woman-owning-cafete-2024-10-17-16-30-29-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/portrait-of-one-happy-young-hispanic-waiter-standi-2025-04-06-11-04-22-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/a-female-hairdresser-portrait-looking-confidence-2025-01-08-09-13-45-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/beautiful-young-couple-cooking-healthy-food-togeth-2025-03-16-03-18-24-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/family-portrait-of-senior-craftsman-with-daughter-2025-04-03-21-55-11-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/man-and-woman-in-the-pottery-shop-2025-03-13-05-42-26-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/portrait-of-male-and-female-coffee-shop-owners-sta-2024-10-22-05-35-40-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/portrait-of-two-women-starting-new-coffee-shop-or-2024-10-21-02-52-46-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/were-the-best-barbers-in-the-town-2025-04-06-08-12-55-utc.jpg',
+                            'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/young-pretty-dark-haired-asian-woman-owning-cafete-2024-10-17-16-30-29-utc.jpg',
                         ];
 
-                        // Re-enable randomization to make the page feel fresh
                         const randomIndex = Math.floor(Math.random() * heroImages.length);
-                        const selectedImage = heroImages[randomIndex];
+                        const originalUrl = heroImages[randomIndex];
 
-                        // Target the main <section> element
+                        // Determine the best image width based on screen size
+                        const isMobile = window.innerWidth < 768;
+                        const width = isMobile ? 800 : 1920;
+
+                        // Change the URL from a direct object link to a render link for transformation
+                        const renderUrl = originalUrl.replace('/object/', '/render/image/');
+
+                        // Add the width and quality parameters to the URL
+                        const selectedImage = `${renderUrl}?width=${width}&quality=80`;
+
                         const heroSection = document.getElementById('hero-section');
-
                         if (heroSection) {
-                            // Set the background image style directly on the section
                             heroSection.style.backgroundImage = `url('${selectedImage}')`;
                         }
                     }
@@ -434,14 +378,17 @@
                             </div>
                             <div class="p-4">
                                 <h3 class="font-bold text-lg truncate text-gray-800">${biz.name}</h3>
-                                <p class="text-sm text-gray-600 truncate">${biz.tagline || '&nbsp;'}</p>
+                                <p class="text-xs font-semibold text-blue-800 uppercase tracking-wide">Featured Partner</p>
+                                <p class="text-sm text-gray-600 truncate mt-1">${biz.tagline || ' '}</p>
                             </div>
                         </a>
                     </div>`
                 ).join('');
                 // --- END OF CORRECTION ---
 
-                initSwiper('#featured-listings-swiper');
+                const featuredSwiper = initSwiper('#featured-listings-swiper');
+                enableAutoplayWhenVisible(featuredSwiper, '#featured-listings-swiper');
+
             }
 
 
@@ -452,7 +399,9 @@
             const { data, error } = await supabaseClient.rpc('get_random_offers', { limit_count: 10 });
             if (error || !data || data.length === 0) { container.innerHTML = '<p class="text-gray-400 col-span-full">No special offers available right now.</p>'; return; }
             container.innerHTML = data.map(offer => `<div class="swiper-slide h-auto"><a href="/${offer.business_territory}/business.html?id=${offer.business_id}" class="block bg-white rounded-xl shadow-md h-full group border border-gray-700 hover:shadow-lg hover:border-blue-500 transition-all duration-300 p-4 flex flex-col"><div class="flex items-center mb-4"><img src="${offer.business_logo_url || 'https://placehold.co/100/EEE/31343C?text=Logo'}" alt="${offer.business_name} Logo" class="w-12 h-12 rounded-full object-cover mr-4 border-2 border-white flex-shrink-0"><p class="font-semibold text-gray-800 flex-grow truncate">${offer.business_name}</p></div><div class="flex-grow flex flex-col"><h3 class="font-bold text-lg text-gray-900 group-hover:text-blue-800 transition-colors">${offer.title}</h3><p class="text-sm text-gray-600 mt-2 line-clamp-3">${offer.description}</p></div></a></div>`).join('');
-            initSwiper('#latest-offers-swiper');
+            const offersSwiper = initSwiper('#latest-offers-swiper');
+            enableAutoplayWhenVisible(offersSwiper, '#latest-offers-swiper');
+
         }
 
                   

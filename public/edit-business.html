@@ -189,160 +189,25 @@
     <!-- The JavaScript will go here -->
     <!-- Add this script block right before the closing </body> tag -->
     <script type="module">
-        
-        function showToast(message, type = 'success') {
-                const color =
-                    type === 'error' ? 'bg-red-600' :
-                        type === 'info' ? 'bg-gray-800' : 'bg-green-600';
-
-                const toast = document.createElement('div');
-                toast.className = `fixed top-4 right-4 text-white text-sm px-4 py-3 rounded-lg shadow-lg ${color}`;
-                toast.textContent = message;
-                document.body.appendChild(toast);
-
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transition = 'opacity 300ms';
-                    setTimeout(() => toast.remove(), 300);
-                }, 1500);
-            }
-
-        
-        // >>> Added by Tyrone — helper required by populateCategoryChecklist
-            const escapeHtml = (str) => String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-            // <<< end helper
-
-
-        // ===================================================================================
-        // --- CONFIGURATION & INITIALIZATION ---
-        // ===================================================================================
-        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-        const tierLimits = {
-            'free': { categories: 1, tags: 0 }, // Max 1 category path, 0 attribute tags
-            'Growth': { categories: 5, tags: 5 },
-            'Pro': { categories: 10, tags: 10 }
-        };
-
+        // --- CONFIGURATION & GLOBAL STATE ---
+        const supabaseClient = supabase.createClient('https://kozlfywdsqjndcsibgtw.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw');
         let currentBusinessData = null;
         let currentUser = null;
+        let quill = null;
 
-        // --- Main Entry Point ---
-        // In /public/edit-business.html
-        // Replace the entire DOMContentLoaded function with this one.
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const businessId = urlParams.get('id');
-
-            if (!businessId) {
-                document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: No business ID provided.</p>';
-                return;
-            }
-
-            // 1. Check user authentication
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) {
-                window.location.href = `/login.html?redirect=/edit-business.html?id=${businessId}`;
-                return;
-            }
-            currentUser = user;
-
-            // 2. Fetch the user's profile to check their roles
-            const { data: profile, error: profileError } = await supabaseClient
-                .from('profiles')
-                .select('roles')
-                .eq('id', user.id)
-                .single();
-
-            if (profileError || !profile) {
-                document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Could not load your user profile.</p>';
-                return;
-            }
-
-            // 3. Build the query to fetch the business data
-            let query = supabaseClient
-                .from('businesses')
-                .select('*')
-                .eq('id', businessId);
-
-            // --- THIS IS THE CRITICAL FIX ---
-            // If the user is NOT an admin, we enforce the owner_id check.
-            // If they ARE an admin, we skip this check and rely on the RLS policies.
-            if (!profile.roles.includes('admin')) {
-                query = query.eq('owner_id', user.id);
-            }
-            // --- END OF FIX ---
-
-            // Finalize the query by expecting only a single result
-            const { data: business, error: businessError } = await query.single();
-
-            // 4. Handle errors and populate the page
-            if (businessError || !business) {
-                console.error('Error fetching business data or permission denied:', businessError);
-                document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: Could not load business data. You may not have permission to edit this listing.</p>';
-                return;
-            }
-
-            currentBusinessData = business;
-
-            populateHeader(currentBusinessData);
-            renderStorySection();
-            setupNavLinks();
-        });
-
-
-        // ===================================================================================
-        // --- UI POPULATION & RENDERING FUNCTIONS ---
-        // ===================================================================================
-
-        function populateHeader(business) {
-            document.getElementById('editing-header').textContent = `Editing: ${business.name}`;
-            const livePageBtn = document.getElementById('view-live-page-btn');
-            livePageBtn.href = `/${business.territory}/business.html?id=${business.id}`;
-            livePageBtn.classList.remove('hidden');
+        // --- HELPER FUNCTIONS ---
+        function showToast(message, type = 'success') {
+            const color = type === 'error' ? 'bg-red-600' : 'bg-green-600';
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 text-white text-sm px-4 py-3 rounded-lg shadow-lg ${color} z-[110]`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 300ms';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
         }
-
-        // In /public/edit-business.html
-        // Replace your entire setupNavLinks function with this one.
-
-        function setupNavLinks() {
-            const navLinks = document.querySelectorAll('.edit-nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    navLinks.forEach(l => l.classList.remove('active'));
-                    link.classList.add('active');
-
-                    const section = link.dataset.section;
-
-                    // This is the corrected if/else if chain
-                    if (section === 'story') {
-                        renderStorySection();
-                    } else if (section === 'photos') {
-                        renderPhotosSection();
-                    } else if (section === 'location') {
-                        renderLocationSection();
-                    } else if (section === 'contact') {
-                        renderContactSection();
-                    } else if (section === 'categories') {
-                        renderCategoriesSection();
-                    } else if (section === 'offers') {
-                        renderOffersSection();
-                    } else {
-                        // This is the fallback for any other links
-                        document.getElementById('edit-content').innerHTML = `<h2 class="text-2xl font-bold">${section.charAt(0).toUpperCase() + section.slice(1)}</h2><p>This section is under construction.</p>`;
-                    }
-                });
-            });
-        }
-
 
         function showUploadStatus(message, type = 'info') {
             const statusContainer = document.getElementById('upload-status');
@@ -360,10 +225,83 @@
                     break;
             }
             statusContainer.innerHTML = `<div class="${bgColor} ${textColor} p-4 rounded-lg flex items-center" role="alert">${icon}<span class="font-medium">${message}</span></div>`;
+            FontAwesome.dom.i2svg();
         }
 
+
+        // --- MAIN INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const businessId = new URLSearchParams(window.location.search).get('id');
+            if (!businessId) {
+                document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: No business ID provided.</p>';
+                return;
+            }
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                window.location.href = `/login.html?redirect=/edit-business.html?id=${businessId}`;
+                return;
+            }
+            currentUser = user;
+
+            const { data: profile } = await supabaseClient.from('profiles').select('roles').eq('id', user.id).single();
+            let query = supabaseClient.from('businesses').select('*, business_categories(category_id), business_tags(tag_id)').eq('id', businessId);
+
+            if (!profile || !profile.roles.includes('admin')) {
+                query = query.eq('owner_id', user.id);
+            }
+
+            const { data: business, error } = await query.single();
+
+            if (error || !business) {
+                console.error(error);
+                document.getElementById('edit-content').innerHTML = '<p class="text-red-500">Error: Could not load business data or you do not have permission to edit this listing.</p>';
+                return;
+            }
+            currentBusinessData = business;
+
+            populateHeader(business);
+            renderStorySection(); // Start on the first tab
+            setupNavLinks();
+            FontAwesome.dom.i2svg();
+        });
+
+        // --- NAVIGATION & SECTION RENDERING ---
+        function setupNavLinks() {
+            const navLinks = document.querySelectorAll('.edit-nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const section = link.dataset.section;
+                    const renderActions = {
+                        story: renderStorySection,
+                        photos: renderPhotosSection,
+                        location: renderLocationSection,
+                        contact: renderContactSection,
+                        categories: renderCategoriesSection,
+                        offers: renderOffersSection,
+                    };
+
+
+                    if (renderActions[section]) {
+                        renderActions[section]();
+                    }
+                });
+            });
+        }
+
+        function populateHeader(business) {
+            document.getElementById('editing-header').textContent = `Editing: ${business.name}`;
+            const livePageBtn = document.getElementById('view-live-page-btn');
+            livePageBtn.href = `/${business.territory}/business.html?id=${business.id}`;
+            livePageBtn.classList.remove('hidden');
+        }
+
+        // --- STORY SECTION ---
         function renderStorySection() {
-            const container = document.getElementById('edit-content');
+                       const container = document.getElementById('edit-content');
             container.innerHTML = `
                                 <h2 class="text-2xl font-bold mb-2">Story & Info</h2>
                                 <p class="text-gray-600 mb-6">This is the heart of your profile. Tell your customers who you are and what makes you special.</p>
@@ -431,9 +369,34 @@
             FontAwesome.dom.i2svg(); // Manually render icons
 
         }
+        async function saveStorySection() {
+                       const saveBtn = document.getElementById('save-story-btn');
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+            const updatedData = {
+                name: document.getElementById('business-name').value,
+                tagline: document.getElementById('business-tagline').value,
+                // Get the HTML content from the Quill editor
+                description: document.querySelector('#quill-editor .ql-editor').innerHTML,
 
+            };
+            const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
+            if (error) {
+                console.error('Error updating story section:', error);
+                alert('Error: Could not save changes.');
+            } else {
+                currentBusinessData = data;
+                document.getElementById('editing-header').textContent = `Editing: ${updatedData.name}`;
+                saveBtn.textContent = 'Saved!';
+                setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+            }
+            saveBtn.disabled = false;
+
+        }
+
+        // --- PHOTOS & LOGO SECTION ---
         function renderPhotosSection() {
-            const container = document.getElementById('edit-content');
+                       const container = document.getElementById('edit-content');
             container.innerHTML = `
                             <h2 class="text-2xl font-bold mb-2">Photos & Gallery</h2>
                             <p class="text-gray-600 mb-6">Showcase your business, products, and team.</p>
@@ -474,9 +437,106 @@
             FontAwesome.dom.i2svg(); // Manually render icons
 
         }
+        async function handleLogoUpload(event) {
+           const file = event.target.files[0];
+            if (!file) return;
+            const logoPreviewContainer = document.getElementById('logo-preview-container');
+            logoPreviewContainer.innerHTML = `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-spinner fa-spin text-2xl text-gray-500"></i></div>`;
+            const filePath = `${currentUser.id}/${currentBusinessData.id}/logo-${Date.now()}`;
+            const { error: uploadError } = await supabaseClient.storage.from('business-logos').upload(filePath, file, { cacheControl: '3600', upsert: true });
+            if (uploadError) {
+                alert(`Error uploading logo: ${uploadError.message}`);
+                renderStorySection();
+                return;
+            }
+            const { data: { publicUrl } } = supabaseClient.storage.from('business-logos').getPublicUrl(filePath);
+            const { data, error: updateError } = await supabaseClient.from('businesses').update({ logo_url: publicUrl }).eq('id', currentBusinessData.id).select().single();
+            if (updateError) {
+                alert('Could not save the new logo to your profile.');
+            } else {
+                currentBusinessData = data;
+                renderStorySection();
+            }
 
+        }
+        async function handleLogoDelete() {
+                        if (!currentBusinessData.logo_url) {
+                alert("There is no logo to delete.");
+                return;
+            }
+            if (!confirm("Are you sure you want to delete your business logo?")) return;
+            const { data, error: updateError } = await supabaseClient.from('businesses').update({ logo_url: null }).eq('id', currentBusinessData.id).select().single();
+            if (updateError) {
+                alert("Could not delete the logo from your profile.");
+            } else {
+                try {
+                    const filePath = currentBusinessData.logo_url.split('/business-logos/')[1];
+                    await supabaseClient.storage.from('business-logos').remove([filePath]);
+                } catch (storageError) {
+                    console.error("Couldn't delete file from storage, but removed from profile.", storageError);
+                }
+                currentBusinessData = data;
+                renderStorySection();
+                alert("Logo deleted.");
+            }
+
+        }
+        async function handlePhotoUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            showUploadStatus(`Uploading ${files.length} photo(s)...`, 'info');
+            let existingPhotos = currentBusinessData.photos || [];
+            let uploadSuccess = false;
+            for (const file of files) {
+                const filePath = `${currentUser.id}/${currentBusinessData.id}/${Date.now()}-${file.name}`;
+                const { error: uploadError } = await supabaseClient.storage.from('business-photos').upload(filePath, file);
+                if (uploadError) {
+                    console.error('Error uploading photo:', uploadError);
+                    showUploadStatus(`Error uploading ${file.name}: ${uploadError.message}`, 'error');
+                    return;
+                }
+                const { data: { publicUrl } } = supabaseClient.storage.from('business-photos').getPublicUrl(filePath);
+                existingPhotos.push(publicUrl);
+                uploadSuccess = true;
+            }
+            if (!uploadSuccess) {
+                document.getElementById('upload-status').innerHTML = '';
+                return;
+            }
+            const { data, error: updateError } = await supabaseClient.from('businesses').update({ photos: existingPhotos }).eq('id', currentBusinessData.id).select().single();
+            if (updateError) {
+                console.error('Error updating business with new photos:', updateError);
+                showUploadStatus('Could not save new photos to your profile.', 'error');
+            } else {
+                currentBusinessData = data;
+                showUploadStatus('Upload complete!', 'success');
+                setTimeout(() => { renderPhotosSection(); }, 2000);
+            }
+
+        }
+        async function handlePhotoDelete(photoUrl) {
+                        if (!confirm('Are you sure you want to delete this photo?')) return;
+            let updatedPhotos = (currentBusinessData.photos || []).filter(url => url !== photoUrl);
+            const { data, error: updateError } = await supabaseClient.from('businesses').update({ photos: updatedPhotos }).eq('id', currentBusinessData.id).select().single();
+            if (updateError) {
+                alert('Error deleting photo from profile.');
+                return;
+            }
+            try {
+                const filePath = photoUrl.split('/business-photos/')[1];
+                await supabaseClient.storage.from('business-photos').remove([filePath]);
+            } catch (storageError) {
+                console.error("Couldn't delete file from storage, but removed from profile.", storageError);
+            }
+            currentBusinessData = data;
+            renderPhotosSection();
+            alert('Photo deleted.');
+
+        }
+
+        // --- LOCATION SECTION ---
         function renderLocationSection() {
-            const container = document.getElementById('edit-content');
+                       const container = document.getElementById('edit-content');
             container.innerHTML = `
                             <h2 class="text-2xl font-bold mb-2">Location & Hours</h2>
                             <p class="text-gray-600 mb-6">Let customers know where to find you and when you're open.</p>
@@ -545,7 +605,58 @@
             FontAwesome.dom.i2svg(); // Manually render icons
 
         }
+        async function saveLocationSection() {
+            const saveBtn = document.getElementById('save-location-btn');
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+            const street = document.getElementById('address-street').value.trim();
+            const city = document.getElementById('address-city').value.trim();
+            const state = document.getElementById('address-state').value.trim();
+            const zip = document.getElementById('address-zip').value.trim();
+            const fullAddress = [street, city, state, zip].filter(Boolean).join(', ');
+            const hoursData = {};
+            document.querySelectorAll('#hours-inputs [data-day]').forEach(row => {
+                const day = row.dataset.day;
+                const isOpen = row.querySelector('.day-open-checkbox').checked;
+                const is24Hours = row.querySelector('.twenty-four-hour-checkbox').checked;
+                const from = row.querySelector('.from-time-input').value;
+                const to = row.querySelector('.to-time-input').value;
+                hoursData[day] = { isOpen, is24Hours, from, to };
+            });
+            const updatedData = {
+                address: street, city: city, state: state, zip_code: zip, hours_data: hoursData,
+            };
+            if (fullAddress && fullAddress !== [currentBusinessData.address, currentBusinessData.city, currentBusinessData.state, currentBusinessData.zip_code].filter(Boolean).join(', ')) {
+                try {
+                    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`;
+                    const res = await fetch(geocodeUrl);
+                    const data = await res.json();
+                    if (data.status === 'OK' && data.results.length > 0) {
+                        updatedData.latitude = data.results[0].geometry.location.lat;
+                        updatedData.longitude = data.results[0].geometry.location.lng;
+                    } else {
+                        alert(`Could not find that address on the map. Error: ${data.status}`);
+                        saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false; return;
+                    }
+                } catch (err) {
+                    alert('An error occurred while trying to geocode the address.');
+                    saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false; return;
+                }
+            }
+            const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
+            if (error) {
+                console.error('Error updating location section:', error);
+                alert('Error: Could not save changes.');
+            } else {
+                currentBusinessData = data;
+                saveBtn.textContent = 'Saved!';
+                setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+            }
+            saveBtn.disabled = false;
 
+        }
+
+        // --- CONTACT SECTION ---
         function renderContactSection() {
             const container = document.getElementById('edit-content');
             container.innerHTML = `
@@ -595,401 +706,250 @@
             FontAwesome.dom.i2svg(); // Manually render icons
 
         }
-
-        // ===================================================================================
-        // --- DATA SAVING FUNCTIONS ---
-        // ===================================================================================
-
-        async function saveStorySection() {
-            const saveBtn = document.getElementById('save-story-btn');
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
-            const updatedData = {
-                name: document.getElementById('business-name').value,
-                tagline: document.getElementById('business-tagline').value,
-                // Get the HTML content from the Quill editor
-                description: document.querySelector('#quill-editor .ql-editor').innerHTML,
-
-            };
-            const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
-            if (error) {
-                console.error('Error updating story section:', error);
-                alert('Error: Could not save changes.');
-            } else {
-                currentBusinessData = data;
-                document.getElementById('editing-header').textContent = `Editing: ${updatedData.name}`;
-                saveBtn.textContent = 'Saved!';
-                setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
-            }
-            saveBtn.disabled = false;
-        }
-
-        async function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const logoPreviewContainer = document.getElementById('logo-preview-container');
-            logoPreviewContainer.innerHTML = `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-spinner fa-spin text-2xl text-gray-500"></i></div>`;
-            const filePath = `${currentUser.id}/${currentBusinessData.id}/logo-${Date.now()}`;
-            const { error: uploadError } = await supabaseClient.storage.from('business-logos').upload(filePath, file, { cacheControl: '3600', upsert: true });
-            if (uploadError) {
-                alert(`Error uploading logo: ${uploadError.message}`);
-                renderStorySection();
-                return;
-            }
-            const { data: { publicUrl } } = supabaseClient.storage.from('business-logos').getPublicUrl(filePath);
-            const { data, error: updateError } = await supabaseClient.from('businesses').update({ logo_url: publicUrl }).eq('id', currentBusinessData.id).select().single();
-            if (updateError) {
-                alert('Could not save the new logo to your profile.');
-            } else {
-                currentBusinessData = data;
-                renderStorySection();
-            }
-        }
-
-        async function handleLogoDelete() {
-            if (!currentBusinessData.logo_url) {
-                alert("There is no logo to delete.");
-                return;
-            }
-            if (!confirm("Are you sure you want to delete your business logo?")) return;
-            const { data, error: updateError } = await supabaseClient.from('businesses').update({ logo_url: null }).eq('id', currentBusinessData.id).select().single();
-            if (updateError) {
-                alert("Could not delete the logo from your profile.");
-            } else {
-                try {
-                    const filePath = currentBusinessData.logo_url.split('/business-logos/')[1];
-                    await supabaseClient.storage.from('business-logos').remove([filePath]);
-                } catch (storageError) {
-                    console.error("Couldn't delete file from storage, but removed from profile.", storageError);
+        async function saveContactSection() {
+                const saveBtn = document.getElementById('save-contact-btn');
+                saveBtn.textContent = 'Saving...';
+                saveBtn.disabled = true;
+                const socialLinks = {};
+                document.querySelectorAll('.social-link-input').forEach(input => {
+                    const key = input.dataset.key;
+                    const url = input.value.trim();
+                    if (url) socialLinks[key] = url;
+                });
+                const updatedData = {
+                    phone: document.getElementById('contact-phone').value.trim(),
+                    email: document.getElementById('contact-email').value.trim(),
+                    website: document.getElementById('contact-website').value.trim(),
+                    social_links: socialLinks,
+                };
+                const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
+                if (error) {
+                    console.error('Error updating contact section:', error);
+                    alert('Error: Could not save changes.');
+                } else {
+                    currentBusinessData = data;
+                    saveBtn.textContent = 'Saved!';
+                    setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
                 }
-                currentBusinessData = data;
-                renderStorySection();
-                alert("Logo deleted.");
-            }
-        }
+                saveBtn.disabled = false;
 
-        async function handlePhotoUpload(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-            showUploadStatus(`Uploading ${files.length} photo(s)...`, 'info');
-            let existingPhotos = currentBusinessData.photos || [];
-            let uploadSuccess = false;
-            for (const file of files) {
-                const filePath = `${currentUser.id}/${currentBusinessData.id}/${Date.now()}-${file.name}`;
-                const { error: uploadError } = await supabaseClient.storage.from('business-photos').upload(filePath, file);
-                if (uploadError) {
-                    console.error('Error uploading photo:', uploadError);
-                    showUploadStatus(`Error uploading ${file.name}: ${uploadError.message}`, 'error');
+            }
+
+        // --- OFFERS SECTION ---
+        async function renderOffersSection() {
+                const container = document.getElementById('edit-content');
+                container.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">Manage Offers</h2>
+                    <p class="text-gray-600">Create and manage special offers to attract customers.</p>
+                </div>
+                <button id="add-offer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i> Add New Offer
+                </button>
+                </div>
+                <div id="offers-list-container" class="space-y-4">
+                <p>Loading offers...</p>
+                </div>
+            `;
+
+                // 1) Fetch offers FIRST
+                const { data: offers, error } = await supabaseClient
+                    .from('offers')
+                    .select('*')
+                    .eq('business_id', currentBusinessData.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    document.getElementById('offers-list-container').innerHTML =
+                        '<p class="text-red-500">Could not load offers.</p>';
                     return;
                 }
-                const { data: { publicUrl } } = supabaseClient.storage.from('business-photos').getPublicUrl(filePath);
-                existingPhotos.push(publicUrl);
-                uploadSuccess = true;
-            }
-            if (!uploadSuccess) {
-                document.getElementById('upload-status').innerHTML = '';
-                return;
-            }
-            const { data, error: updateError } = await supabaseClient.from('businesses').update({ photos: existingPhotos }).eq('id', currentBusinessData.id).select().single();
-            if (updateError) {
-                console.error('Error updating business with new photos:', updateError);
-                showUploadStatus('Could not save new photos to your profile.', 'error');
-            } else {
-                currentBusinessData = data;
-                showUploadStatus('Upload complete!', 'success');
-                setTimeout(() => { renderPhotosSection(); }, 2000);
-            }
-        }
 
-        async function handlePhotoDelete(photoUrl) {
-            if (!confirm('Are you sure you want to delete this photo?')) return;
-            let updatedPhotos = (currentBusinessData.photos || []).filter(url => url !== photoUrl);
-            const { data, error: updateError } = await supabaseClient.from('businesses').update({ photos: updatedPhotos }).eq('id', currentBusinessData.id).select().single();
-            if (updateError) {
-                alert('Error deleting photo from profile.');
-                return;
-            }
-            try {
-                const filePath = photoUrl.split('/business-photos/')[1];
-                await supabaseClient.storage.from('business-photos').remove([filePath]);
-            } catch (storageError) {
-                console.error("Couldn't delete file from storage, but removed from profile.", storageError);
-            }
-            currentBusinessData = data;
-            renderPhotosSection();
-            alert('Photo deleted.');
-        }
+                // 2) Plan limit (normalized)
+                const { data: profileRow } = await supabaseClient
+                    .from('profiles')
+                    .select('membership_level')
+                    .eq('id', currentBusinessData.owner_id)
+                    .single();
+                const OFFER_LIMITS = { free: 0, essentials: 3, pro: 999 };
+                const membership = (profileRow?.membership_level || 'free').toString().trim().toLowerCase();
+                const offerLimit = OFFER_LIMITS[membership] ?? 0;
+                window.__offerLimitReached = (offers?.length || 0) >= offerLimit;
 
-        async function saveLocationSection() {
-            const saveBtn = document.getElementById('save-location-btn');
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
-            const street = document.getElementById('address-street').value.trim();
-            const city = document.getElementById('address-city').value.trim();
-            const state = document.getElementById('address-state').value.trim();
-            const zip = document.getElementById('address-zip').value.trim();
-            const fullAddress = [street, city, state, zip].filter(Boolean).join(', ');
-            const hoursData = {};
-            document.querySelectorAll('#hours-inputs [data-day]').forEach(row => {
-                const day = row.dataset.day;
-                const isOpen = row.querySelector('.day-open-checkbox').checked;
-                const is24Hours = row.querySelector('.twenty-four-hour-checkbox').checked;
-                const from = row.querySelector('.from-time-input').value;
-                const to = row.querySelector('.to-time-input').value;
-                hoursData[day] = { isOpen, is24Hours, from, to };
-            });
-            const updatedData = {
-                address: street, city: city, state: state, zip_code: zip, hours_data: hoursData,
-            };
-            if (fullAddress && fullAddress !== [currentBusinessData.address, currentBusinessData.city, currentBusinessData.state, currentBusinessData.zip_code].filter(Boolean).join(', ')) {
-                try {
-                    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`;
-                    const res = await fetch(geocodeUrl);
-                    const data = await res.json();
-                    if (data.status === 'OK' && data.results.length > 0) {
-                        updatedData.latitude = data.results[0].geometry.location.lat;
-                        updatedData.longitude = data.results[0].geometry.location.lng;
-                    } else {
-                        alert(`Could not find that address on the map. Error: ${data.status}`);
-                        saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false; return;
-                    }
-                } catch (err) {
-                    alert('An error occurred while trying to geocode the address.');
-                    saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false; return;
+                // 3) Wire the "Add New Offer" button (and reflect limit)
+                const addOfferBtn = document.getElementById('add-offer-btn');
+                if (addOfferBtn) {
+                    const btn = addOfferBtn.cloneNode(true);
+                    addOfferBtn.replaceWith(btn);
+                    btn.disabled = window.__offerLimitReached;
+                    btn.classList.toggle('opacity-50', window.__offerLimitReached);
+                    btn.classList.toggle('cursor-not-allowed', window.__offerLimitReached);
+                    btn.title = window.__offerLimitReached ?
+                        `You’ve reached your offer limit (${offerLimit}).` :
+                        '';
+                    btn.addEventListener('click', () => {
+                        if (window.__offerLimitReached) {
+                            alert(`Offer limit reached for your plan (${offerLimit}). Delete one or upgrade.`);
+                            return;
+                        }
+                        const modal = document.getElementById('offer-modal');
+                        if (!modal) return;
+
+                        document.getElementById('offer-modal-title').textContent = 'Add New Offer';
+                        document.getElementById('offer-id-input').value = '';
+                        document.getElementById('offer-title').value = '';
+                        document.getElementById('offer-description').value = '';
+                        document.getElementById('offer-pin').value = '';
+                        document.getElementById('offer-limit').value = '';
+                        const firstTime = document.getElementById('offer-first-time');
+                        if (firstTime) firstTime.checked = false;
+                        const expires = document.getElementById('offer-expires-at');
+                        if (expires) expires.value = '';
+
+                        modal.classList.remove('hidden');
+                    });
                 }
-            }
-            const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
-            if (error) {
-                console.error('Error updating location section:', error);
-                alert('Error: Could not save changes.');
-            } else {
-                currentBusinessData = data;
-                saveBtn.textContent = 'Saved!';
-                setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
-            }
-            saveBtn.disabled = false;
-        }
 
-        async function saveContactSection() {
-            const saveBtn = document.getElementById('save-contact-btn');
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
-            const socialLinks = {};
-            document.querySelectorAll('.social-link-input').forEach(input => {
-                const key = input.dataset.key;
-                const url = input.value.trim();
-                if (url) socialLinks[key] = url;
-            });
-            const updatedData = {
-                phone: document.getElementById('contact-phone').value.trim(),
-                email: document.getElementById('contact-email').value.trim(),
-                website: document.getElementById('contact-website').value.trim(),
-                social_links: socialLinks,
-            };
-            const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
-            if (error) {
-                console.error('Error updating contact section:', error);
-                alert('Error: Could not save changes.');
-            } else {
-                currentBusinessData = data;
-                saveBtn.textContent = 'Saved!';
-                setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
-            }
-            saveBtn.disabled = false;
-        }
-
-        // In /public/edit-business.html
-
-        // Replace your existing renderCategoriesSection function with this one
-        async function renderCategoriesSection() {
-            const container = document.getElementById('edit-content');
-
-            container.innerHTML = `
-                    <h2 class="text-2xl font-bold mb-2">Categories & Tags</h2>
-                    <p class="text-gray-600 mb-6">Help customers find you by selecting all relevant categories and tags.</p>
-                    <div id="limit-info" class="p-3 bg-blue-100 text-blue-800 rounded-md mb-4 text-sm font-medium space-y-1"></div>
-                    
-                    <!-- Categories Section -->
-                    <div class="space-y-4 bg-gray-50 p-6 rounded-lg mb-8">
-                        <h3 class="font-bold text-lg text-gray-800">Business Categories</h3>
-                        <p class="text-sm text-gray-600">Select all categories that apply. Paid tiers allow for more selections.</p>
-                        <input type="text" id="category-search" placeholder="Search categories..." class="w-full p-3 border border-gray-300 rounded-md mb-4">
-                        <div id="category-checklist-container" class="max-h-72 overflow-y-auto space-y-2">
-                            <!-- Category checklist will be generated here -->
+                // 4) Render list
+                const list = document.getElementById('offers-list-container');
+                list.innerHTML = '';
+                if (!offers || offers.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-8">No offers yet. Click "Add New Offer" to get started!</p>';
+                } else {
+                    offers.forEach(offer => {
+                        const card = document.createElement('div');
+                        card.className = 'bg-gray-50 p-4 rounded-lg shadow-sm flex justify-between items-center';
+                        card.innerHTML = `
+                        <div>
+                            <h4 class="font-bold text-lg">${offer.title || ''}</h4>
+                            <p class="text-sm text-gray-600">${offer.description || ''}</p>
+                            <p class="text-xs text-gray-500 mt-2">
+                                PIN: ${offer.redemption_pin || '—'} | Limit: ${offer.claim_limit ?? 'None'}
+                            </p>
                         </div>
-                    </div>
-
-                    <!-- Attribute Tags Section -->
-                    <div class="space-y-4 bg-gray-50 p-6 rounded-lg">
-                        <h3 class="font-bold text-lg text-gray-800">Attribute Tags</h3>
-                        <p class="text-sm text-gray-600">Select all tags that apply to your business.</p>
-                        <div id="tag-limit-info" class="text-sm text-gray-700"></div>
-                        <div id="tags-checkbox-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                            <!-- Tag checkboxes will be generated here -->
+                        <div>
+                            <button class="edit-offer-btn text-blue-600 hover:text-blue-800 mr-4" data-offer-id="${offer.id}">Edit</button>
+                            <button class="delete-offer-btn text-red-600 hover:text-red-800" data-offer-id="${offer.id}">Delete</button>
                         </div>
-                    </div>
-                    
+                    `;
+                        list.appendChild(card);
+                    });
+                }
 
-                    <!-- Save Button -->
-                        <div class="flex justify-end items-center mt-8">
-                        <button
-                            id="save-categories-btn"
-                            type="button"
-                            onclick="saveCategoriesAndTags()"
-                            class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-                        >
-                            Save Changes
-                        </button>
-                        </div>
+                // 5) Make the modal buttons (X / Save) work
+                setupOfferModal();
 
+                // --- NEW CODE: ADD EVENT LISTENERS FOR EDIT AND DELETE ---
+                const offersListContainer = document.getElementById('offers-list-container');
+                offersListContainer.addEventListener('click', async (e) => {
+                    const modal = document.getElementById('offer-modal');
 
-                    `;      
+                    // --- EDIT BUTTON LOGIC ---
+                    if (e.target.classList.contains('edit-offer-btn')) {
+                        const offerId = e.target.dataset.offerId;
+                        const offerToEdit = offers.find(o => String(o.id) === offerId);
 
-            // --- Fetch user's membership level ---
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('membership_level')
-                .eq('id', currentUser.id)
-                .single();
+                        if (offerToEdit && modal) {
+                            document.getElementById('offer-modal-title').textContent = 'Edit Offer';
+                            document.getElementById('offer-id-input').value = offerToEdit.id;
+                            document.getElementById('offer-title').value = offerToEdit.title || '';
+                            document.getElementById('offer-description').value = offerToEdit.description || '';
+                            document.getElementById('offer-pin').value = offerToEdit.redemption_pin || '';
+                            document.getElementById('offer-limit').value = offerToEdit.claim_limit || '';
+                            document.getElementById('offer-first-time').checked = offerToEdit.is_first_time_only;
+                            // Format the date for the date input field
+                            document.getElementById('offer-expires-at').value = offerToEdit.expires_at ? offerToEdit.expires_at.split('T')[0] : '';
 
-            const membership = profile?.membership_level || 'free';
-            const limits = tierLimits[membership];
+                            modal.classList.remove('hidden');
+                        }
+                    }
 
-            // --- Now, populate the UI ---
-            await populateCategoryChecklist();
-            populateTagsCheckboxes();
+                    // --- DELETE BUTTON LOGIC ---
+                    if (e.target.classList.contains('delete-offer-btn')) {
+                        const offerId = e.target.dataset.offerId;
+                        if (confirm('Are you sure you want to delete this offer? This cannot be undone.')) {
+                            const { error: deleteError } = await supabaseClient
+                                .from('offers')
+                                .delete()
+                                .eq('id', offerId);
 
-            // --- Add event listeners ---
-            document.getElementById('category-search').addEventListener('input', filterCategoryChecklist); // This now correctly calls the function below
-            //document.getElementById('save-categories-btn').addEventListener('click', saveCategoriesAndTags);
-
-            
-        }
-
-        // Add this new function to your script
-        async function renderOffersSection() {
-            const container = document.getElementById('edit-content');
-            container.innerHTML = `
-                                <div class="flex justify-between items-center mb-6">
-                                    <div>
-                                        <h2 class="text-2xl font-bold mb-2">Manage Offers</h2>
-                                        <p class="text-gray-600">Create and manage special offers to attract customers.</p>
-                                    </div>
-                                    <button id="add-offer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
-                                        <i class="fas fa-plus mr-2"></i> Add New Offer
-                                    </button>
-                                </div>
-                                <div id="offers-list-container" class="space-y-4">
-                                    <p>Loading offers...</p>
-                                </div>
-                            `;
-
-            // --- Fetch and display existing offers ---
-            const { data: offers, error } = await supabaseClient
-                .from('offers')
-                .select('*')
-                .eq('business_id', currentBusinessData.id);
-
-            if (error) {
-                document.getElementById('offers-list-container').innerHTML = '<p class="text-red-500">Could not load offers.</p>';
-                return;
-            }
-
-            const offersListContainer = document.getElementById('offers-list-container');
-            offersListContainer.innerHTML = ''; // Clear loading message
-
-            if (offers.length === 0) {
-                offersListContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No offers created yet. Click "Add New Offer" to get started!</p>';
-            } else {
-                offers.forEach(offer => {
-                    const offerCard = document.createElement('div');
-                    offerCard.className = 'bg-gray-50 p-4 rounded-lg shadow-sm flex justify-between items-center';
-                    offerCard.innerHTML = `
-                                    <div>
-                                        <h4 class="font-bold text-lg">${offer.title}</h4>
-                                        <p class="text-sm text-gray-600">${offer.description}</p>
-                                        <p class="text-xs text-gray-500 mt-2">PIN: ${offer.redemption_pin} | Limit: ${offer.claim_limit || 'None'}</p>
-                                    </div>
-                                    <div>
-                                        <button class="edit-offer-btn text-blue-600 hover:text-blue-800 mr-4" data-offer-id="${offer.id}">Edit</button>
-                                        <button class="delete-offer-btn text-red-600 hover:text-red-800" data-offer-id="${offer.id}">Delete</button>
-                                    </div>
-                                `;
-                    offersListContainer.appendChild(offerCard);
+                            if (deleteError) {
+                                alert('Error: Could not delete the offer. Please try again.');
+                                console.error('Delete error:', deleteError);
+                            } else {
+                                alert('Offer deleted successfully.');
+                                renderOffersSection(); // Re-render the list to show the change
+                            }
+                        }
+                    }
                 });
             }
 
 
-            // --- Add Event Listeners ---
-            setupOfferModal(); // This sets up the Add/Edit modal
-
-            offersListContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('edit-offer-btn')) {
-                    const offerId = e.target.dataset.offerId;
-                    alert(`Editing offer ID: ${offerId}`);
-                    // In the future, this will also call openModal() and populate the form
-                }
-                if (e.target.classList.contains('delete-offer-btn')) {
-                    const offerId = e.target.dataset.offerId;
-                    alert(`Deleting offer ID: ${offerId}`);
-                }
-            });
-
-
-            // Add listeners for edit/delete buttons (we'll build the logic later)
-            offersListContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('edit-offer-btn')) {
-                    const offerId = e.target.dataset.offerId;
-                    alert(`Editing offer ID: ${offerId}`);
-                }
-                if (e.target.classList.contains('delete-offer-btn')) {
-                    const offerId = e.target.dataset.offerId;
-                    alert(`Deleting offer ID: ${offerId}`);
-                }
-            });
-        }
-
-        // Add this new function to your script
         function setupOfferModal() {
-            const modal = document.getElementById('offer-modal');
-            const addBtn = document.getElementById('add-offer-btn');
-            const closeBtn = document.getElementById('close-offer-modal-btn');
-            const saveBtn = document.getElementById('save-offer-btn');
+                const modal = document.getElementById('offer-modal');
+                if (!modal) return;
 
-            if (!modal || !addBtn || !closeBtn || !saveBtn) return;
-
-            // Function to open the modal
-            const openModal = () => modal.classList.remove('hidden');
-
-            // Function to close the modal
-            const closeModal = () => modal.classList.add('hidden');
-
-            // Attach listeners
-            addBtn.addEventListener('click', () => {
-                // Clear the form for a new entry
-                document.getElementById('offer-modal-title').textContent = 'Add New Offer';
-                document.getElementById('offer-id-input').value = '';
-                document.getElementById('offer-title').value = '';
-                document.getElementById('offer-description').value = '';
-                document.getElementById('offer-pin').value = '';
-                document.getElementById('offer-limit').value = '';
-                document.getElementById('offer-first-time').checked = false;
-                document.getElementById('offer-expires-at').value = '';
-
-                // Open the modal
-                modal.classList.remove('hidden');
-            });
-            closeBtn.addEventListener('click', closeModal);
-
-            // In setupOfferModal, this is the correct replacement
-            saveBtn.addEventListener('click', saveOffer);
-
-        }
+                // avoid re-binding overlay/escape on every render
+                if (modal.dataset.wired === '1') return;
+                modal.dataset.wired = '1';
+                modal.setAttribute('tabindex', '-1'); // so Esc works when focused
 
 
-        // Add this new function to your script
+                const closeX = document.getElementById('close-offer-modal-btn');
+                const save = document.getElementById('save-offer-btn');
+
+                // An array of buttons we need to re-wire
+                const elementsToRebind = [closeX, save].filter(Boolean);
+
+                elementsToRebind.forEach((el) => {
+                    // Clone the element to remove any old event listeners
+                    const freshElement = el.cloneNode(true);
+                    el.replaceWith(freshElement);
+
+                    // Add the correct listener based on the element's ID
+                    if (freshElement.id === 'close-offer-modal-btn') {
+                        freshElement.addEventListener('click', () => modal.classList.add('hidden'));
+                    }
+
+                    else if (freshElement.id === 'save-offer-btn') {
+                        freshElement.addEventListener('click', async () => {
+                            const originalText = freshElement.textContent;
+                            freshElement.disabled = true;
+                            freshElement.textContent = 'Saving…';
+
+                            try {
+                                // Call saveOffer directly, not from the window object
+                                await saveOffer();
+                                // The saveOffer function will close the modal and re-render on success
+                            } catch (error) {
+                                console.error("An error occurred during save:", error);
+                                // On error, restore the button so the user can try again
+                                freshElement.disabled = false;
+                                freshElement.textContent = originalText;
+                            }
+                            // We don't need to restore the button on success, 
+                            // because the whole section will be re-rendered.
+                        });
+                    }
+                });
+
+                // Click outside to close
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                }, { passive: true });
+
+                // ESC key to close
+                modal.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') modal.classList.add('hidden');
+                });
+            }
+
         async function saveOffer() {
-            const saveBtn = document.getElementById('save-offer-btn');
+                        const saveBtn = document.getElementById('save-offer-btn');
             saveBtn.textContent = 'Saving...';
             saveBtn.disabled = true;
 
@@ -1032,6 +992,31 @@
                     .eq('id', offerId);
                 error = updateError;
             } else {
+                // Guard: re-check limit just before inserting (normalized)
+                const { data: profileRow } = await supabaseClient
+                    .from('profiles')
+                    .select('membership_level')
+                    .eq('id', currentBusinessData.owner_id)
+                    .single();
+
+                const OFFER_LIMITS = { free: 0, essentials: 3, pro: 999 };
+                const membershipRaw = profileRow?.membership_level || 'free';
+                const membership = membershipRaw.toString().trim().toLowerCase();
+                const offerLimit = OFFER_LIMITS[membership] ?? 0;
+
+                const { count, error: countErr } = await supabaseClient
+                    .from('offers')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('business_id', currentBusinessData.id);
+
+                if (!countErr && (count ?? 0) >= offerLimit) {
+                    alert(`Offer limit reached for your plan (${offerLimit}). Delete an offer or upgrade.`);
+                    saveBtn.textContent = 'Save Offer';
+                    saveBtn.disabled = false;
+                    return;
+                }
+
+
                 // No ID, so we are inserting a new offer
                 const { error: insertError } = await supabaseClient
                     .from('offers')
@@ -1051,621 +1036,208 @@
 
             saveBtn.textContent = 'Save Offer';
             saveBtn.disabled = false;
+
         }
 
-
-        // In /public/edit-business.html
-        // Replace your existing filterCategoryChecklist function with this one.
-
-        // In /public/edit-business.html
-        // Replace your existing filterCategoryChecklist function with this one.
-
-        function filterCategoryChecklist(event) {
-            const searchTerm = event.target.value.toLowerCase();
-            const allAccordions = document.querySelectorAll('#category-checklist-container > .border.rounded-md');
-
-            // If the search term is empty, reset everything to its default state
-            if (searchTerm.length === 0) {
-                allAccordions.forEach(accordion => {
-                    const content = accordion.querySelector('.accordion-content');
-                    const icon = accordion.querySelector('.accordion-toggle i');
-
-                    accordion.style.display = 'block'; // Make sure the whole block is visible
-                    content.classList.add('hidden');   // Close the content
-                    if (icon) icon.classList.remove('rotate-180'); // Reset the icon
-
-                    // Make all items inside visible again
-                    accordion.querySelectorAll('.category-item').forEach(item => item.style.display = 'flex');
-                });
-                return; // Stop here
+        function closeOfferModal() {
+                const modal = document.getElementById('offer-modal');
+                if (modal) modal.classList.add('hidden');
             }
 
-            // If there is a search term, perform the filtering
-            allAccordions.forEach(accordion => {
-                const mainCategoryButton = accordion.querySelector('.accordion-toggle');
-                const mainCategoryText = mainCategoryButton.querySelector('span').textContent.toLowerCase();
-                const content = accordion.querySelector('.accordion-content');
-                const items = content.querySelectorAll('.category-item');
-
-                let hasInternalMatch = false;
-
-                // Check all the children (sub-categories and tags) for matches
-                items.forEach(item => {
-                    const labelText = item.querySelector('span').textContent.toLowerCase();
-                    if (labelText.includes(searchTerm)) {
-                        item.style.display = 'flex'; // Show this specific item
-                        hasInternalMatch = true;
-                    } else {
-                        item.style.display = 'none'; // Hide this specific item
-                    }
-                });
-
-                // --- THIS IS THE KEY LOGIC ---
-                // An accordion should be visible if EITHER its own title matches OR it contains a child that matches.
-                if (mainCategoryText.includes(searchTerm) || hasInternalMatch) {
-                    accordion.style.display = 'block';      // Show the entire accordion block
-                    content.classList.remove('hidden');     // Expand the content to show the results
-                    mainCategoryButton.querySelector('i')?.classList.add('rotate-180'); // Rotate the icon
-                } else {
-                    // If nothing matches at all, hide the entire accordion block
-                    accordion.style.display = 'none';
-                }
-            });
-        }
-
-
-
-        // In /public/edit-business.html
-        // Replace the updateParentStyles function with this one.
-        function updateParentStyles() {
-            // First, remove all existing highlights to prevent conflicts
-            document.querySelectorAll('.parent-has-selection').forEach(el => {
-                el.classList.remove('parent-has-selection');
-            });
-
-            // Find every checked checkbox
-            document.querySelectorAll('.category-checkbox:checked').forEach(checkbox => {
-                // For each checked box, find its containing accordion content div
-                let parentContent = checkbox.closest('.accordion-content');
-
-                // "Traverse up" the DOM tree by repeatedly finding the next parent accordion
-                while (parentContent) {
-                    // Get the button associated with this content div
-                    const parentButton = parentContent.previousElementSibling;
-                    if (parentButton && parentButton.classList.contains('accordion-toggle')) {
-                        // Add the highlight class to the button
-                        parentButton.classList.add('parent-has-selection');
-                    }
-                    // Move up to the next level
-                    parentContent = parentContent.closest('.accordion-container')?.parentElement.closest('.accordion-content');
-                }
-            });
-        }
-
-
-
-     
-
-
-
-
-        // ===================================================================================
-        // --- CATEGORY & TAGS JAVASCRIPT ---
-        // ===================================================================================
-
-        // ===== CATEGORY LIMITS & STATE =====
-        
-            const LEAF_LIMITS = { free: 1, growth: 3, pro: 7 };
-            // You can tweak these numbers anytime:
-            const TAG_LIMITS = { free: 0, growth: 3, pro: 7 };
-
-            const __catState = {
-                leafLimit: 1,        // set from membership
-                tagLimit: 0,        // set from membership
-                lockedRoot: null,    // root id we lock to after first selection
-                rootOf: new Map(),   // categoryId -> rootId
-            };
-
-            // Resolve membership -> limits
-            async function resolveLeafLimit() {
-                try {
-                    const { data: profile } = await supabaseClient
-                        .from('profiles')
-                        .select('membership_level')
-                        .eq('id', currentUser.id)
-                        .maybeSingle();
-
-                    const lvl = String(profile?.membership_level || 'free').toLowerCase();
-                    __catState.leafLimit = LEAF_LIMITS[lvl] ?? LEAF_LIMITS.free;
-                    __catState.tagLimit = TAG_LIMITS[lvl] ?? TAG_LIMITS.free;   // ← add this line
-                } catch {
-                    __catState.leafLimit = LEAF_LIMITS.free;
-                    __catState.tagLimit = TAG_LIMITS.free;
-                }
-                return __catState.leafLimit;
-            }
-
-
-            // Create (if missing) a small header with limit info + "change main" button
-            function ensureLimitHeader() {
-                const wrap = document.getElementById('category-checklist-container');
-                if (!wrap) return;
-                let toolbar = document.getElementById('cat-toolbar');
-                if (!toolbar) {
-                    toolbar = document.createElement('div');
-                    toolbar.id = 'cat-toolbar';
-                    toolbar.className = 'flex items-center justify-between mb-2';
-                    toolbar.innerHTML = `
-      <div id="limit-info" class="text-sm text-gray-700"></div>
-      <button id="change-main-category" type="button"
-        class="text-sm px-3 py-1 rounded border border-gray-300 hover:bg-gray-50">
-        Change main category
-      </button>`;
-                    wrap.parentElement?.insertBefore(toolbar, wrap);
-                }
-                // Wire reset
-                const resetBtn = document.getElementById('change-main-category');
-                if (resetBtn && !resetBtn.dataset.bound) {
-                    resetBtn.dataset.bound = '1';
-                    resetBtn.addEventListener('click', () => {
-                        // Clear all leaves, unlock roots, update UI
-                        const cont = document.getElementById('category-checklist-container');
-                        cont?.querySelectorAll('.category-checkbox[data-leaf="1"]:checked')
-                            .forEach(cb => { cb.checked = false; });
-
-                        __catState.lockedRoot = null;
-                        // Re-enable all leaves
-                        cont?.querySelectorAll('.category-checkbox[data-leaf="1"]').forEach(cb => cb.disabled = false);
-                        // Re-run locks & limits
-                        updateAncestorLocks();
-                        enforceLeafLimit();
-                        updateLimitInfo();
-                    });
-                }
-            }
-
-            function updateLimitInfo() {
-                const info = document.getElementById('limit-info');
-                if (!info) return;
-                const count = document.querySelectorAll('#category-checklist-container .category-checkbox[data-leaf="1"]:checked').length;
-                const main = __catState.lockedRoot ? ` | Main locked` : '';
-                info.innerHTML = `Categories selected: <b>${count}</b> / <b>${__catState.leafLimit}</b>${main}
-                            <span class="text-gray-500 ml-2">(Main and Sub-categories are auto-included and don’t count)</span>`;
-            }
-
-            // Helpers used later (defined globally so listeners see them)
-            function updateAncestorLocks() {
-                const cont = document.getElementById('category-checklist-container');
-                if (!cont) return;
-                // parents are data-leaf="0" and always auto-managed (checked if any descendant leaf is checked)
-                cont.querySelectorAll('.category-checkbox[data-leaf="0"]').forEach(parentBox => {
-                    const acc = parentBox.closest('.accordion-container');
-                    const hasCheckedLeaf = !!(acc && acc.querySelector(':scope .accordion-content .category-checkbox[data-leaf="1"]:checked'));
-                    parentBox.checked = hasCheckedLeaf;
-                    parentBox.disabled = true;
-                });
-            }
-
-            function enforceLeafLimit() {
-                const cont = document.getElementById('category-checklist-container');
-                if (!cont) return;
-                const leaves = cont.querySelectorAll('.category-checkbox[data-leaf="1"]');
-                const count = cont.querySelectorAll('.category-checkbox[data-leaf="1"]:checked').length;
-
-                leaves.forEach(cb => {
-                    const root = __catState.rootOf.get(String(cb.value));
-                    const wrongRoot = __catState.lockedRoot && root !== __catState.lockedRoot;
-                    // Disable if: wrong root OR at limit and this one is not already checked
-                    cb.disabled = wrongRoot || (!cb.checked && count >= __catState.leafLimit);
-                });
-                updateLimitInfo();
-            }
-
-            function updateTagLimitInfo() {
-                    const info = document.getElementById('tag-limit-info');
-                    if (!info) return;
-                    const count = document.querySelectorAll('#tags-checkbox-container .attribute-tag-checkbox:checked').length;
-                    info.innerHTML = `Tags selected: <b>${count}</b> / <b>${__catState.tagLimit}</b>`;
-                }
-
-                function enforceTagLimit() {
-                    const checks = document.querySelectorAll('#tags-checkbox-container .attribute-tag-checkbox');
-                    const count = document.querySelectorAll('#tags-checkbox-container .attribute-tag-checkbox:checked').length;
-                    checks.forEach(cb => {
-                        cb.disabled = (!cb.checked && count >= __catState.tagLimit);
-                    });
-                    updateTagLimitInfo();
-                }
-
-                function wireTagLimit() {
-                    const wrap = document.getElementById('tags-checkbox-container');
-                    if (!wrap) return;
-                    wrap.addEventListener('change', (e) => {
-                        if (!e.target.matches('.attribute-tag-checkbox')) return;
-                        enforceTagLimit();
-                    });
-                    enforceTagLimit(); // initial pass
-                }
-
-
-
-        // In /public/edit-business.html
-            // Replace ONLY the populateCategoryChecklist function with this one.
-
-                async function populateCategoryChecklist() {
-                        const container = document.getElementById('category-checklist-container');
-                        if (!container) return;
-
-                        await resolveLeafLimit();        // set __catState.leafLimit
-                        ensureLimitHeader();             // ensure toolbar present
-
-                        const [{ data: rawCats, error: catErr }, { data: businessCats, error: bcErr }] = await Promise.all([
-                            supabaseClient.from('categories').select('id,name,parent_id').order('name'),
-                            supabaseClient.from('business_categories').select('category_id').eq('business_id', currentBusinessData.id),
-                        ]);
-                        if (catErr || bcErr) {
-                            container.innerHTML = '<p class="text-red-500">Error loading categories.</p>';
-                            return;
-                        }
-
-                        // Normalize + build root map
-                        const cats = (rawCats || []).map(c => ({
-                            id: String(c.id),
-                            name: c.name,
-                            parent_id: c.parent_id == null ? null : String(c.parent_id),
-                        }));
-                        const selected = new Set((businessCats || []).map(r => String(r.category_id)));
-
-                        const byParent = new Map();
-                        for (const c of cats) {
-                            const key = c.parent_id === null ? 'root' : c.parent_id;
-                            if (!byParent.has(key)) byParent.set(key, []);
-                            byParent.get(key).push(c);
-                        }
-
-                        // Build rootOf map (category -> topmost ancestor)
-                        __catState.rootOf.clear();
-                        const parentOf = new Map(cats.map(c => [c.id, c.parent_id]));
-                        function rootOf(id) {
-                            let cur = id, p = parentOf.get(cur);
-                            while (p !== null && p !== undefined) { cur = p; p = parentOf.get(cur); }
-                            return cur; // topmost id under null
-                        }
-                        for (const c of cats) __catState.rootOf.set(c.id, rootOf(c.id));
-
-                        // If there are pre-selected leaves from different roots, lock to the first found
-                        if (!__catState.lockedRoot) {
-                            const firstLeaf = [...selected].find(id => !(byParent.get(id) && byParent.get(id).length));
-                            if (firstLeaf) __catState.lockedRoot = __catState.rootOf.get(firstLeaf) || null;
-                        }
-
-                        const build = (parentKey) => {
-                            const kids = byParent.get(parentKey) || [];
-                            if (!kids.length) return '';
-                            return kids.map(cat => {
-                                const childHtml = build(cat.id);
-                                const isLeaf = !byParent.get(cat.id) || !(byParent.get(cat.id)?.length);
-                                const checked = selected.has(cat.id) ? 'checked' : '';
-
-                                const input = isLeaf
-                                    ? `<input type="checkbox" value="${cat.id}" data-leaf="1"
-                                        class="category-checkbox h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${checked}>`
-                                    : `<input type="checkbox" value="${cat.id}" data-leaf="0"
-                                        class="category-checkbox h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${checked} disabled>`;
-
-                                const chevBtn = childHtml
-                                        ? `<button type="button" class="accordion-toggle flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200" aria-label="Toggle children">
-                                                <span class="chev text-gray-600 text-lg leading-none">▸</span>
-                                            </button>`
-                                        : '';
-
-                                const headerRow = `
-                                        <div class="cat-row flex items-center justify-between py-1 cursor-pointer">
-                                        <label class="flex-grow flex items-center">
-                                            ${input}
-                                            <span class="ml-3 font-medium text-gray-800">${escapeHtml(cat.name)}</span>
-                                        </label>
-                                        ${chevBtn}
-                                        </div>`;
-
-                                return `
-        <div class="accordion-container ml-2 pl-2 border-l-2 border-gray-200">
-          ${headerRow}
-          ${childHtml ? `<div class="accordion-content hidden pl-3">${childHtml}</div>` : ''}
-        </div>`;
-                            }).join('');
-                        };
-
-                        container.innerHTML = `<div class="space-y-1">${build('root')}</div>`;
-
+            
+        // --- NEW & REBUILT CATEGORIES & TAGS SECTION ---
+        async function renderCategoriesSection() {
+                const container = document.getElementById('edit-content');
+                container.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-2">Categories & Tags</h2>
+                    <p class="text-gray-600 mb-6">Help customers find you by selecting all relevant categories and tags.</p>
+                    <div id="tier-limit-info" class="p-3 bg-blue-100 text-blue-800 rounded-md mb-6 text-sm font-medium">Loading tier limits...</div>
                     
-                    // Row + chevron click = expand/collapse (parents only)
-                    // Clicking the actual checkbox still just toggles the box.
-                    container.addEventListener('click', (e) => {
-                        // ignore direct clicks on the checkbox itself
-                        if (e.target.closest('input.category-checkbox')) return;
+                    <div class="bg-gray-50 p-6 rounded-lg mb-8">
+                        <h3 class="font-bold text-lg text-gray-800">Step 1: Choose Your Business Category</h3>
+                        <p class="text-sm text-gray-500 mb-4">First, select the primary category that defines your business. Selections must be within the same main group (e.g., "Food & Drink").</p>
+                        <div id="category-checklist-container" class="space-y-3">Loading...</div>
+                    </div>
 
-                        const row = e.target.closest('.cat-row');
-                        if (!row) return;
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h3 class="font-bold text-lg text-gray-800">Step 2: Choose Your Tags</h3>
+                        <p class="text-sm text-gray-500 mb-4">Now, select all the attributes and services that apply to your business. The options below will update based on the category you chose in Step 1.</p>
+                        <div id="tags-checklist-container" class="space-y-4">Loading...</div>
+                    </div>
+                    
+                    <div class="flex justify-end mt-8">
+                        <button id="save-categories-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Save Changes</button>
+                    </div>
+                `;
 
-                        const acc = row.closest('.accordion-container');
-                        const content = acc && acc.querySelector(':scope > .accordion-content');
-                        const toggle = acc && acc.querySelector(':scope .accordion-toggle');
-                        const chev = toggle ? toggle.querySelector('.chev') : null;
+                // The rest of the function that fetches and renders the data remains the same...
+                const [catRes, tagRes, groupRes, profileRes] = await Promise.all([
+                    supabaseClient.from('categories').select('*').order('name'),
+                    supabaseClient.from('tags').select('*').order('name'),
+                    supabaseClient.from('tag_groups').select('*').order('name'),
+                    supabaseClient.from('profiles').select('membership_level').eq('id', currentBusinessData.owner_id).single()
+                ]);
 
-                        if (content) {
-                            const isHidden = content.classList.contains('hidden');
-                            content.classList.toggle('hidden');
-                            if (chev) chev.textContent = isHidden ? '▾' : '▸';
-                        }
+                const allCategories = catRes.data || [];
+                const allTags = tagRes.data || [];
+                const allGroups = groupRes.data || [];
+                const membership = profileRes.data?.membership_level || 'free';
+
+                const tierLimits = {
+                    free: { categories: 1, tags: 5 },
+                    Essentials: { categories: 3, tags: 15 },
+                    Pro: { categories: 7, tags: 999 }
+                };
+                const limits = tierLimits[membership] || tierLimits.free;
+                document.getElementById('tier-limit-info').textContent = `Your '${membership}' plan allows up to ${limits.categories} categories and ${limits.tags} tags.`;
+
+                // Render Categories
+                const catContainer = document.getElementById('category-checklist-container');
+                catContainer.innerHTML = '';
+                const mainCategories = allCategories.filter(c => c.parent_id === null);
+                mainCategories.forEach(mainCat => {
+                    let html = `<div class="font-semibold text-gray-900">${mainCat.name}</div><div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 pl-4">`;
+                    const subCats = allCategories.filter(c => String(c.parent_id) === String(mainCat.id));
+                    subCats.forEach(subCat => {
+                        const isChecked = currentBusinessData.business_categories.some(bc => String(bc.category_id) === String(subCat.id));
+                        html += `<label class="flex items-center font-normal text-gray-700"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 category-checkbox" value="${subCat.id}" data-parent-id="${mainCat.id}" ${isChecked ? 'checked' : ''}><span class="ml-2">${subCat.name}</span></label>`;
                     });
+                    html += `</div>`;
+                    catContainer.innerHTML += html;
+                });
 
+                // Render Tags
+                const tagContainer = document.getElementById('tags-checklist-container');
+                tagContainer.innerHTML = '';
+                allGroups.forEach(group => {
+                    let html = `<div class="font-semibold text-gray-900">${group.name}</div><div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 pl-4">`;
+                    const tagsInGroup = allTags.filter(t => t.group_id === group.id);
+                    tagsInGroup.forEach(tag => {
+                        const isChecked = currentBusinessData.business_tags.some(bt => bt.tag_id === tag.id);
+                        html += `<label class="flex items-center font-normal text-gray-700"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 tag-checkbox" value="${tag.id}" ${isChecked ? 'checked' : ''}><span class="ml-2">${tag.name}</span></label>`;
+                    });
+                    html += `</div>`;
+                    tagContainer.innerHTML += html;
+                });
 
-                        // Auto-expand ancestors for any pre-checked boxes
-                        container.querySelectorAll('.category-checkbox:checked').forEach(cb => {
-                            let acc = cb.closest('.accordion-container');
-                            while (acc) {
-                                const content = acc.querySelector(':scope > .accordion-content');
-                                const toggle = acc.querySelector(':scope .accordion-toggle');
-                                const chev = toggle ? toggle.querySelector('.chev') : null;
-                                if (content && content.classList.contains('hidden')) {
-                                    content.classList.remove('hidden');
-                                    if (chev) chev.textContent = '▾';
-                                }
-                                acc = acc.parentElement?.closest('.accordion-container');
-                            }
-                        });
-
-                        // Enforce root lock + leaf limit on every change
-                        container.addEventListener('change', (e) => {
-                            const cb = e.target;
-                            if (!cb.matches('.category-checkbox')) return;
-
-                            // Only leaves are user-toggleable
-                            if (cb.dataset.leaf !== '1') return;
-
-                            // Lock root on first leaf pick
-                            if (cb.checked && !__catState.lockedRoot) {
-                                __catState.lockedRoot = __catState.rootOf.get(String(cb.value)) || null;
-                            }
-
-                            // Expand parents when checking
-                            if (cb.checked) {
-                                let acc = cb.closest('.accordion-container');
-                                while (acc) {
-                                    const content = acc.querySelector(':scope > .accordion-content');
-                                    const toggle = acc.querySelector(':scope .accordion-toggle');
-                                    const chev = toggle ? toggle.querySelector('.chev') : null;
-                                    if (content && content.classList.contains('hidden')) {
-                                        content.classList.remove('hidden');
-                                        if (chev) chev.textContent = '▾';
-                                    }
-                                    acc = acc.parentElement?.closest('.accordion-container');
-                                }
-                            }
-
-                            updateAncestorLocks();
-                            enforceLeafLimit();
-                        });
-
-                        // First pass
-                        updateAncestorLocks();
-                        enforceLeafLimit();
-                    }
-
-
-
-
-
-
-
-        // In /public/edit-business.html
-        // Replace your populateTagsCheckboxes function with this debugging version.
-
-        async function populateTagsCheckboxes() {
-                const container = document.getElementById('tags-checkbox-container');
-                if (!container) {
-                    console.error("FATAL: Could not find the #tags-checkbox-container div. Stopping.");
-                    return;
-                }
-
-                await resolveLeafLimit(); // ADD THIS: ensures __catState.tagLimit is set
-
-                // Fetch all available tags
-                const { data: availableTags, error: tagsError } = await supabaseClient
-                    .from('tags')
-                    .select('id, name')
-                    .order('name');
-
-                if (tagsError) {
-                    console.error("ERROR fetching available tags:", tagsError);
-                    container.innerHTML = '<p class="text-red-500">Could not load tags.</p>';
-                    return;
-                }
-
-                if (!availableTags || availableTags.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">No attribute tags have been configured.</p>';
-                    return;
-                }
-
-                // Fetch tags currently linked to THIS business
-                const { data: currentLinks, error: linksError } = await supabaseClient
-                    .from('business_tags')
-                    .select('tag_id')
-                    .eq('business_id', currentBusinessData.id);
-
-                if (linksError) {
-                    console.error("ERROR fetching current business_tags:", linksError);
-                }
-
-                const currentTagIds = new Set((currentLinks || []).map(link => link.tag_id));
-
-                // Render checkboxes
-                container.innerHTML = availableTags.map(tag => {
-                    const isChecked = currentTagIds.has(tag.id);
-                    return `
-                            <label class="flex items-center p-3 bg-white border rounded-lg hover:bg-gray-50">
-                                <input type="checkbox"
-                                    value="${tag.id}"
-                                    class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 attribute-tag-checkbox"
-                                    ${isChecked ? 'checked' : ''}>
-                                <span class="ml-3 text-sm font-medium text-gray-700">${tag.name}</span>
-                            </label>
-                            `;
-                }).join('');
-
-                wireTagLimit(); // ADD THIS: hooks change handlers + enforces limit immediately
+                // Add event listeners
+                document.getElementById('save-categories-btn').addEventListener('click', () => saveCategoriesAndTags(limits));
+                catContainer.addEventListener('change', updateVisibleTags);
+                updateVisibleTags(); // Run once on load
             }
 
+        window.renderCategoriesSection = renderCategoriesSection;
 
 
+        async function saveCategoriesAndTags(limits) {
+            const saveBtn = document.getElementById('save-categories-btn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
 
+            const selectedCategoryCheckboxes = Array.from(document.querySelectorAll('.category-checkbox:checked'));
+            const selectedCategoryIds = selectedCategoryCheckboxes.map(cb => cb.value);
+            const selectedTagIds = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
 
+            // --- VALIDATION: "Stay in Your Lane" ---
+            const parentIds = new Set(selectedCategoryCheckboxes.map(cb => cb.dataset.parentId));
+            if (parentIds.size > 1) {
+                alert("Please select categories from only one main business type (e.g., 'Food & Drink').");
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+                return;
+            }
 
-             let __savingCatsTags = false;
+            // --- VALIDATION: Tier Limits ---
+            if (selectedCategoryIds.length > limits.categories) {
+                alert(`Your plan limits you to ${limits.categories} categories. You have selected ${selectedCategoryIds.length}.`);
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+                return;
+            }
+            if (selectedTagIds.length > limits.tags) {
+                alert(`Your plan limits you to ${limits.tags} tags. You have selected ${selectedTagIds.length}.`);
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+                return;
+            }
 
-                async function saveCategoriesAndTags() {
-                    if (__savingCatsTags) return;
-                    __savingCatsTags = true;
-
-                    const btn = document.getElementById('save-categories-btn') || document.getElementById('save-cats-tags');
-                    const status = document.getElementById('save-status');
-
-                    try {
-                        if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-                        if (status) status.textContent = 'Saving...';
-
-                        // ----- Collect LEAVES only (what the user actually picked) -----
-                        const cont = document.getElementById('category-checklist-container');
-                        const directIds = Array.from(
-                            cont ? cont.querySelectorAll('.category-checkbox[data-leaf="1"]:checked') : []
-                        ).map(cb => String(cb.value)); // UUID-safe
-
-                        // ----- Validate: single main + within tier limit -----
-                        const roots = new Set(directIds.map(id => __catState.rootOf.get(id)));
-                        if (roots.size > 1) {
-                            alert('Please select leaves from ONE main category only. Use "Change main category" to switch.');
-                            if (status) status.textContent = 'Save blocked: multiple mains selected.';
-                            return;
-                        }
-
-                        if (directIds.length > __catState.leafLimit) {
-                            alert(`You can select up to ${__catState.leafLimit} leaf categories on your plan.`);
-                            if (status) status.textContent = 'Save blocked: over leaf limit.';
-                            return;
-                        }
-
-                        // ----- Build parent chain and include ancestors -----
-                        const { data: rawAllCats, error: catsErr } = await supabaseClient
-                            .from('categories')
-                            .select('id,parent_id');
-                        if (catsErr) throw catsErr;
-
-                        const catMap = new Map((rawAllCats || []).map(c => [
-                            String(c.id),
-                            { id: String(c.id), parent_id: c.parent_id == null ? null : String(c.parent_id) }
-                        ]));
-
-                        const allToSaveSet = new Set();
-                        for (const id of directIds) {
-                            let cur = catMap.get(id);
-                            while (cur) {
-                                allToSaveSet.add(cur.id);
-                                cur = cur.parent_id ? catMap.get(cur.parent_id) : null;
-                            }
-                        }
-                        const finalCatIds = Array.from(allToSaveSet); // UUID strings
-
-                        // ===== PERSIST CATEGORIES (diff-based: delete stale, insert only new) =====
-                        const { data: existingCats, error: exCatErr } = await supabaseClient
-                            .from('business_categories')
-                            .select('category_id')
-                            .eq('business_id', currentBusinessData.id);
-                        if (exCatErr) throw exCatErr;
-
-                        const existingCatSet = new Set((existingCats || []).map(r => String(r.category_id)));
-                        const staleCatIds = [...existingCatSet].filter(id => !finalCatIds.includes(id));
-                        const newCatIds = finalCatIds.filter(id => !existingCatSet.has(id));
-
-                        if (staleCatIds.length) {
-                            const { error: delCatErr } = await supabaseClient
-                                .from('business_categories')
-                                .delete()
-                                .eq('business_id', currentBusinessData.id)
-                                .in('category_id', staleCatIds);
-                            if (delCatErr) throw delCatErr;
-                        }
-
-                        if (newCatIds.length) {
-                            const catRows = newCatIds.map(id => ({ business_id: currentBusinessData.id, category_id: id }));
-                            const { error: upErr } = await supabaseClient
-                                .from('business_categories')
-                                .upsert(catRows, { onConflict: 'business_id,category_id', ignoreDuplicates: true });
-                            if (upErr) throw upErr;
-                        }
-
-                        // ===== PERSIST TAGS (diff-based + upsert; prevents 409s) =====
-                        const tagIds = Array.from(
-                            document.querySelectorAll('#tags-checkbox-container .attribute-tag-checkbox:checked')
-                        ).map(cb => Number(cb.value)).filter(Number.isFinite);
-
-                        const { data: existingTags, error: exTagErr } = await supabaseClient
-                            .from('business_tags')
-                            .select('tag_id')
-                            .eq('business_id', currentBusinessData.id);
-                        if (exTagErr) throw exTagErr;
-
-                        const existingTagSet = new Set((existingTags || []).map(r => r.tag_id));
-                        const staleTagIds = [...existingTagSet].filter(id => !tagIds.includes(id));
-                        const newTagIds = tagIds.filter(id => !existingTagSet.has(id));
-
-                        if (staleTagIds.length) {
-                            const { error: delTagErr } = await supabaseClient
-                                .from('business_tags')
-                                .delete()
-                                .eq('business_id', currentBusinessData.id)
-                                .in('tag_id', staleTagIds);
-                            if (delTagErr) throw delTagErr;
-                        }
-
-                        if (newTagIds.length) {
-                            const tagRows = newTagIds.map(id => ({ business_id: currentBusinessData.id, tag_id: id }));
-                            const { error: upTagErr } = await supabaseClient
-                                .from('business_tags')
-                                .upsert(tagRows, { onConflict: 'business_id,tag_id', ignoreDuplicates: true });
-                            if (upTagErr) throw upTagErr;
-                        }
-
-                        // ----- Friendly confirmation -----
-                        if (status) status.textContent = ''; // avoid duplicate "Saved!"
-
-                        if (btn) {
-                            btn.textContent = 'Saved!';
-                            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                            btn.classList.add('bg-green-600');
-                            showToast('Changes saved ✅', 'success');
-                            setTimeout(() => {
-                                btn.textContent = 'Save Changes';
-                                btn.classList.remove('bg-green-600');
-                                btn.classList.add('bg-blue-600');
-                                // leave hover class optional; your CSS may handle it
-                                if (status) status.textContent = '';
-                            }, 1500);
-                        }
-                    } catch (e) {
-                        console.error(e);
-                        showToast(`Save failed: ${e.message}`, 'error');
-                        alert(`Save failed: ${e.message}`);
-                        if (status) status.textContent = `Save failed: ${e.message}`;
-                    } finally {
-                        if (btn) btn.disabled = false;
-                        __savingCatsTags = false;
-                    }
+            try {
+                // Sync Categories
+                await supabaseClient.from('business_categories').delete().eq('business_id', currentBusinessData.id);
+                if (selectedCategoryIds.length > 0) {
+                    const newCategoryLinks = selectedCategoryIds.map(id => ({ business_id: currentBusinessData.id, category_id: id }));
+                    await supabaseClient.from('business_categories').insert(newCategoryLinks);
                 }
-                window.saveCategoriesAndTags = saveCategoriesAndTags;
+
+                // Sync Tags
+                await supabaseClient.from('business_tags').delete().eq('business_id', currentBusinessData.id);
+                if (selectedTagIds.length > 0) {
+                    const newTagLinks = selectedTagIds.map(id => ({ business_id: currentBusinessData.id, tag_id: id }));
+                    await supabaseClient.from('business_tags').insert(newTagLinks);
+                }
+
+                // Refresh local data
+                const { data: updatedBusiness } = await supabaseClient.from('businesses').select('*, business_categories(category_id), business_tags(tag_id)').eq('id', currentBusinessData.id).single();
+                currentBusinessData = updatedBusiness;
+
+                showToast('Categories and tags saved!', 'success');
+            } catch (error) {
+                showToast('Error saving changes: ' + error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+            }
+        }
+
+        async function updateVisibleTags() {
+                const categoryCheckboxes = document.querySelectorAll('.category-checkbox:checked');
+                const selectedCategoryIds = Array.from(categoryCheckboxes).map(cb => cb.value);
+
+                // Fetch all tags that belong to a "universal" group
+                const { data: universalGroups, error: groupError } = await supabaseClient.from('tag_groups').select('id').eq('is_universal', true);
+                if (groupError) {
+                    console.error("Error fetching universal groups:", groupError);
+                    return;
+                }
+                const universalGroupIds = universalGroups.map(g => g.id);
+
+                const { data: universalTags, error: uTagError } = await supabaseClient.from('tags').select('id').in('group_id', universalGroupIds);
+                if (uTagError) {
+                    console.error("Error fetching universal tags:", uTagError);
+                    return;
+                }
+
+                const visibleTagIds = new Set(universalTags.map(t => t.id));
+
+                // If categories are selected, fetch their specific tags as well
+                if (selectedCategoryIds.length > 0) {
+                    const { data: specificTags, error: sTagError } = await supabaseClient.from('category_tags').select('tag_id').in('category_id', selectedCategoryIds);
+                    if (sTagError) {
+                        console.error("Error fetching specific tags:", sTagError);
+                        return;
+                    }
+                    specificTags.forEach(t => visibleTagIds.add(t.tag_id));
+                }
+
+                // Now, show or hide all tag checkboxes based on our final list
+                const allTagCheckboxes = document.querySelectorAll('.tag-checkbox');
+                allTagCheckboxes.forEach(checkbox => {
+                    const tagId = parseInt(checkbox.value, 10);
+                    const wrapper = checkbox.parentElement; // The <label> tag
+                    if (visibleTagIds.has(tagId)) {
+                        wrapper.style.display = 'flex';
+                    } else {
+                        wrapper.style.display = 'none';
+                    }
+                });
+            }
+        
+        
+
+            window.renderCategoriesSection = renderCategoriesSection;
+                window.renderOffersSection = renderOffersSection;
 
 
-              
     </script>
 
 

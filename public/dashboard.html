@@ -5,13 +5,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SupportLocalSLC</title>
+
     <link href="/shared/output.css" rel="stylesheet">
-    <script data-auto-replace-svg="false" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
-        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
+
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/shared/supabase-init.js"></script>
-    <script type="module" src="/shared/auth-nav.js"></script>
     <script src="/shared/header-nav.js"></script>
+    <script defer src="/shared/include.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+                      
+            // This will log the classes of the mobile menu button and the mobile menu itself
+            const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+            const mobileMenu = document.getElementById("mobile-menu");
+            if (mobileMenuBtn) {
+                console.log("Mobile menu button classes on load:", mobileMenuBtn.className);
+                console.log("Is mobile menu button hidden on load?", mobileMenuBtn.classList.contains("hidden"));
+            }
+            if (mobileMenu) {
+                console.log("Mobile menu classes on load:", mobileMenu.className);
+                console.log("Is mobile menu hidden on load?", mobileMenu.classList.contains("hidden"));
+            }
+        });
+    </script>
+
+    <script type="module" src="/shared/auth-nav.js"></script>
+    
+
 
     <style>
         .tab-button {
@@ -25,336 +47,284 @@
             border-bottom-color: #3B82F6;
             color: #1F2937;
         }
+
+        #claim-modal {
+            display: none;
+        }
+
+        #claim-modal.is-open {
+            display: flex;
+        }
+
+        #admin-edit-modal {
+        display: none;
+        }
+        #admin-edit-modal.is-open {
+        display: flex; /* This makes the modal visible */
+        }
+        
     </style>
 </head>
 
 <body class="bg-gray-100 font-sans">
     <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="container mx-auto px-6 py-3">
-            <div class="flex items-center">
-                <!-- Logo -->
-                <a href="/" class="flex-shrink-0">
-                    <img class="h-12 w-auto"
-                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                        alt="SupportLocalSLC Logo">
-                </a>
-    
-                <!-- Desktop Nav (right-aligned) -->
-                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8 ml-auto">
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-56 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html?filter=offers"
-                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <a href="/#for-business" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
-    
-                    <!-- Login/Dashboard -->
-                    <a id="auth-link" href="/login.html"
-                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
-                </nav>
-    
-                <!-- Mobile hamburger -->
-                <button id="mobile-menu-btn" class="lg:hidden ml-auto text-gray-600 hover:text-gray-800 focus:outline-none">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
-            </div>
-    
-            <!-- Mobile Menu -->
-            <nav id="mobile-menu" class="lg:hidden hidden mt-4 w-64 ml-auto text-right">
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <a href="/#for-business" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
-                <hr class="my-2" />
-                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
-            </nav>
-        </div>
+        <div data-include="header"></div>
     </header>
+    
+    <script>
+        (function () {
+            function wire() {
+                const btn = document.getElementById('mobile-menu-btn');
+                
+                const menu = document.getElementById('mobile-menu');
+                if (!btn || !menu) return false;            // header not injected yet
 
-        <!-- In /public/dashboard.html -->
-        <!-- In /public/dashboard.html -->
-        <main class="container mx-auto p-4 md:p-8">
-            <!-- Header Section (Stays the same) -->
-            <div class="mb-8">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800" id="welcome-message">Welcome!</h1>
-                <p class="text-gray-600">Manage your profiles, offers, and more.</p>
+                if (btn.dataset.wired === '1') return true; // already wired
+                btn.dataset.wired = '1';
+
+                btn.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');          // show/hide mobile menu
+                });
+
+                // close on link tap inside the mobile menu (but not dropdown toggles)
+                menu.addEventListener('click', (e) => {
+                    const a = e.target.closest('a');
+                    if (a && !a.classList.contains('dropdown-toggle')) menu.classList.add('hidden');
+                });
+
+
+                return true;
+            }
+
+            // try now; if header not ready, watch for it
+            if (wire()) return;
+            const headerEl = document.querySelector('header');
+            if (headerEl) {
+                const mo = new MutationObserver(() => { if (wire()) mo.disconnect(); });
+                mo.observe(headerEl, { childList: true, subtree: true });
+            }
+        })();
+    </script>
+
+
+    <main class="container mx-auto p-4 md:p-8">
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800" id="welcome-message">Welcome!</h1>
+            <p class="text-gray-600">Manage your profiles, offers, and more.</p>
+        </div>
+
+        <div class="mb-6">
+            <div class="border-b border-gray-200">
+                <nav id="dashboard-tabs" class="flex space-x-4 -mb-px" aria-label="Tabs"></nav>
             </div>
-        
-            <!-- =================================================================== -->
-            <!-- --- NEW TAB NAVIGATION --- -->
-            <!-- =================================================================== -->
-            <div class="mb-6">
-                <div class="border-b border-gray-200">
-                    <nav id="dashboard-tabs" class="flex space-x-4 -mb-px" aria-label="Tabs">
-                        <!-- Tabs will be dynamically inserted here by JavaScript -->
+        </div>
+
+        <div id="dashboard-content">
+            <p>Loading dashboard...</p>
+        </div>
+
+        <section id="account-panel" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-200 overflow-hidden mt-6">
+                <div
+                    class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Your Subscription</h2>
+                        <p class="text-sm text-slate-500">Manage your plan and billing.</p>
+                    </div>
+                    <div id="plan-badge-host"></div>
+                </div>
+
+                <div class="px-6 py-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                    <div id="plan-meta" class="text-sm text-slate-600"></div>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="btn-manage-billing"
+                            class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800">
+                            Manage billing
+                        </button>
+                        <div id="downgrade-slot"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="signin-prompt" class="hidden mt-6">
+            <div class="bg-white rounded-2xl shadow ring-1 ring-slate-200 px-6 py-5">
+                <p class="text-slate-700">
+                    Already purchased? <a href="/login.html?redirect=/dashboard.html"
+                        class="text-blue-600 underline">Sign
+                        in</a> to view your plan and manage billing.
+                </p>
+            </div>
+        </div>
+
+        <div id="claim-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+            <div
+                class="bg-white p-6 md:p-8 rounded-lg shadow-2xl w-full sm:w-auto sm:min-w-[600px] max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Claim or Add a Business</h2>
+                    <button id="close-claim-modal-btn" class="text-gray-500 hover:text-gray-800 text-3xl">×</button>
+                </div>
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="flex space-x-4" aria-label="Tabs">
+                        <button id="tab-search" class="tab-button active-tab">1. Search for Your Business</button>
+                        <button id="tab-create" class="tab-button">2. Create a New Listing</button>
                     </nav>
                 </div>
-            </div>
-            <!-- =================================================================== -->
-        
-            <!-- Main Content Area -->
-            <div id="dashboard-content" class="bg-white p-6 rounded-lg shadow-lg">
-                <!-- The content for the selected tab will be loaded here -->
-                <p>Loading dashboard...</p>
-            </div>
-        
-            <!-- Keep your Add/Claim Business Modal and <style> block here -->
-            <!-- ... (The modal HTML you already have) ... -->
-
-            <!-- In /public/dashboard.html, paste this right before the closing </main> tag -->
-            
-            <!-- =================================================================== -->
-            <!-- --- ADD/CLAIM BUSINESS MODAL --- -->
-            <!-- =================================================================== -->
-            <div id="claim-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
-                <div
-                    class="bg-white p-6 md:p-8 rounded-lg shadow-2xl w-full sm:w-auto sm:min-w-[600px] max-w-2xl max-h-[90vh] overflow-y-auto">
-            
-                    <!-- Modal Header -->
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">Claim or Add a Business</h2>
-                        <button id="close-claim-modal-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
-                    </div>
-            
-                    <!-- Tab Navigation for the Modal -->
-                    <div class="border-b border-gray-200 mb-6">
-                        <nav class="flex space-x-4" aria-label="Tabs">
-                            <button id="tab-search" class="tab-button active-tab">1. Search for Your Business</button>
-                            <button id="tab-create" class="tab-button">2. Create a New Listing</button>
-                        </nav>
-                    </div>
-            
-                    <!-- Tab Content: Search -->
-                    <div id="tab-content-search" class="tab-content">
-                        <p class="text-gray-600 mb-4">See if your business is already listed. Type the name below to search.</p>
-                        <input id="search-business-input" type="text" placeholder="Search by business name..."
-                            class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500">
-                        <div id="search-results-container" class="space-y-3 min-h-[100px]">
-                            <!-- Search results will be injected here -->
+                <div id="tab-content-search" class="tab-content">
+                    <p class="text-gray-600 mb-4">See if your business is already listed. Type the name below to search.
+                    </p>
+                    <input id="search-business-input" type="text" placeholder="Search by business name..."
+                        class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500">
+                    <div id="search-results-container" class="space-y-3 min-h-[100px]"></div>
+                    <div class="relative my-6">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
                         </div>
-                        <!-- Divider and Claim Code Section -->
-                        <div class="relative my-6">
-                            <div class="absolute inset-0 flex items-center">
-                                <div class="w-full border-t border-gray-300"></div>
-                            </div>
-                            <div class="relative flex justify-center"><span
-                                    class="bg-white px-2 text-sm font-medium text-gray-500">Or</span></div>
-                        </div>
-                        <div id="claim-code-section">
-                            <label for="claim-code-input" class="block text-sm font-medium text-gray-700 mb-1">Have a Claim
-                                Code?</label>
-                            <div class="flex space-x-2">
-                                <input id="claim-code-input" type="text" placeholder="Enter your code here..."
-                                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                <button id="claim-code-btn"
-                                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg">Claim</button>
-                            </div>
-                        </div>
+                        <div class="relative flex justify-center"><span
+                                class="bg-white px-2 text-sm font-medium text-gray-500">Or</span></div>
                     </div>
-            
-                    <!-- Tab Content: Create -->
-                    <div id="tab-content-create" class="tab-content hidden">
-                        <p class="text-gray-600 mb-4">Can't find your business? No problem. Create a new listing for free.</p>
-                    
-                        <div class="space-y-4">
-                            <div>
-                                <label for="new-business-name" class="block text-sm font-medium text-gray-700">Business Name</label>
-                                <input type="text" id="new-business-name"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
-                            </div>
-                    
-                            <!-- New Structured Address Fields -->
-                            <div>
-                                <label for="new-business-street" class="block text-sm font-medium text-gray-700">Street Address</label>
-                                <input type="text" id="new-business-street"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label for="new-business-city" class="block text-sm font-medium text-gray-700">City</label>
-                                    <input type="text" id="new-business-city"
-                                        class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
-                                </div>
-                                <div>
-                                    <label for="new-business-state" class="block text-sm font-medium text-gray-700">State</label>
-                                    <input type="text" id="new-business-state"
-                                        class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
-                                </div>
-                                <div>
-                                    <label for="new-business-zip" class="block text-sm font-medium text-gray-700">Zip Code</label>
-                                    <input type="text" id="new-business-zip"
-                                        class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
-                                </div>
-                            </div>
-                    
-                            <div>
-                                <label for="new-business-territory" class="block text-sm font-medium text-gray-700">Primary
-                                    Territory</label>
-                                <select id="new-business-territory"
-                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm bg-white">
-                                    <option value="sandy">Sandy</option>
-                                    <option value="draper">Draper</option>
-                                    <option value="taylorsville">Taylorsville</option>
-                                </select>
-                            </div>
-                            <button id="create-listing-submit-btn"
-                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700">Create
-                                My Free Listing</button>
+                    <div id="claim-code-section">
+                        <label for="claim-code-input" class="block text-sm font-medium text-gray-700 mb-1">Have a Claim
+                            Code?</label>
+                        <div class="flex space-x-2">
+                            <input id="claim-code-input" type="text" placeholder="Enter your code here..."
+                                class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <button id="claim-code-btn"
+                                class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg">Claim</button>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Add some basic CSS for the tabs in the head -->
-            <style>
-                .tab-button {
-                    padding: 8px 16px;
-                    border-bottom: 3px solid transparent;
-                    font-weight: 600;
-                    color: #4B5563;
-                    /* gray-600 */
-                }
-            
-                .tab-button.active-tab {
-                    border-bottom-color: #3B82F6;
-                    /* blue-500 */
-                    color: #1F2937;
-                    /* gray-800 */
-                }
-            </style>
-
-            <!-- In /public/dashboard.html, before </main> -->
-            
-            <!-- =================================================================== -->
-            <!-- --- ADMIN ADD UNCLAIMED BUSINESS MODAL --- -->
-            <!-- =================================================================== -->
-            <div id="admin-add-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50 p-4">
-                <div
-                    class="bg-white p-6 md:p-8 rounded-lg shadow-2xl w-full sm:w-auto sm:min-w-[600px] max-w-2xl max-h-[90vh] overflow-y-auto">
-            
-                    <!-- Modal Header -->
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">Add New Unclaimed Business</h2>
-                        <button id="close-admin-add-modal-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
-                    </div>
-            
-                    <!-- Form -->
+                <div id="tab-content-create" class="tab-content hidden">
+                    <p class="text-gray-600 mb-4">Can't find your business? No problem. Create a new listing for free.
+                    </p>
                     <div class="space-y-4">
-                        <p class="text-sm text-gray-600">Use this form to pre-populate the directory. A unique claim code will be
-                            automatically generated.</p>
-            
                         <div>
-                            <label for="admin-business-name" class="block text-sm font-medium text-gray-700">Business Name</label>
-                            <input type="text" id="admin-business-name"
+                            <label for="new-business-name" class="block text-sm font-medium text-gray-700">Business
+                                Name</label>
+                            <input type="text" id="new-business-name"
                                 class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
                         </div>
-            
-                        <!-- Structured Address Fields -->
                         <div>
-                            <label for="admin-business-street" class="block text-sm font-medium text-gray-700">Street
+                            <label for="new-business-street" class="block text-sm font-medium text-gray-700">Street
                                 Address</label>
-                            <input type="text" id="admin-business-street"
+                            <input type="text" id="new-business-street"
                                 class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label for="admin-business-city" class="block text-sm font-medium text-gray-700">City</label>
-                                <input type="text" id="admin-business-city"
+                                <label for="new-business-city"
+                                    class="block text-sm font-medium text-gray-700">City</label>
+                                <input type="text" id="new-business-city"
                                     class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
                             </div>
                             <div>
-                                <label for="admin-business-state" class="block text-sm font-medium text-gray-700">State</label>
-                                <input type="text" id="admin-business-state"
+                                <label for="new-business-state"
+                                    class="block text-sm font-medium text-gray-700">State</label>
+                                <input type="text" id="new-business-state"
                                     class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
                             </div>
                             <div>
-                                <label for="admin-business-zip" class="block text-sm font-medium text-gray-700">Zip Code</label>
-                                <input type="text" id="admin-business-zip"
+                                <label for="new-business-zip" class="block text-sm font-medium text-gray-700">Zip
+                                    Code</label>
+                                <input type="text" id="new-business-zip"
                                     class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
                             </div>
                         </div>
-            
                         <div>
-                            <label for="admin-business-territory" class="block text-sm font-medium text-gray-700">Primary
+                            <label for="new-business-territory" class="block text-sm font-medium text-gray-700">Primary
                                 Territory</label>
-                            <select id="admin-business-territory"
+                            <select id="new-business-territory"
                                 class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm bg-white">
                                 <option value="sandy">Sandy</option>
                                 <option value="draper">Draper</option>
                                 <option value="taylorsville">Taylorsville</option>
                             </select>
                         </div>
-            
-                        <!-- Save Button -->
-                        <div class="flex justify-end pt-4">
-                            <button id="admin-save-business-btn"
-                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Create
-                                Business</button>
-                        </div>
+                        <button id="create-listing-submit-btn"
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700">Create
+                            My Free Listing</button>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <div id="admin-modal" class="fixed inset-0 bg-white z-50 hidden flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b bg-gray-50">
+                <h2 id="admin-modal-title" class="text-2xl font-bold">Admin Tool</h2>
+                <button onclick="closeAdminModal()" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+            </div>
+            <div id="admin-modal-content" class="p-6 overflow-y-auto flex-grow">
+                <p>Loading content...</p>
+            </div>
+        </div>
 
-        </main>
+        <div id="admin-edit-modal"
+            class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100]">
+            <div class="bg-white p-6 rounded shadow-md max-w-lg w-full">
+                <h3 id="edit-modal-title" class="text-lg font-bold mb-4">Edit</h3>
+                <input type="hidden" id="edit-id">
+                <input type="hidden" id="edit-type">
+                <div id="name-field">
+                    <label for="edit-name" class="block text-sm font-medium">Name</label>
+                    <input type="text" id="edit-name" class="w-full p-2 mt-1 border rounded">
+                </div>
+                <div id="group-select-field" class="hidden mt-4">
+                    <label for="edit-group" class="block text-sm font-medium">Group</label>
+                    <select id="edit-group" class="w-full p-2 mt-1 border rounded"></select>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button onclick="closeEditModal()" class="bg-gray-500 text-white p-2 rounded mr-2">Cancel</button>
+                    <button onclick="saveEditModal()" class="bg-blue-500 text-white p-2 rounded">Save</button>
+                </div>
+            </div>
+        </div>
+    </main>
 
-
-
-    <!-- This is the start of the script tag. Paste this entire block into your dashboard.html file. -->
     <script type="module">
-        // ===================================================================================
-        // --- CONFIGURATION & GLOBAL STATE ---
-        // ===================================================================================
-        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+        // --- GLOBAL STATE ---
         const supabaseClient = window.supabaseClient;
         let currentUser;
+        let allGroups = [];
 
-        // ===================================================================================
-        // --- MAIN ENTRY POINT ---
-        // ===================================================================================
+        // --- HELPER FUNCTIONS ---
+        function fmt(d) {
+            if (!d) return '';
+            const dt = new Date(d);
+            return isNaN(dt) ? '' : dt.toLocaleDateString();
+        }
+
+        async function sendGHLNotification(eventType, details) {
+            try {
+                await fetch('https://services.leadconnectorhq.com/hooks/miD90jDw7w2L2p1FaEpg/webhook-trigger/7b238155-630a-4776-9f3d-45a2757e8644', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event: eventType, email: currentUser.email, details, type: 'business' })
+                });
+            } catch (err) {
+                console.error('GHL notify error:', err);
+            }
+        }
+
+        // --- MAIN INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', async () => {
-            const welcomeMessage = document.getElementById('welcome-message');
             const { data: { user } } = await supabaseClient.auth.getUser();
-
             if (!user) {
                 window.location.href = '/login.html';
                 return;
             }
-            currentUser = user;
+
+          currentUser = user;
+            // Remove any existing handlers and use only the header-nav.js
+            const hamburger = document.getElementById('mobile-menu-btn');
+            // Clone the button to remove all event listeners
+            const newHamburger = hamburger.cloneNode(true);
+            hamburger.parentNode.replaceChild(newHamburger, hamburger);
+            // Let header-nav.js handle it
+            initializeHeader();
+
+
+
+
 
             const { data: profile } = await supabaseClient
                 .from('profiles')
@@ -363,40 +333,32 @@
                 .single();
 
             if (!profile) {
-                welcomeMessage.textContent = 'Error: Could not load user profile.';
+                document.getElementById('welcome-message').textContent = 'Error: Could not load user profile.';
                 return;
             }
 
-            const displayName = profile.first_name || user.email;
-            welcomeMessage.textContent = `Welcome, ${displayName}!`;
+            document.getElementById('welcome-message').textContent = `Welcome, ${profile.first_name || user.email}!`;
 
-            setupModal();
-            setupDashboardTabs(profile.roles, profile.managed_territories);
-            updateNavAuth();               // or updateNavAuth(user); either is fine
-            FontAwesome.dom.i2svg();       // <- add this line
-            wireLogoutButton();
-
+            setupDashboardTabs(profile.roles);
+            setupClaimModal();
+            mountAccountPanel();
+            supabaseClient.auth.onAuthStateChange(() => mountAccountPanel());
         });
 
-
-        // ===================================================================================
-        // --- TAB & VIEW RENDERING LOGIC ---
-        // ===================================================================================
-        function setupDashboardTabs(roles, managedTerritories) {
+        // --- UI SETUP FUNCTIONS ---
+        function setupDashboardTabs(roles) {
             const tabsContainer = document.getElementById('dashboard-tabs');
             if (!tabsContainer) return;
-
             tabsContainer.innerHTML = '';
             const availableTabs = [];
             const tabConfig = {
                 supporter: { label: 'Supporter', renderFunc: renderSupporterView },
                 business: { label: 'My Businesses', renderFunc: renderBusinessView },
-                admin: { label: 'Admin Panel', renderFunc: () => renderAdminView(managedTerritories) }
+                admin: { label: 'Admin Panel', renderFunc: renderAdminView },
             };
             const displayOrder = ['supporter', 'business', 'admin'];
-
-            displayOrder.forEach(roleKey => {
-                if (roles.includes(roleKey)) {
+            displayOrder.forEach((roleKey) => {
+                if (roles && roles.includes(roleKey)) {
                     const tab = document.createElement('button');
                     tab.className = 'tab-button';
                     tab.textContent = tabConfig[roleKey].label;
@@ -405,15 +367,13 @@
                     availableTabs.push(tab);
                 }
             });
-
             if (availableTabs.length > 0) {
                 availableTabs.forEach(tab => {
                     tab.addEventListener('click', (e) => {
                         e.preventDefault();
                         availableTabs.forEach(t => t.classList.remove('active-tab'));
                         tab.classList.add('active-tab');
-                        const view = tab.dataset.view;
-                        tabConfig[view].renderFunc();
+                        tabConfig[tab.dataset.view].renderFunc();
                     });
                 });
                 availableTabs[availableTabs.length - 1].click();
@@ -422,24 +382,54 @@
             }
         }
 
+        function setupClaimModal() {
+            const claimModal = document.getElementById('claim-modal');
+            const closeModalBtn = document.getElementById('close-claim-modal-btn');
+            const tabSearch = document.getElementById('tab-search');
+            const tabCreate = document.getElementById('tab-create');
+            const contentSearch = document.getElementById('tab-content-search');
+            const contentCreate = document.getElementById('tab-content-create');
+
+            if (!claimModal || !closeModalBtn || !tabSearch || !tabCreate || !contentSearch || !contentCreate) return;
+
+            closeModalBtn.addEventListener('click', () => {
+                claimModal.classList.remove('is-open');
+            });
+
+            tabSearch.addEventListener('click', () => {
+                tabSearch.classList.add('active-tab');
+                tabCreate.classList.remove('active-tab');
+                contentSearch.classList.remove('hidden');
+                contentCreate.classList.add('hidden');
+            });
+
+            tabCreate.addEventListener('click', () => {
+                tabCreate.classList.add('active-tab');
+                tabSearch.classList.remove('active-tab');
+                contentCreate.classList.remove('hidden');
+                contentSearch.classList.add('hidden');
+            });
+
+            document.getElementById('search-business-input').addEventListener('input', searchBusinesses);
+            document.getElementById('claim-code-btn').addEventListener('click', claimWithCode);
+            document.getElementById('create-listing-submit-btn').addEventListener('click', createNewListing);
+        }
+
+        // --- VIEW RENDERING FUNCTIONS ---
         function renderSupporterView() {
             const container = document.getElementById('dashboard-content');
-            const businessCallToAction = `
+            container.innerHTML = `
                 <div class="text-center bg-white p-8 rounded-lg shadow-lg border-2 border-dashed border-blue-300">
                     <h3 class="text-2xl font-bold text-gray-800">Do You Own a Local Business?</h3>
                     <p class="mt-2 text-gray-600">Get your free listing on Support Local SLC to connect with the community and grow your brand.</p>
-                    <button id="supporter-claim-btn" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">Add or Claim Your Business Now</button>
+                    <button id="supporter-claim-btn" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Add or Claim Your Business Now</button>
                 </div>
-            `;
-            const claimedOffersSection = `
                 <div class="mt-8">
                     <h2 class="text-2xl font-bold mb-4">My Claimed Offers</h2>
                     <div id="claimed-offers-list" class="space-y-4"><p>Loading your claimed offers...</p></div>
-                </div>
-            `;
-            container.innerHTML = businessCallToAction + claimedOffersSection;
+                </div>`;
             document.getElementById('supporter-claim-btn').addEventListener('click', () => {
-                document.getElementById('claim-modal').classList.remove('hidden');
+                document.getElementById('claim-modal').classList.add('is-open');
             });
             loadClaimedOffers();
         }
@@ -451,67 +441,36 @@
                     <h2 class="text-2xl font-bold text-gray-700">My Businesses</h2>
                     <button id="add-claim-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">+ Add or Claim Business</button>
                 </div>
-                <div id="owned-list" class="space-y-4"><p>Loading your businesses...</p></div>
-            `;
+                <div id="owned-list" class="space-y-4"><p>Loading your businesses...</p></div>`;
             const { data } = await supabaseClient.from('businesses').select('*').eq('owner_id', currentUser.id);
             renderBusinessCards(data, 'owned-list');
             document.getElementById('add-claim-btn').addEventListener('click', () => {
-                document.getElementById('claim-modal').classList.remove('hidden');
+                document.getElementById('claim-modal').classList.add('is-open');
             });
         }
 
-        async function renderAdminView(managedTerritories) {
+        function renderAdminView() {
             const container = document.getElementById('dashboard-content');
-            const isSuperAdmin = !managedTerritories || managedTerritories.length === 0;
-            const title = isSuperAdmin ? 'Super Admin Panel' : `Admin Panel: ${managedTerritories.join(', ')}`;
             container.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">${title}</h2>
-                    <button id="admin-add-business-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">+ Add Unclaimed Business</button>
-                </div>
-                <p class="text-gray-600 mb-6">Manage all business listings within your assigned territories.</p>
-                <div class="flex flex-col md:flex-row gap-4 mb-6 bg-gray-100 p-4 rounded-lg">
-                    ${isSuperAdmin ? `<div class="flex-1"><label for="admin-territory-filter" class="block text-sm font-medium text-gray-700">Filter by Territory</label><select id="admin-territory-filter" class="mt-1 block w-full p-2 border border-gray-300 rounded-md"><option value="">All Territories</option></select></div>` : ''}
-                    <div class="flex-1"><label for="admin-search-input" class="block text-sm font-medium text-gray-700">Search by Name or Address</label><input type="text" id="admin-search-input" placeholder="Start typing to search..." class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></div>
-                </div>
-                <div id="admin-list" class="space-y-4"><p>Loading businesses...</p></div>
-            `;
-            let allAdminBusinesses = [];
-            let query = supabaseClient.from('businesses').select('*');
-            if (!isSuperAdmin) {
-                query = query.in('territory', managedTerritories);
-            }
-            const { data } = await query;
-            allAdminBusinesses = data || [];
-            if (isSuperAdmin) {
-                const territoryFilter = document.getElementById('admin-territory-filter');
-                const territories = [...new Set(allAdminBusinesses.map(b => b.territory).filter(Boolean))].sort();
-                territories.forEach(t => { territoryFilter.innerHTML += `<option value="${t}">${t}</option>`; });
-            }
-            const filterAndRenderAdminList = () => {
-                const territory = document.getElementById('admin-territory-filter')?.value || '';
-                const searchTerm = document.getElementById('admin-search-input').value.toLowerCase();
-                const filtered = allAdminBusinesses.filter(business => {
-                    const matchesTerritory = !territory || business.territory === territory;
-                    const matchesSearch = !searchTerm || business.name.toLowerCase().includes(searchTerm) || (business.address && business.address.toLowerCase().includes(searchTerm));
-                    return matchesTerritory && matchesSearch;
-                });
-                renderBusinessCards(filtered, 'admin-list');
-            };
-            document.getElementById('admin-search-input').addEventListener('input', filterAndRenderAdminList);
-            if (isSuperAdmin) {
-                document.getElementById('admin-territory-filter').addEventListener('change', filterAndRenderAdminList);
-            }
-            const adminAddModal = document.getElementById('admin-add-modal');
-            document.getElementById('admin-add-business-btn').addEventListener('click', () => adminAddModal.classList.remove('hidden'));
-            document.getElementById('close-admin-add-modal-btn').addEventListener('click', () => adminAddModal.classList.add('hidden'));
-            document.getElementById('admin-save-business-btn').addEventListener('click', adminCreateBusiness);
-            filterAndRenderAdminList();
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center flex flex-col justify-center">
+                        <h3 class="text-xl font-bold mb-4">Manage Businesses</h3>
+                        <p class="text-gray-600 text-sm mb-4 flex-grow">View and approve new business claims and listings.</p>
+                        <button onclick="openAdminModal('businesses')" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg mt-auto">Manage</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center flex flex-col justify-center">
+                        <h3 class="text-xl font-bold mb-4">Manage Tag Groups</h3>
+                        <p class="text-gray-600 text-sm mb-4 flex-grow">Create and edit the main groups for your tags (e.g., Cuisine, Features).</p>
+                        <button onclick="openAdminModal('tag_groups')" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg mt-auto">Manage</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center flex flex-col justify-center">
+                        <h3 class="text-xl font-bold mb-4">Manage Tags</h3>
+                        <p class="text-gray-600 text-sm mb-4 flex-grow">Add, edit, and categorize all the tags available for businesses to select.</p>
+                        <button onclick="openAdminModal('tags')" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg mt-auto">Manage</button>
+                    </div>
+                </div>`;
         }
 
-        // ===================================================================================
-        // --- HELPER & SHARED FUNCTIONS ---
-        // ===================================================================================
         function renderBusinessCards(businesses, containerId) {
             const listDiv = document.getElementById(containerId);
             if (!listDiv) return;
@@ -520,61 +479,104 @@
                 listDiv.innerHTML = '<p class="text-gray-600">No businesses found.</p>';
                 return;
             }
-            businesses.forEach(business => {
+            businesses.forEach((business) => {
                 const card = document.createElement('div');
                 card.className = 'bg-gray-50 p-4 rounded-lg shadow-md flex justify-between items-center';
                 const statusColor = business.claim_status === 'approved' ? 'text-green-600' : 'text-yellow-600';
-                card.innerHTML = `<div><h3 class="text-lg font-bold">${business.name}</h3><p class="text-sm text-gray-600">${business.address || 'No address'}, ${business.territory}</p><p class="text-sm font-semibold capitalize ${statusColor}">Status: ${business.claim_status || 'unclaimed'}</p></div><a href="/edit-business.html?id=${business.id}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm">Edit</a>`;
+                card.innerHTML = `
+                    <div>
+                        <h3 class="text-lg font-bold">${business.name}</h3>
+                        <p class="text-sm text-gray-600">${business.address || 'No address'}, ${business.territory}</p>
+                        <p class="text-sm font-semibold capitalize ${statusColor}">Status: ${business.claim_status || 'unclaimed'}</p>
+                    </div>
+                    <a href="/edit-business.html?id=${business.id}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm">Edit</a>`;
                 listDiv.appendChild(card);
             });
         }
 
-        function setupModal() {
-            const claimModal = document.getElementById('claim-modal');
-            const closeModalBtn = document.getElementById('close-claim-modal-btn');
-            if (!claimModal || !closeModalBtn) return;
-            closeModalBtn.addEventListener('click', () => claimModal.classList.add('hidden'));
-            const tabSearch = document.getElementById('tab-search');
-            const tabCreate = document.getElementById('tab-create');
-            const contentSearch = document.getElementById('tab-content-search');
-            const contentCreate = document.getElementById('tab-content-create');
-            tabSearch.addEventListener('click', () => {
-                tabSearch.classList.add('active-tab'); tabCreate.classList.remove('active-tab');
-                contentSearch.classList.remove('hidden'); contentCreate.classList.add('hidden');
+        // --- DATA-DRIVEN FUNCTIONS ---
+        async function loadClaimedOffers() {
+            const list = document.getElementById('claimed-offers-list');
+            if (!list) return;
+            list.innerHTML = `<p class="text-gray-500">Loading your claimed offers...</p>`;
+            const { data: claims, error } = await supabaseClient
+                .from('claimed_offers')
+                .select('id, status, created_at, redeemed_at, expires_at, offers(id, title, description, claim_limit, is_first_time_only, expires_at, businesses(id, name))')
+                .eq('user_id', currentUser.id)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                list.innerHTML = `<p class="text-red-500">Could not load offers.</p>`;
+                return;
+            }
+            if (!claims || claims.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center py-6">You haven’t claimed any offers yet.</p>`;
+                return;
+            }
+            list.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-6">${claims.map(claim => {
+                const offer = claim.offers || {};
+                const biz = offer.businesses || {};
+                const expired = (claim.expires_at && new Date(claim.expires_at) < new Date()) || (offer.expires_at && new Date(offer.expires_at) < new Date());
+                const redeemed = claim.status === 'redeemed' || !!claim.redeemed_at;
+                const canRedeem = !expired && !redeemed;
+                const chipClass = redeemed ? 'bg-green-100 text-green-800' : expired ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-800';
+                const chipText = redeemed ? `Redeemed ${fmt(claim.redeemed_at)}` : expired ? 'Expired' : 'Claimed';
+                return `
+                    <article class="group bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">${offer.title || 'Untitled Offer'}</h3>
+                                <p class="text-sm text-gray-500 mt-0.5">${biz.name || ''}</p>
+                                <div class="mt-3 text-xs text-gray-500">
+                                    <div>Claimed: <span class="font-medium text-gray-700">${fmt(claim.created_at)}</span></div>
+                                    ${claim.expires_at ? `<div>Expires: <span class="font-medium text-gray-700">${fmt(claim.expires_at)}</span></div>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${chipClass}">${chipText}</span>
+                                ${canRedeem ? `<button class="redeem-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg" data-claim-id="${claim.id}">Redeem</button>` : `<button class="bg-gray-200 text-gray-600 font-semibold px-4 py-2 rounded-lg cursor-not-allowed" disabled>${redeemed ? 'Redeemed' : 'Unavailable'}</button>`}
+                            </div>
+                        </div>
+                    </article>`;
+            }).join('')}</div>`;
+            list.addEventListener('click', (e) => {
+                const btn = e.target.closest('.redeem-btn');
+                if (btn) handleRedeemOffer(btn.dataset.claimId);
             });
-            tabCreate.addEventListener('click', () => {
-                tabCreate.classList.add('active-tab'); tabSearch.classList.remove('active-tab');
-                contentCreate.classList.remove('hidden'); contentSearch.classList.add('hidden');
-            });
-            document.getElementById('search-business-input').addEventListener('input', searchBusinesses);
-            document.getElementById('claim-code-btn').addEventListener('click', claimWithCode);
-            document.getElementById('create-listing-submit-btn').addEventListener('click', createNewListing);
         }
 
         async function searchBusinesses(event) {
             const query = event.target.value.toLowerCase();
             const resultsContainer = document.getElementById('search-results-container');
-            if (!resultsContainer) return;
-            if (query.length < 3) { resultsContainer.innerHTML = ''; return; }
+            if (!resultsContainer || query.length < 3) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
             const { data } = await supabaseClient.from('businesses').select('*').ilike('name', `%${query}%`).eq('claim_status', 'unclaimed');
-            resultsContainer.innerHTML = '';
-            if (!data || data.length === 0) { resultsContainer.innerHTML = '<p class="text-gray-500">No unclaimed businesses found.</p>'; }
-            else {
-                data.forEach(business => {
-                    const card = document.createElement('div');
-                    card.className = 'bg-gray-100 p-4 rounded-lg flex justify-between items-center';
-                    card.innerHTML = `<div><h4 class="font-bold">${business.name}</h4><p class="text-sm text-gray-600">${business.address || 'No Address'}</p></div><button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm">Request Claim</button>`;
-                    card.querySelector('button').addEventListener('click', () => requestClaim(business.id));
-                    resultsContainer.appendChild(card);
+            if (!data || data.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-gray-500">No unclaimed businesses found.</p>';
+            } else {
+                resultsContainer.innerHTML = data.map(business => `
+                    <div class="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold">${business.name}</h4>
+                            <p class="text-sm text-gray-600">${business.address || 'No Address'}</p>
+                        </div>
+                        <button class="claim-request-btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm" data-business-id="${business.id}">Request Claim</button>
+                    </div>`).join('');
+                resultsContainer.querySelectorAll('.claim-request-btn').forEach(btn => {
+                    btn.addEventListener('click', () => requestClaim(btn.dataset.businessId));
                 });
             }
         }
 
         async function claimWithCode() {
             const code = document.getElementById('claim-code-input').value.trim();
-            if (!code) { alert('Please enter a claim code.'); return; }
-            const { data: biz } = await supabaseClient.from('businesses').select('id, name').eq('claim_code', code).eq('claim_status', 'unclaimed').maybeSingle();
-            if (!biz) { alert('Invalid code or business already claimed.'); return; }
+            if (!code) return alert('Please enter a claim code.');
+            const { data: biz, error } = await supabaseClient.from('businesses').select('id, name').eq('claim_code', code).eq('claim_status', 'unclaimed').maybeSingle();
+            if (error || !biz) return alert('Invalid code or business already claimed.');
+
             await supabaseClient.from('businesses').update({ owner_id: currentUser.id, claim_status: 'approved', claim_code: null }).eq('id', biz.id);
             const { data: profile } = await supabaseClient.from('profiles').select('roles').eq('id', currentUser.id).single();
             if (!profile.roles.includes('business')) {
@@ -602,332 +604,193 @@
             const state = document.getElementById('new-business-state').value.trim();
             const zip = document.getElementById('new-business-zip').value.trim();
             const territory = document.getElementById('new-business-territory').value;
-            if (!name || !street || !city || !state || !zip || !territory) { alert('Please fill out all fields.'); return; }
-            const { error } = await supabaseClient.rpc('create_business_and_upgrade_role', { p_name: name, p_street: street, p_city: city, p_state: state, p_zip: zip, p_territory: territory });
-            if (error) { alert(`Error creating listing: ${error.message}`); }
-            else {
+            if (!name || !street || !city || !state || !zip || !territory) {
+                return alert('Please fill out all fields.');
+            }
+            const { error } = await supabaseClient.rpc('create_business_and_upgrade_role', {
+                p_name: name, p_street: street, p_city: city, p_state: state, p_zip: zip, p_territory: territory
+            });
+            if (error) {
+                alert(`Error creating listing: ${error.message}`);
+            } else {
                 alert('Success! Your new listing has been created and your role has been upgraded.');
                 window.location.reload();
             }
         }
 
-        async function adminCreateBusiness() {
-            const saveBtn = document.getElementById('admin-save-business-btn');
-            saveBtn.textContent = 'Creating...';
-            saveBtn.disabled = true;
-            const nameInput = document.getElementById('admin-business-name');
-            const streetInput = document.getElementById('admin-business-street');
-            const cityInput = document.getElementById('admin-business-city');
-            const stateInput = document.getElementById('admin-business-state');
-            const zipInput = document.getElementById('admin-business-zip');
-            const territoryInput = document.getElementById('admin-business-territory');
-            const newBusinessData = { name: nameInput.value.trim(), address: streetInput.value.trim(), city: cityInput.value.trim(), state: stateInput.value.trim(), zip_code: zipInput.value.trim(), territory: territoryInput.value, claim_status: 'unclaimed' };
-            if (!newBusinessData.name || !newBusinessData.address) { alert('Please fill out all fields.'); saveBtn.textContent = 'Create Business'; saveBtn.disabled = false; return; }
-            const { data, error } = await supabaseClient.from('businesses').insert([newBusinessData]).select().single();
-            if (error) { alert(`Error creating business: ${error.message}`); }
-            else {
-                alert(`Success! Created "${data.name}".\n\nNew Claim Code: ${data.claim_code}`);
-                document.getElementById('admin-add-modal').classList.add('hidden');
-                nameInput.value = ''; streetInput.value = ''; cityInput.value = ''; stateInput.value = ''; zipInput.value = ''; territoryInput.value = 'sandy';
-                renderAdminView();
-            }
-            saveBtn.textContent = 'Create Business';
-            saveBtn.disabled = false;
-        }
-
-           
-                // helper to print dates safely
-                    function fmt(d) {
-                        if (!d) return '';
-                        const dt = new Date(d);
-                        return isNaN(dt) ? '' : dt.toLocaleDateString();
-                    }
-
-                    async function loadClaimedOffers() {
-                        const list = document.getElementById('claimed-offers-list');
-                        if (!list) return;
-
-                        list.innerHTML = `<p class="text-gray-500">Loading your claimed offers...</p>`;
-
-                        const { data: { user } } = await supabaseClient.auth.getUser();
-                        if (!user) {
-                            list.innerHTML = `<p class="text-gray-500">Please log in to see your claimed offers.</p>`;
-                            return;
-                        }
-
-                        // Claims + offer + business (no joins to non-existent views)
-                        const { data: claims, error } = await supabaseClient
-                            .from('claimed_offers')
-                            .select(`
-                            id, status, created_at, redeemed_at, expires_at, offer_id,
-                            offers (
-                                id, title, description, claim_limit, is_first_time_only, expires_at,
-                                businesses ( id, name )
-                            )
-                            `)
-                            .eq('user_id', user.id)
-                            .order('created_at', { ascending: false });
-
-                        if (error) {
-                            console.error(error);
-                            list.innerHTML = `<p class="text-red-500">Could not load offers.</p>`;
-                            return;
-                        }
-                        if (!claims || claims.length === 0) {
-                            list.innerHTML = `<p class="text-gray-500 text-center py-6">You haven’t claimed any offers yet.</p>`;
-                            return;
-                        }
-
-                        // Render cards (same look as business page). No "Only X left!" line here.
-                        let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-6">`;
-
-                        claims.forEach(claim => {
-                            const offer = claim.offers || {};
-                            const biz = offer.businesses || {};
-
-                            const expired = (claim.expires_at && new Date(claim.expires_at) < new Date()) ||
-                                (offer.expires_at && new Date(offer.expires_at) < new Date());
-                            const redeemed = claim.status === 'redeemed' || !!claim.redeemed_at;
-                            const canRedeem = !expired && !redeemed;
-
-                            const chipClass = redeemed
-                                ? 'bg-green-100 text-green-800'
-                                : expired
-                                    ? 'bg-red-100 text-red-700'
-                                    : 'bg-blue-100 text-blue-800';
-
-                            const chipText = redeemed
-                                ? `Redeemed ${fmt(claim.redeemed_at)}`
-                                : expired
-                                    ? 'Expired'
-                                    : 'Claimed';
-
-                            html += `
-                                <article class="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 md:p-7">
-                                    <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-gray-900 leading-snug">${offer.title || 'Untitled Offer'}</h3>
-                                        ${biz.name ? `<p class="text-sm text-gray-500 mt-0.5">${biz.name}</p>` : ''}
-                                        ${offer.description ? `<p class="mt-2 text-gray-700 text-sm leading-relaxed">${offer.description}</p>` : ''}
-
-                                        <div class="mt-3 flex flex-wrap gap-2">
-                                        ${offer.claim_limit ? `<span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">Limit ${offer.claim_limit}</span>` : ''}
-                                        ${offer.is_first_time_only ? `<span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">First-time only</span>` : ''}
-                                        ${offer.expires_at ? `<span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">Expires ${fmt(offer.expires_at)}</span>` : ''}
-                                        </div>
-
-                                        <div class="mt-3 grid grid-cols-2 gap-x-6 text-xs text-gray-500">
-                                        <div>Claimed: <span class="font-medium text-gray-700">${fmt(claim.created_at)}</span></div>
-                                        ${claim.expires_at ? `<div>Expires: <span class="font-medium text-gray-700">${fmt(claim.expires_at)}</span></div>` : ''}
-                                        </div>
-                                    </div>
-
-                                    <!-- Right-side action column: prevent shrinking so button doesn't wrap -->
-                                    <div class="flex flex-col items-end gap-2 flex-shrink-0">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${chipClass}">${chipText}</span>
-
-                                        ${canRedeem
-                                                                ? `<button class="redeem-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg whitespace-nowrap min-w-[120px] text-center"
-                                                    data-claim-id="${claim.id}">Redeem Now</button>`
-                                                                : `<button class="bg-gray-200 text-gray-600 font-semibold px-4 py-2 rounded-lg cursor-not-allowed whitespace-nowrap min-w-[120px] text-center" disabled>
-                                            ${redeemed ? 'Redeemed' : 'Not Available'}
-                                            </button>`
-                                                            }
-                                    </div>
-                                    </div>
-                                </article>
-                                `;
-                        });
-
-                        html += `</div>`;
-                        list.innerHTML = html;
-
-                        // Restore your existing redeem flow
-                        if (!list.dataset.bound) {
-                            list.addEventListener('click', (e) => {
-                                const btn = e.target.closest('.redeem-btn');
-                                if (!btn) return;
-                                const id = btn.dataset.claimId;
-                                if (typeof handleRedeemOffer === 'function') handleRedeemOffer(id);
-                            });
-                            list.dataset.bound = '1';
-                        }
-                    }
-
-
-
-
         async function handleRedeemOffer(claimId) {
             const enteredPin = prompt("Please have the business owner enter their 4-digit PIN:");
-            if (enteredPin === null || enteredPin.trim() === '') return;
+            if (!enteredPin) return;
             const { data, error } = await supabaseClient.rpc('redeem_offer', { p_claim_id: claimId, p_pin: enteredPin });
-            if (error) { alert(`An unexpected error occurred: ${error.message}`); }
-            else {
+            if (error) {
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
                 alert(data);
-                if (data.startsWith('Success')) { renderSupporterView(); }
+                if (String(data).startsWith('Success')) renderSupporterView();
             }
         }
 
-        function updateNavAuth(user) {
-                const authLink = document.getElementById('auth-link');
-                const mobileAuthLink = document.getElementById('mobile-auth-link');
+        async function mountAccountPanel() {
+            const panel = document.getElementById('account-panel');
+            const signin = document.getElementById('signin-prompt');
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                panel?.classList.remove('hidden');
+                signin?.classList.add('hidden');
+                await renderPlanBadge(session);
+            } else {
+                panel?.classList.add('hidden');
+                signin?.classList.remove('hidden');
+            }
+        }
 
-                const setLoggedIn = () => {
-                    authLink && (authLink.href = '/dashboard.html', authLink.textContent = 'Dashboard');
-                    mobileAuthLink && (mobileAuthLink.href = '/dashboard.html', mobileAuthLink.textContent = 'Dashboard');
-                };
-                const setLoggedOut = () => {
-                    authLink && (authLink.href = '/login.html', authLink.textContent = 'Login');
-                    mobileAuthLink && (mobileAuthLink.href = '/login.html', mobileAuthLink.textContent = 'Login');
-                };
+        async function renderPlanBadge(session) {
+            const elPlanHost = document.getElementById("plan-badge-host");
+            const elPlanMeta = document.getElementById("plan-meta");
+            if (!elPlanHost || !elPlanMeta) return;
 
-                (async () => {
-                    try {
-                        if (!user) {
-                            const { data: { user: u } } = await supabaseClient.auth.getUser();
-                            user = u || null;
-                        }
-                        user ? setLoggedIn() : setLoggedOut();
-                    } catch {
-                        setLoggedOut();
+            const { data: profile, error } = await supabaseClient.from("profiles").select("membership_level, plan_status, stripe_current_period_end").eq("id", session.user.id).single();
+            if (error) {
+                console.error(error);
+                elPlanHost.innerHTML = `<span class="text-sm text-red-600">Could not load plan.</span>`;
+                return;
+            }
+            const level = profile?.membership_level || "free";
+            const status = profile?.plan_status || "inactive";
+            const renews = fmt(profile?.stripe_current_period_end);
+            const colorClasses = level === "Pro" ? "bg-purple-100 text-purple-800" : level === "essentials" ? "bg-blue-100 text-blue-800" : "bg-slate-100 text-slate-700";
+            const label = level === "Pro" ? "Pro" : level === "essentials" ? "Essentials" : "Free";
+
+            elPlanHost.innerHTML = `<span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${colorClasses}"><span class="h-2 w-2 rounded-full ${status === "active" ? "bg-green-500" : "bg-amber-500"}"></span>Current plan: ${label}${status === "active" ? "" : ` (${status})`}</span>`;
+            elPlanMeta.innerHTML = renews ? `<span class="text-slate-600">Renews on <span class="font-medium text-slate-800">${renews}</span></span>` : "";
+
+            document.getElementById("btn-manage-billing")?.addEventListener("click", async () => {
+                try {
+                    const { data, error } = await supabaseClient.functions.invoke('create-portal-session', { body: {} });
+                    if (error || data?.error) {
+                        alert(data?.error || error?.message || 'Could not open portal');
+                        return;
                     }
-                })();
-            }
-
-
-
-        async function sendGHLNotification(eventType, details) {
-            try {
-                await fetch('https://services.leadconnectorhq.com/hooks/miD90jDw7w2L2p1FaEpg/webhook-trigger/7b238155-630a-4776-9f3d-45a2757e8644', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event: eventType, email: currentUser.email, details, type: 'business' })
-                });
-            } catch (err) {
-                console.error('GHL notify error:', err);
-            }
-        }
-
-        async function wireLogoutButton() {
-                // Only show if logged in
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                if (!user) return;
-
-                if (document.getElementById('logout-btn')) return; // don't dup
-
-                // Try to place it right after the "Dashboard" button in the header
-                const dashBtn = Array.from(document.querySelectorAll('header a, header button'))
-                    .find(el => /dashboard/i.test(el.textContent));
-
-                const btn = document.createElement('button');
-                btn.id = 'logout-btn';
-                btn.className = 'ml-3 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100';
-                btn.textContent = 'Logout';
-
-                if (dashBtn && dashBtn.parentNode) {
-                    dashBtn.parentNode.insertBefore(btn, dashBtn.nextSibling);
-                } else {
-                    // fallback: stick it at the end of the header container
-                    (document.querySelector('header .container') || document.querySelector('header'))?.appendChild(btn);
+                    if (data?.url) location.href = data.url;
+                } catch (e) {
+                    alert('Could not open portal');
                 }
+            }, { once: true });
+        }
 
-                btn.addEventListener('click', async () => {
-                    try {
-                        btn.disabled = true;
-                        btn.textContent = 'Logging out...';
-                        await supabaseClient.auth.signOut();
-                        window.location.href = '/'; // send them home (change if you want)
-                    } catch (err) {
-                        console.error(err);
-                        btn.disabled = false;
-                        btn.textContent = 'Logout';
-                        alert('Could not log out. Please try again.');
-                    }
+        // --- ADMIN PANEL (MODAL) LOGIC ---
+        const adminModal = document.getElementById('admin-modal');
+        window.openAdminModal = async (dataType) => {
+            const content = document.getElementById('admin-modal-content');
+            const title = document.getElementById('admin-modal-title');
+            content.innerHTML = '<p class="text-center p-8">Loading...</p>';
+            adminModal.classList.remove('hidden');
+
+            let headers, data, renderer, addButtonHtml = '', tableDataForFiltering = [];
+            try {
+                if (dataType === 'businesses') {
+                    title.textContent = 'Manage Businesses';
+                    headers = ['Name', 'Status', 'Actions'];
+                    const { data: bizData, error } = await supabaseClient.from('businesses').select('id, name, claim_status').order('name');
+                    if (error) throw error;
+                    data = tableDataForFiltering = bizData;
+                    renderer = renderBusinessRow;
+                } else if (dataType === 'tag_groups') {
+                    title.textContent = 'Manage Tag Groups';
+                    headers = ['Group Name', 'Actions'];
+                    const { data: groupData, error } = await supabaseClient.from('tag_groups').select('*').order('name');
+                    if (error) throw error;
+                    data = tableDataForFiltering = groupData;
+                    allGroups = data;
+                    renderer = renderGroupRow;
+                    addButtonHtml = `<button onclick="showEditModal('tag_groups')" class="bg-green-500 text-white px-4 py-2 rounded mb-4 text-sm">Add New Group</button>`;
+                } else if (dataType === 'tags') {
+                    title.textContent = 'Manage Tags';
+                    headers = ['Tag Name', 'Group', 'Actions'];
+                    const { data: tagData, error } = await supabaseClient.from('tags').select('*, tag_groups(name)').order('name');
+                    if (error) throw error;
+                    data = tableDataForFiltering = tagData;
+                    renderer = renderTagRow;
+                    addButtonHtml = `<button onclick="showEditModal('tags')" class="bg-green-500 text-white px-4 py-2 rounded mb-4 text-sm">Add New Tag</button>`;
+                }
+                const tableHtml = `
+                    ${addButtonHtml}
+                    <div class="mb-4"><input type="search" id="admin-modal-search" placeholder="Search this list..." class="w-full p-2 border rounded-lg"></div>
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50"><tr>${headers.map(h => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${h}</th>`).join('')}</tr></thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${data && data.length > 0 ? data.map(renderer).join('') : `<tr><td colspan="${headers.length}" class="p-4 text-center">No items found.</td></tr>`}
+                            </tbody>
+                        </table>
+                    </div>`;
+                content.innerHTML = tableHtml;
+                document.getElementById('admin-modal-search').addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const filtered = tableDataForFiltering.filter(item => Object.values(item).some(val => String(val).toLowerCase().includes(term)));
+                    content.querySelector('tbody').innerHTML = filtered.length > 0 ? filtered.map(renderer).join('') : `<tr><td colspan="${headers.length}" class="p-4 text-center">No matches found.</td></tr>`;
                 });
+            } catch (error) {
+                content.innerHTML = `<p class="text-red-500">Error loading data: ${error.message}</p>`;
             }
+        };
+        window.closeAdminModal = () => adminModal.classList.add('hidden');
+        function renderBusinessRow(biz) {
+            return `<tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${biz.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${biz.claim_status}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"><a href="/edit-business.html?id=${biz.id}" target="_blank" class="text-blue-600 hover:text-blue-900">Edit Full Listing &rarr;</a></td>
+            </tr>`;
+        }
+        function renderGroupRow(group) {
+            return `<tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${group.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button onclick="showEditModal('tag_groups', ${group.id}, '${group.name}')" class="text-blue-600 hover:text-blue-900">Edit</button>
+                    <button onclick="deleteItem('tag_groups', ${group.id})" class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                </td>
+            </tr>`;
+        }
+        function renderTagRow(tag) {
+            const groupName = tag.tag_groups ? tag.tag_groups.name : '<span class="text-gray-400">Not Set</span>';
+            return `<tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${tag.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${groupName}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button onclick="showEditModal('tags', ${tag.id}, '${tag.name}', ${tag.group_id})" class="text-blue-600 hover:text-blue-900">Edit</button>
+                    <button onclick="deleteItem('tags', ${tag.id})" class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                </td>
+            </tr>`;
+        }
+        const editModal = document.getElementById('admin-edit-modal');
+            window.showEditModal = (type, id = null, name = '', groupId = null) => {
+                document.getElementById('edit-type').value = type;
+                document.getElementById('edit-id').value = id;
+                document.getElementById('edit-name').value = name;
+                document.getElementById('edit-modal-title').textContent = id ? `Edit ${type.slice(0, -1)}` : `Add ${type.slice(0, -1)}`;
+                const groupSelectField = document.getElementById('group-select-field');
+                if (type === 'tags') {
+                    const groupSelect = document.getElementById('edit-group');
+                    groupSelect.innerHTML = allGroups.map(g => `<option value="${g.id}" ${g.id === groupId ? 'selected' : ''}>${g.name}</option>`).join('');
+                    groupSelectField.classList.remove('hidden'); // <-- THIS LINE STAYS THE SAME
+                } else {
+                    groupSelectField.classList.add('hidden'); // <-- THIS LINE STAYS THE SAME
+                }
+                editModal.classList.add('is-open'); // <-- THIS LINE IS CHANGED
+            };
+        window.closeEditModal = () => editModal.classList.remove('is-open'); // <-- THIS LINE IS CHANGED
+        window.saveEditModal = async () => { /* Logic to be implemented */ };
+        window.deleteItem = async (tableName, id) => { /* Logic to be implemented */ };
 
-                const sb = window.supabaseClient;
+         // Always start closed (some flows can leave it open)
+            document.getElementById('admin-modal')?.classList.add('hidden');
+            document.getElementById('admin-edit-modal')?.classList.add('hidden');
 
-                    (async () => {
-                        const { data: { session } } = await sb.auth.getSession();
-                        const user = session?.user;
-                        if (!user) return;
+</script>
 
-                        await sb.from('profiles').upsert(
-                            { id: user.id, email: user.email }, 
-                            { onConflict: 'id' }
-                        );
-
-                        // Now read the row safely
-                        const { data: profile, error } = await sb
-                            .from('profiles')
-                            .select('*')
-                            .eq('id', user.id)
-                            .maybeSingle();
-
-                        if (error || !profile) {
-                            console.error('profile load error', error);
-                            // show your existing “Could not load user profile” UI here
-                            return;
-                        }
-
-                        // Normalize role no matter how the column is named
-                        const role =
-                            profile.role ??
-                            (Array.isArray(profile.roles) ? profile.roles[0] : undefined) ??
-                            'supporter';
-
-                        // TODO: continue rendering dashboard with `profile` + `role`
-                        // e.g., document.getElementById('welcome-name').textContent = profile.first_name || profile.email;
-                    })(
-                    
-                );
-
-    </script>
-
-
-
-
-    <!-- This is the end of the script tag. -->
-        <footer class="bg-gray-800 text-gray-400 mt-16">
-            <div class="container mx-auto px-6 py-12">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div class="md:col-span-2">
-                        <a href="/" class="flex items-center space-x-2">
-                            <img class="h-10 w-auto"
-                                src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                                alt="SupportLocalSLC Logo">
-                            <span class="text-white font-bold text-xl">SupportLocalSLC</span>
-                        </a>
-                        <p class="mt-4 text-sm">Your guide to the best local spots in Salt Lake County. Discover stories,
-                            support dreams.</p>
-                    </div>
-                    <div>
-                        <h3 class="text-white font-semibold tracking-wider uppercase">Navigate</h3>
-                        <ul class="mt-4 space-y-2 text-sm">
-                            <li><a href="/" class="hover:text-white">Home</a></li>
-                            <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
-                            <li><a href="#" class="hover:text-white">For Business Owners</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="text-white font-semibold tracking-wider uppercase">Legal</h3>
-                        <ul class="mt-4 space-y-2 text-sm">
-                            <li><a href="/terms.html" class="hover:text-white">Terms of Service</a></li>
-                            <li><a href="/privacy.html" class="hover:text-white">Privacy Policy</a></li>
-                        </ul>
-                        <h3 class="text-white font-semibold tracking-wider uppercase mt-6">Connect</h3>
-                        <div class="mt-4 flex space-x-4">
-                            <a href="#" class="hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="hover:text-white"><i class="fab fa-instagram"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
-                    <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
-                </div>
-            </div>
-        </footer>
+    <footer class="bg-gray-800 text-gray-400">
+        <div data-include="footer"></div>
+    </footer>
 
 </body>
 

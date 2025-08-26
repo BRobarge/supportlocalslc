@@ -10,9 +10,12 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/shared/supabase-init.js"></script>
-    <script type="module" src="/shared/auth-nav.js"></script>
     <script src="/shared/header-nav.js"></script>
+    <script defer src="/shared/include.js"></script>
+    <script type="module" src="/shared/auth-nav.js"></script>
+    
 
+   
     <style>
         .category-pills::-webkit-scrollbar {
             height: 8px;
@@ -73,78 +76,7 @@
 
     <!-- Header / Navigation -->
     <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="container mx-auto px-6 py-3">
-            <div class="flex items-center">
-                <!-- Logo -->
-                <a href="/" class="flex-shrink-0">
-                    <img class="h-12 w-auto"
-                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                        alt="SupportLocalSLC Logo">
-                </a>
-    
-                <!-- Desktop Nav (right-aligned) -->
-                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8 ml-auto">
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <div class="relative dropdown">
-                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
-                            data-toggle="dropdown">
-                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </a>
-                        <div class="dropdown-menu hidden absolute mt-2 w-56 bg-white rounded-lg shadow-xl py-2">
-                            <a href="/sandy/index.html?filter=offers"
-                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
-                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</span>
-                        </div>
-                    </div>
-    
-                    <a href="/#for-business" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
-    
-                    <!-- Login/Dashboard -->
-                    <a id="auth-link" href="/login.html"
-                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
-                </nav>
-    
-                <!-- Mobile hamburger -->
-                <button id="mobile-menu-btn" class="lg:hidden ml-auto text-gray-600 hover:text-gray-800 focus:outline-none">
-                    <i class="fas fa-bars text-2xl"></i>
-                </button>
-            </div>
-    
-            <!-- Mobile Menu -->
-            <nav id="mobile-menu" class="lg:hidden hidden mt-4 w-64 ml-auto text-right">
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
-                        Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
-                    </a>
-                    <div class="dropdown-menu hidden pl-4">
-                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
-                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
-                    </div>
-                </div>
-                <a href="/#for-business" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
-                <hr class="my-2" />
-                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
-            </nav>
-        </div>
+        <div data-include="header"></div>
     </header>
 
     <main class="container mx-auto p-4 md:p-8">
@@ -153,320 +85,451 @@
             <p class="text-lg text-gray-600 mt-2">Discover the best local businesses in Sandy.</p>
         </div>
 
-        <div class="bg-white p-4 rounded-lg shadow-md mb-8 sticky top-[76px] z-30">
-            <div class="relative mb-4">
-                <input type="search" id="search-input" placeholder="Search by business name, category, or tag..."
-                    class="w-full p-3 pl-10 border border-gray-300 rounded-lg">
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <div class="container mx-auto px-4">
+        
+            <div class="lg:hidden mb-4">
+                <button id="mobile-filter-btn"
+                    class="w-full flex items-center justify-center py-3 px-4 bg-blue-600 text-white font-bold rounded-lg shadow-md">
+                    <i class="fas fa-filter mr-2"></i>
+                    Filter Businesses
+                </button>
             </div>
-            <div id="category-pills-container" class="category-pills flex items-center space-x-3 overflow-x-auto pb-3">
-                <p class="text-gray-500">Loading categories...</p>
-            </div>
-        </div>
-
-        <div id="business-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <p class="text-gray-500 col-span-full">Loading businesses...</p>
-        </div>
-    </main>
-
-    <footer class="bg-gray-800 text-gray-400 mt-16">
-        <div class="container mx-auto px-6 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="md:col-span-2">
-                    <a href="/" class="flex items-center space-x-2">
-                        <img class="h-10 w-auto"
-                            src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
-                            alt="SupportLocalSLC Logo">
-                        <span class="text-white font-bold text-xl">SupportLocalSLC</span>
-                    </a>
-                    <p class="mt-4 text-sm">Your guide to the best local spots in Salt Lake County. Discover stories,
-                        support dreams.</p>
-                </div>
-                <div>
-                    <h3 class="text-white font-semibold tracking-wider uppercase">Navigate</h3>
-                    <ul class="mt-4 space-y-2 text-sm">
-                        <li><a href="/" class="hover:text-white">Home</a></li>
-                        <li><a href="/sandy/index.html" class="hover:text-white">Directory</a></li>
-                        <li><a href="#" class="hover:text-white">For Business Owners</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white font-semibold tracking-wider uppercase">Legal</h3>
-                    <ul class="mt-4 space-y-2 text-sm">
-                        <li><a href="/terms.html" class="hover:text-white">Terms of Service</a></li>
-                        <li><a href="/privacy.html" class="hover:text-white">Privacy Policy</a></li>
-                    </ul>
-                    <h3 class="text-white font-semibold tracking-wider uppercase mt-6">Connect</h3>
-                    <div class="mt-4 flex space-x-4">
-                        <a href="#" class="hover:text-white"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="hover:text-white"><i class="fab fa-instagram"></i></a>
+        
+            <div class="grid grid-cols-1 lg:grid-cols-4 lg:gap-8">
+        
+                <aside id="desktop-filter-panel"
+                    class="hidden lg:block lg:col-span-1 bg-white p-6 rounded-lg shadow-md self-start">
+                    <h2 class="text-xl font-bold mb-4">Filter Results</h2>
+                    <div id="filter-panel-container" class="space-y-6">
+                        <p class="text-gray-500">Loading filters...</p>
+                    </div>
+                </aside>
+        
+                <div class="lg:col-span-3">
+                    <div class="relative mb-6">
+                        <input type="search" id="search-input" placeholder="Search by business name, category, or tag..."
+                            class="w-full p-3 pl-10 border border-gray-300 rounded-lg">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <div id="active-chips" class="mb-4 hidden"></div>
+                    
+                    <div id="business-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        
+                    <div id="business-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <p class="text-gray-500 col-span-full">Loading businesses...</p>
                     </div>
                 </div>
-            </div>
-            <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
-                <p>&copy; 2025 SupportLocalSLC. All Rights Reserved.</p>
+        
             </div>
         </div>
+        
+        <div id="mobile-filter-drawer" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="absolute bottom-0 left-0 w-full bg-white rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b">
+                    <h2 class="text-xl font-bold">Filter Results</h2>
+                    <button id="close-drawer-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+                </div>
+                <div id="mobile-filter-container" class="overflow-y-auto p-6 space-y-6">
+                    <p class="text-gray-500">Loading filters...</p>
+                </div>
+                <div class="p-4 border-t bg-white sticky bottom-0">
+                    <button id="apply-filters-btn" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg">Show
+                        Results</button>
+                </div>
+            </div>
+        </div>
+
+        
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400">
+        <div data-include="footer"></div>
     </footer>
 
     <script type="module">
-        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
         const supabaseClient = window.supabaseClient;
-
         let allBusinesses = [];
-        let mainCategories = [];
+        let allCategories = [];
+        let allTags = new Map();
 
-        // In /public/sandy/index.html
-            document.addEventListener('DOMContentLoaded', async () => {
-                updateNavAuth();
-
-                const [businessesRes, allCategoriesRes] = await Promise.all([
-                    supabaseClient
-                        .from('businesses')
-                        .select(`
-                *,
-                business_categories ( categories ( id, name, parent_id ) ),
-                business_tags ( tags ( id, name ) )
-            `)
-                        .eq('territory', 'sandy')
-                        .eq('claim_status', 'approved'),
-                    supabaseClient
-                        .from('categories')
-                        .select('id, name, parent_id')
+        // --- MAIN ENTRY POINT ---
+        document.addEventListener('DOMContentLoaded', async () => {
+                // This new query now joins with the profiles table to get the membership_level
+                const [businessesRes, categoriesRes, tagsRes] = await Promise.all([
+                    supabaseClient.from('businesses').select(`
+            *, 
+            profiles (membership_level), 
+            offers(*), 
+            business_categories(categories(id, name, parent_id)), 
+            business_tags(tags(id, name))
+        `).eq('territory', 'sandy').eq('claim_status', 'approved'),
+                    supabaseClient.from('categories').select('id, name, parent_id').order('name'),
+                    supabaseClient.from('tags').select('id, name').order('name')
                 ]);
 
-                if (businessesRes.error || allCategoriesRes.error) {
-                    console.error("Error fetching data:", businessesRes.error || allCategoriesRes.error);
+                if (businessesRes.error || categoriesRes.error || tagsRes.error) {
+                    console.error("Error fetching data:", businessesRes.error || categoriesRes.error || tagsRes.error);
                     document.getElementById('business-grid').innerHTML = '<p class="text-red-500 col-span-full text-center">Error loading data. Please try again.</p>';
                     return;
                 }
 
-                const allCategoriesMap = new Map(allCategoriesRes.data.map(c => [c.id, c]));
+                allCategories = categoriesRes.data;
+                tagsRes.data.forEach(tag => allTags.set(tag.id, tag.name));
+                allBusinesses = processBusinessData(businessesRes.data);
 
-                allBusinesses = businessesRes.data.map(biz => {
-                    const processedCategories = biz.business_categories.map(bc => {
-                        const category = bc.categories;
-                        let mainParentId = category.parent_id;
-                        let current = category;
-                        while (current && current.parent_id) {
-                            mainParentId = current.parent_id;
-                            current = allCategoriesMap.get(current.parent_id);
-                        }
-                        return { ...category, mainParentId: mainParentId || category.id };
-                    });
-
-                    return {
-                        ...biz,
-                        categories: processedCategories,
-                        tags: biz.business_tags.map(bt => bt.tags)
-                    };
-                });
-
-                mainCategories = allCategoriesRes.data.filter(c => c.parent_id === null);
-
-                renderCategoryPills();
+                renderFilterPanels();
+                renderActiveChips();
+                applyOffersParam(); 
                 renderBusinessGrid();
-
-                document.getElementById('search-input').addEventListener('input', renderBusinessGrid);
-                document.getElementById('category-pills-container').addEventListener('click', handlePillClick);
+                setupEventListeners();
             });
 
-
-
-        function renderCategoryPills() {
-            const container = document.getElementById('category-pills-container');
-            const pillsHtml = mainCategories.map(cat =>
-                `<button class="category-pill flex-shrink-0 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white" data-category-id="${cat.id}">
-                    ${cat.name}
-                </button>`
-            ).join('');
-            container.innerHTML = `<button class="category-pill active flex-shrink-0 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-full" data-category-id="all">All</button>` + pillsHtml;
+        // --- DATA PROCESSING ---
+        function processBusinessData(businesses) {
+            const allCategoriesMap = new Map(allCategories.map(c => [c.id, c]));
+            return businesses.map(biz => {
+                const categories = biz.business_categories.map(bc => bc.categories);
+                const tags = biz.business_tags.map(bt => bt.tags);
+                // Add a simple flag for offers to make filtering easier
+                const has_offers = biz.offers && biz.offers.length > 0;
+                return { ...biz, categories, tags, has_offers };
+            });
         }
 
-                function escapeHtml(str) {
-                    return String(str ?? '')
-                        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        // --- UI RENDERING ---
+        function renderFilterPanels() {
+            // --- NEW: Define Tag Groups ---
+            // We can make this dynamic from the database later, but for now, we'll manually group them.
+            const cuisineTags = new Set(['Mexican', 'Italian', 'Pizza', 'Bakery', 'Coffee', 'Tacos']); // Add more cuisine-related tags here
+
+            let dealsHtml = `
+                <label class="flex items-center text-gray-600 hover:text-black font-semibold cursor-pointer">
+                    <input type="checkbox" id="filter-offers" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 filter-checkbox" data-filter-type="offer">
+                    <span class="ml-2">Active Offers</span>
+                </label>
+            `;
+
+            const mainCategories = allCategories.filter(c => c.parent_id === null);
+            let categoryHtml = '<div class="space-y-2">';
+            mainCategories.forEach(mainCat => {
+                categoryHtml += `<div class="font-bold text-gray-800 pt-2">${mainCat.name}</div><div class="pl-4 space-y-1">`;
+                const subCats = allCategories.filter(sc => sc.parent_id === mainCat.id);
+                subCats.forEach(subCat => {
+                    categoryHtml += `
+                        <label class="flex items-center text-gray-600 hover:text-black cursor-pointer">
+                            <input type="checkbox" class="filter-checkbox" data-filter-type="category" value="${subCat.id}">
+                            <span class="ml-2">${subCat.name}</span>
+                        </label>`;
+                });
+                categoryHtml += `</div>`;
+            });
+            categoryHtml += '</div>';
+
+            let cuisineTagHtml = `<div class="space-y-1">`;
+            let featureTagHtml = `<div class="space-y-1">`;
+            Array.from(allTags.entries()).forEach(([id, name]) => {
+                const tagCheckboxHtml = `
+                    <label class="flex items-center text-gray-600 hover:text-black cursor-pointer">
+                        <input type="checkbox" class="filter-checkbox" data-filter-type="tag" value="${id}">
+                        <span class="ml-2">${name}</span>
+                    </label>`;
+                if (cuisineTags.has(name)) {
+                    cuisineTagHtml += tagCheckboxHtml;
+                } else {
+                    featureTagHtml += tagCheckboxHtml;
                 }
+            });
+            cuisineTagHtml += '</div>';
+            featureTagHtml += '</div>';
 
-                // REPLACE your whole renderBusinessGrid with this
-                function renderBusinessGrid() {
-                    const grid = document.getElementById('business-grid');
-                    const searchTerm = (document.getElementById('search-input').value || '').toLowerCase();
-                    const activePill = document.querySelector('.category-pill.active');
-                    // ✨ keep ids as strings (UUID-safe)
-                    const activeCategoryId = activePill
-                        ? (activePill.dataset.categoryId === 'all' ? 'all' : activePill.dataset.categoryId)
-                        : 'all';
+            const fullFilterHtml = `
+                <!-- TOP clear button -->
+                <div class="sticky top-0 z-10 bg-white pb-3 mb-3 border-b">
+                    <button type="button"
+                            class="clear-filters-btn w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium shadow-sm">
+                    <i class="fas fa-broom text-sm"></i>
+                    Clear All Filters
+                    </button>
+                </div>
 
-                    const filtered = allBusinesses.filter(biz => {
-                        const searchCorpus = [
-                            biz.name || '',
-                            biz.tagline || '',
-                            ...(biz.categories || []).map(c => c.name || ''),
-                            ...(biz.tags || []).map(t => t.name || '')
-                        ].join(' ').toLowerCase();
+                <div>
+                    <h3 class="text-lg font-semibold border-b pb-2 mb-3">Deals</h3>
+                    ${dealsHtml}
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold border-b pb-2 mb-3">Categories</h3>
+                    ${categoryHtml}
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold border-b pb-2 mb-3">Cuisine & Type</h3>
+                    ${cuisineTagHtml}
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold border-b pb-2 mb-3">Features & Amenities</h3>
+                    ${featureTagHtml}
+                </div>
 
-                        const matchesSearch = !searchTerm || searchCorpus.includes(searchTerm);
-                        const matchesCategory = activeCategoryId === 'all'
-                            || (biz.categories || []).some(cat => String(cat.mainParentId) === String(activeCategoryId));
+                <!-- BOTTOM clear button -->
+                <div class="pt-2">
+                    <button type="button"
+                            class="clear-filters-btn w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium shadow-sm">
+                    <i class="fas fa-broom text-sm"></i>
+                    Clear All Filters
+                    </button>
+                </div>
+                `;
 
-                        return matchesSearch && matchesCategory;
-                    });
 
-                    if (filtered.length === 0) {
-                        grid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No businesses found matching your criteria.</p>';
+            document.getElementById('filter-panel-container').innerHTML = fullFilterHtml;
+            document.getElementById('mobile-filter-container').innerHTML = fullFilterHtml;
+        }
+
+        function applyOffersParam() {
+                const params = new URLSearchParams(location.search);
+                // support both styles: ?offers=1 and ?filter=offers
+                const wantsOffers = params.get('offers') === '1' || params.get('filter') === 'offers';
+                if (!wantsOffers) return;
+
+                // Check the "Active Offers" box in BOTH panels
+                ['filter-panel-container', 'mobile-filter-container'].forEach(id => {
+                    const container = document.getElementById(id);
+                    const cb = container?.querySelector('#filter-offers'); // this id already exists in your Deals section
+                    if (cb && !cb.checked) {
+                        cb.checked = true;
+                        cb.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+                  // After applying from URL once, strip the param so refresh doesn't re-check it
+            const url = new URL(window.location.href);
+            url.searchParams.delete('offers');
+            url.searchParams.delete('filter');
+            const q = url.searchParams.toString();
+            history.replaceState({}, '', url.pathname + (q ? `?${q}` : '') + url.hash);
+
+            }
+
+            function renderActiveChips() {
+                    const chipHost = document.getElementById('active-chips');
+                    if (!chipHost) return;
+
+                    const isMobile = window.innerWidth < 1024;
+                    const panel = isMobile
+                        ? document.getElementById('mobile-filter-container')
+                        : document.getElementById('filter-panel-container');
+
+                    const chips = [];
+
+                    // Search term
+                    const searchInput = document.getElementById('search-input');
+                    const searchTerm = (searchInput?.value || '').trim();
+                    if (searchTerm) chips.push({ type: 'search', label: `Search: ${searchTerm}` });
+
+                    // Offers
+                    const offersOn = !!panel.querySelector('#filter-offers')?.checked;
+                    if (offersOn) chips.push({ type: 'offer', label: 'Active Offers' });
+
+                    // Categories
+                    panel.querySelectorAll('.filter-checkbox[data-filter-type="category"]:checked')
+                        .forEach(cb => {
+                            const label = cb.nextElementSibling?.textContent?.trim() || 'Category';
+                            chips.push({ type: 'category', value: cb.value, label });
+                        });
+
+                    // Tags
+                    panel.querySelectorAll('.filter-checkbox[data-filter-type="tag"]:checked')
+                        .forEach(cb => {
+                            const label = cb.nextElementSibling?.textContent?.trim() || 'Tag';
+                            chips.push({ type: 'tag', value: cb.value, label });
+                        });
+
+                    // Render
+                    if (chips.length === 0) {
+                        chipHost.innerHTML = '';
+                        chipHost.classList.add('hidden');
                         return;
                     }
 
-                    // show up to 3 chips, then "+N more"
-                    const renderTagChips = (tags = []) => {
-                        if (!tags.length) return '';
-                        const shown = tags.slice(0, 3);
-                        const more = tags.length - shown.length;
+                    chipHost.classList.remove('hidden');
+                    chipHost.innerHTML = `
+    <div class="flex flex-wrap gap-2">
+      ${chips.map(c => `
+        <button type="button" class="tag-chip" data-chip-type="${c.type}" data-chip-value="${c.value || ''}">
+          ${c.label}<span aria-hidden="true">&nbsp;×</span>
+        </button>`).join('')}
+    </div>
+  `;
 
-                        const chips = shown.map(tag => `
-                                                    <span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                                    ${escapeHtml(tag.name)}
-                                                    </span>
-                                                `).join('');
+                    // Remove a single filter when a chip is clicked
+                    chipHost.onclick = (e) => {
+                        const chip = e.target.closest('.tag-chip');
+                        if (!chip) return;
 
-                        const moreChip = more > 0
-                            ? `<span class="inline-block bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded-full"
-                                title="${escapeHtml(tags.slice(3).map(t => t.name).join(', '))}">+${more} more</span>`
-                            : '';
+                        const type = chip.dataset.chipType;
+                        const val = chip.dataset.chipValue;
 
-                        return chips + moreChip;
-                    };
-
-
-                    grid.innerHTML = filtered.map(biz => {
-                       // build chips (ALL tags, no +N)
-                        const tagsHtml = (biz.tags || [])
-                            .map(t => `<span class="tag-chip">${escapeHtml(t.name)}</span>`)
-                            .join('');
-
-                        // ...inside the card template:
-                        return `
-                            <a href="business.html?id=${biz.id}" class="flex flex-col bg-white rounded-lg shadow-md overflow-hidden group border border-gray-200 hover:shadow-xl hover:border-blue-500 transition-all duration-300">
-                                <div class="h-40 bg-gray-50 flex items-center justify-center overflow-hidden">
-                                <img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}"
-                                    alt="${escapeHtml(biz.name)} Logo"
-                                    class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300">
-                                </div>
-                                <div class="p-4 flex flex-col flex-grow">
-                                <h3 class="font-bold text-lg truncate text-gray-800">${escapeHtml(biz.name)}</h3>
-                                <p class="text-sm text-gray-600 truncate flex-grow">${escapeHtml(biz.tagline || 'Local Sandy Business')}</p>
-
-                                <!-- TAGS: scroll on hover, gradient fade at the right edge -->
-                                <div class="mt-2 pt-2 border-t border-gray-100">
-                                    <div class="relative group">
-                                    <div class="tags-scroll pr-8">${tagsHtml}</div>
-                                    <div class="pointer-events-none absolute right-0 top-0 h-7 w-8
-                                                bg-gradient-to-l from-white to-transparent
-                                                opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    </div>
-                                </div>
-                                </div>
-                            </a>
-                            `;
-
-                    }).join('');
-
-                    function enableTagWheelScroll() {
-                        document.querySelectorAll('.tags-scroll').forEach(scroller => {
-                            scroller.addEventListener('wheel', (e) => {
-                                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                                    scroller.scrollLeft += e.deltaY;
-                                    e.preventDefault();
-                                }
-                            }, { passive: false });
-                        });
-                    }
-
-                    enableTagWheelScroll();
-
-                }
-
-
-
-
-
-        function handlePillClick(e) {
-            if (e.target.classList.contains('category-pill')) {
-                document.querySelectorAll('.category-pill').forEach(pill => {
-                    pill.classList.remove('active', 'bg-blue-600', 'text-white');
-                    pill.classList.add('bg-gray-200', 'text-gray-700');
-                });
-                e.target.classList.add('active', 'bg-blue-600', 'text-white');
-                e.target.classList.remove('bg-gray-200', 'text-gray-700');
-                renderBusinessGrid();
-            }
-        }
-
-        function updateNavAuth(user) {
-                const authLink = document.getElementById('auth-link');
-                const mobileAuthLink = document.getElementById('mobile-auth-link');
-
-                const setLoggedIn = () => {
-                    if (authLink) { authLink.href = '/dashboard.html'; authLink.textContent = 'Dashboard'; }
-                    if (mobileAuthLink) { mobileAuthLink.href = '/dashboard.html'; mobileAuthLink.textContent = 'Dashboard'; }
-                };
-                const setLoggedOut = () => {
-                    if (authLink) { authLink.href = '/login.html'; authLink.textContent = 'Login'; }
-                    if (mobileAuthLink) { mobileAuthLink.href = '/login.html'; mobileAuthLink.textContent = 'Login'; }
-                };
-
-                (async () => {
-                    try {
-                        if (!user) {
-                            const { data: { user: u } } = await supabaseClient.auth.getUser();
-                            user = u || null;
+                        if (type === 'search') {
+                            if (searchInput) searchInput.value = '';
+                        } else if (type === 'offer') {
+                            ['filter-panel-container', 'mobile-filter-container'].forEach(id => {
+                                const el = document.getElementById(id)?.querySelector('#filter-offers');
+                                if (el) el.checked = false;
+                            });
+                        } else if (type === 'category' || type === 'tag') {
+                            ['filter-panel-container', 'mobile-filter-container'].forEach(id => {
+                                const sel = `.filter-checkbox[data-filter-type="${type}"][value="${val}"]`;
+                                document.getElementById(id)?.querySelectorAll(sel).forEach(el => el.checked = false);
+                            });
                         }
-                        user ? setLoggedIn() : setLoggedOut();
-                    } catch {
-                        setLoggedOut();
-                    }
-                })();
+
+                        renderActiveChips();
+                        renderBusinessGrid();
+                    };
+                }
+
+
+
+        function renderBusinessGrid() {
+                const grid = document.getElementById('business-grid');
+
+                // --- FILTERING LOGIC (from your code) ---
+                const isMobile = window.innerWidth < 1024;
+                const activeFilterContainer = isMobile ? document.getElementById('mobile-filter-container') : document.getElementById('filter-panel-container');
+                const searchTerm = document.getElementById('search-input').value.toLowerCase();
+                const wantsOffers = activeFilterContainer.querySelector('#filter-offers')?.checked;
+                const selectedCategoryIds = new Set(Array.from(activeFilterContainer.querySelectorAll('.filter-checkbox[data-filter-type="category"]:checked')).map(el => el.value));
+                const selectedTagIds = new Set(Array.from(activeFilterContainer.querySelectorAll('.filter-checkbox[data-filter-type="tag"]:checked')).map(el => el.value));
+
+                const filtered = allBusinesses.filter(biz => {
+                    const searchCorpus = [biz.name || '', biz.tagline || '', ...biz.categories.map(c => c.name || ''), ...biz.tags.map(t => t.name || '')].join(' ').toLowerCase();
+                    const matchesSearch = !searchTerm || searchCorpus.includes(searchTerm);
+                    const matchesOffers = !wantsOffers || biz.has_offers;
+                    const matchesCategory = selectedCategoryIds.size === 0 || biz.categories.some(cat => selectedCategoryIds.has(String(cat.id)));
+                    const matchesTag = selectedTagIds.size === 0 || biz.tags.some(tag => selectedTagIds.has(String(tag.id)));
+                    return matchesSearch && matchesOffers && matchesCategory && matchesTag;
+                });
+
+                // --- SORTING LOGIC ---
+                const tierWeights = { pro: 3, essentials: 2, free: 1 };
+                const normTier = (lvl) => (lvl || 'free').toString().trim().toLowerCase();
+
+                filtered.sort((a, b) => {
+                    const weightA = tierWeights[normTier(a.profiles?.membership_level)] || 0;
+                    const weightB = tierWeights[normTier(b.profiles?.membership_level)] || 0;
+                    if (weightA !== weightB) return weightB - weightA; // Pro > Essentials > free
+                    return Math.random() - 0.5; // randomize within same tier
+                });
+
+
+                // --- GRID RENDERING ---
+                if (filtered.length === 0) {
+                    grid.innerHTML = '<p class="text-gray-500 col-span-full text-center">No businesses found matching your criteria.</p>';
+                    return;
+                }
+
+                grid.innerHTML = filtered.map(biz => {
+                    const level = (biz.profiles?.membership_level || 'free').toString().trim().toLowerCase();
+
+                    // Subtle Sponsored Label (show for Pro + Essentials)
+                    const sponsoredLabel = (level === 'pro' || level === 'essentials')
+                        ? `<p class="text-xs font-semibold text-blue-800 uppercase tracking-wide">Sponsored Listing</p>`
+                        : '';
+
+
+                    // Limited Tags with "+N more"
+                    const allBizTags = biz.tags || [];
+                    const tagsToShow = allBizTags.slice(0, 3);
+                    const remainingTagsCount = allBizTags.length - tagsToShow.length;
+                    const tagsHtml = tagsToShow.map(t => `<span class="inline-block bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full">${t.name}</span>`).join('');
+                    const moreTagsHtml = remainingTagsCount > 0
+                        ? `<span class="inline-block bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-full">+${remainingTagsCount} more</span>`
+                        : '';
+
+                    // Offer indicators
+                    const offerRingClass = biz.has_offers ? 'ring-2 ring-offset-2 ring-yellow-400' : 'border-gray-200';
+                    const offerIndicator = biz.has_offers ? '<div class="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full z-10">OFFER</div>' : '';
+
+                    // --- Final Card HTML (restoring the preferred "old look") ---
+                    return `
+            <a href="business.html?id=${biz.id}" class="relative flex flex-col bg-white rounded-lg shadow-md overflow-hidden group border hover:shadow-xl hover:border-blue-500 transition-all duration-300 ${offerRingClass}">
+                ${offerIndicator}
+                <div class="h-40 bg-gray-50 flex items-center justify-center overflow-hidden">
+                    <img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}" alt="${biz.name} Logo" class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300">
+                </div>
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-bold text-lg truncate text-gray-800">${biz.name}</h3>
+                    ${sponsoredLabel}
+                    <p class="text-sm text-gray-600 truncate mt-1 flex-grow">${biz.tagline || 'Local Sandy Business'}</p>
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <div class="flex flex-wrap items-center gap-2">
+                            ${tagsHtml}
+                            ${moreTagsHtml}
+                        </div>
+                    </div>
+                </div>
+            </a>
+        `;
+                }).join('');
             }
 
+        // --- EVENT LISTENERS (No changes needed here) ---
+        function setupEventListeners() {
+            const drawer = document.getElementById('mobile-filter-drawer');
+            document.getElementById('mobile-filter-btn').addEventListener('click', () => drawer.classList.remove('hidden'));
+            document.getElementById('close-drawer-btn').addEventListener('click', () => drawer.classList.add('hidden'));
+            document.getElementById('apply-filters-btn').addEventListener('click', () => {
+                renderBusinessGrid();
+                renderActiveChips(); // NEW
+                drawer.classList.add('hidden');
+            });
 
-         // Header menu wiring (safe to include on multiple pages)
-            (function () {
-                if (window.__sl_header_nav) return; // avoid duplicates
-                window.__sl_header_nav = true;
+            document.getElementById('search-input').addEventListener('input', () => {
+                renderBusinessGrid();
+                renderActiveChips(); // NEW
+            });
 
-                document.addEventListener('click', (e) => {
-                    // Mobile hamburger
-                    const hamburger = e.target.closest('#mobile-menu-btn');
-                    if (hamburger) {
-                        const mm = document.getElementById('mobile-menu');
-                        if (mm) mm.classList.toggle('hidden');
-                        return;
-                    }
+            document.getElementById('filter-panel-container').addEventListener('click', handleFilterChange);
+            document.getElementById('mobile-filter-container').addEventListener('click', handleFilterChange);
 
-                    // Dropdown toggles (use closest so clicks on the <i> chevron still work)
-                    const toggle = e.target.closest('[data-toggle="dropdown"]');
-                    if (toggle) {
-                        e.preventDefault();
+            window.addEventListener('resize', renderActiveChips);
 
-                        // Close other open menus
-                        document.querySelectorAll('.dropdown-menu').forEach(m => {
-                            if (m !== toggle.nextElementSibling) m.classList.add('hidden');
-                        });
+            
+        }
 
-                        // Toggle this one
-                        toggle.nextElementSibling?.classList.toggle('hidden');
-                        return;
-                    }
+         function handleFilterChange(event) {
+                const target = event.target;
 
-                    // Clicked outside any dropdown? Close all.
-                    if (!e.target.closest('.dropdown')) {
-                        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
-                    }
-                });
-            })();
+                // Clear buttons (top OR bottom) — support clicks on the button OR its icon
+                if (target.id === 'clear-filters-btn' || (target.closest && target.closest('.clear-filters-btn'))) {
+                    // 1) Uncheck ALL checkboxes in BOTH panels
+                    document.querySelectorAll('.filter-checkbox').forEach(cb => (cb.checked = false));
+
+                    // 2) Clear search
+                    const search = document.getElementById('search-input');
+                    if (search) search.value = '';
+
+                    // 3) Remove any filter params so refresh starts clean
+                    const url = new URL(window.location.href);
+                    url.search = '';
+                    history.replaceState({}, '', url.pathname + url.hash);
+
+                    // 4) Re-render results + chips
+                    renderBusinessGrid();
+                    if (typeof renderActiveChips === 'function') renderActiveChips();
+
+                    // 5) Close mobile drawer if open
+                    document.getElementById('mobile-filter-drawer')?.classList?.add('hidden');
+
+                    return; // done
+                }
+
+                // Normal filter clicks:
+                // Desktop: update immediately; Mobile: user taps "Show Results"
+                if (window.innerWidth >= 1024) {
+                    renderBusinessGrid();
+                    if (typeof renderActiveChips === 'function') renderActiveChips();
+                }
+            }
+
 
     </script>
 </body>
