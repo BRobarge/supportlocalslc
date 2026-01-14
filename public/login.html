@@ -153,224 +153,209 @@
     <!-- SCRIPT                                                         -->
     <!-- ============================================================= -->
     <script type="module">
-        // ===== Supabase client =====
-        const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
-        const sb = window.supabaseClient || supabase.createClient(supabaseUrl, supabaseAnonKey);
-        window.supabaseClient = sb;
+    // ===== Supabase client =====
+    const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
+    const sb = window.supabaseClient || supabase.createClient(supabaseUrl, supabaseAnonKey);
+    window.supabaseClient = sb;
 
-        // ===== Helpers =====
-        const $ = (sel, root = document) => root.querySelector(sel);
-        const successBox = $('#success-message');
-        const errorBox = $('#error-message');
-        const showSuccess = (m) => { if (!successBox || !errorBox) return; successBox.textContent = m; successBox.classList.remove('hidden'); errorBox.classList.add('hidden'); }
-        const showError = (m) => { if (!successBox || !errorBox) return; errorBox.textContent = m; errorBox.classList.remove('hidden'); successBox.classList.add('hidden'); }
-        const hideMsg = () => { if (!successBox || !errorBox) return; successBox.classList.add('hidden'); errorBox.classList.add('hidden'); }
+    // ===== Helpers =====
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const successBox = $('#success-message');
+    const errorBox = $('#error-message');
+    const showSuccess = (m) => { successBox.textContent = m; successBox.classList.remove('hidden'); errorBox.classList.add('hidden'); }
+    const showError = (m) => { errorBox.textContent = m; errorBox.classList.remove('hidden'); successBox.classList.add('hidden'); }
+    const hideMsg = () => { successBox.classList.add('hidden'); errorBox.classList.add('hidden'); }
 
+    // Tabs
+    function setTab(which) {
+        const isLogin = which === 'login';
+        const tabLogin = $('#tab-login'), tabSignup = $('#tab-signup');
+        const panelLogin = $('#panel-login'), panelSignup = $('#panel-signup');
+        
+        tabLogin.setAttribute('aria-selected', isLogin);
+        tabSignup.setAttribute('aria-selected', !isLogin);
+        tabLogin.classList.toggle('bg-white', isLogin);
+        tabLogin.classList.toggle('text-slate-600', !isLogin);
+        tabLogin.classList.toggle('shadow', isLogin);
+        tabSignup.classList.toggle('bg-white', !isLogin);
+        tabSignup.classList.toggle('text-slate-600', isLogin);
+        tabSignup.classList.toggle('shadow', !isLogin);
+        
+        panelLogin.classList.toggle('hidden', !isLogin);
+        panelSignup.classList.toggle('hidden', isLogin);
+        hideMsg();
+    }
+
+    // ===== Click handling =====
+    document.addEventListener('click', async (e) => {
         // Tabs
-        function setTab(which) {
-            const isLogin = which === 'login';
-            const tabLogin = $('#tab-login'), tabSignup = $('#tab-signup');
-            const panelLogin = $('#panel-login'), panelSignup = $('#panel-signup');
-            if (tabLogin && tabSignup) {
-                tabLogin.setAttribute('aria-selected', isLogin);
-                tabSignup.setAttribute('aria-selected', !isLogin);
-                tabLogin.classList.toggle('bg-white', isLogin);
-                tabLogin.classList.toggle('text-slate-600', !isLogin);
-                tabLogin.classList.toggle('shadow', isLogin);
-                tabSignup.classList.toggle('bg-white', !isLogin);
-                tabSignup.classList.toggle('text-slate-600', isLogin);
-                tabSignup.classList.toggle('shadow', !isLogin);
-            }
-            if (panelLogin && panelSignup) {
-                panelLogin.classList.toggle('hidden', !isLogin);
-                panelSignup.classList.toggle('hidden', isLogin);
-            }
-            hideMsg();
+        if (e.target.closest('#tab-login')) { 
+            e.preventDefault(); 
+            setTab('login'); 
+            return; 
+        }
+        if (e.target.closest('#tab-signup')) { 
+            e.preventDefault(); 
+            setTab('signup'); 
+            return; 
         }
 
-        // ===== Click handling (delegated) =====
-        document.addEventListener('click', async (e) => {
-            // Tabs
-            if (e.target.closest('#tab-login')) { e.preventDefault(); setTab('login'); return; }
-            if (e.target.closest('#tab-signup')) { e.preventDefault(); setTab('signup'); return; }
+        // Password toggles
+        if (e.target.closest('#login-toggle-pass')) { 
+            const i = $('#login-password'); 
+            i.type = i.type === 'password' ? 'text' : 'password'; 
+            return; 
+        }
+        if (e.target.closest('#signup-toggle-pass')) { 
+            const i = $('#signup-password'); 
+            i.type = i.type === 'password' ? 'text' : 'password'; 
+            return; 
+        }
 
-            // Password toggles
-            if (e.target.closest('#login-toggle-pass')) { const i = $('#login-password'); if (i) { i.type = i.type === 'password' ? 'text' : 'password'; } return; }
-            if (e.target.closest('#signup-toggle-pass')) { const i = $('#signup-password'); if (i) { i.type = i.type === 'password' ? 'text' : 'password'; } return; }
+        // Forgot password
+        if (e.target.closest('#forgot')) {
+            e.preventDefault();
+            const email = ($('#login-email')?.value || '').trim();
+            if (!email) { showError('Enter your email above, then click again.'); return; }
+            const redirectTo = `${window.location.origin}/reset.html`;
+            const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+            if (error) { showError(error.message); return; }
+            showSuccess('Password reset email sent. Check your inbox.');
+            return;
+        }
 
-            // Forgot password
-            if (e.target.closest('#forgot')) {
-                e.preventDefault();
-                const email = ($('#login-email')?.value || '').trim();
-                if (!email) { showError('Enter your email above, then click again.'); return; }
-                const redirectTo = `${window.location.origin}/reset.html`;
-                const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
-                if (error) { showError(error.message); return; }
-                showSuccess('Password reset email sent. Check your inbox.');
-                return;
-            }
+        // Google OAuth
+        if (e.target.closest('#login-google, #signup-google')) {
+            e.preventDefault();
+            const redirectTo = window.location.origin + '/dashboard.html';
+            const { error } = await sb.auth.signInWithOAuth({ 
+                provider: 'google', 
+                options: { redirectTo } 
+            });
+            if (error) showError(error.message);
+            return;
+        }
 
-            // Google OAuth (login OR signup buttons)
-            if (e.target.closest('#login-google, #signup-google')) {
-                e.preventDefault();
-                const redirectTo = window.location.origin + '/dashboard.html';
-                const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
-                if (error) showError(error.message);
-                return;
-            }
-
-            // LOGIN magic link
-            if (e.target.closest('#login-magic')) {
-                const email = (document.getElementById('login-email')?.value || '').trim();
-                if (!email) { showError('Enter your email first.'); return; }
-
-                const btn = e.target.closest('#login-magic');
-                btn.disabled = true; const prev = btn.textContent; btn.textContent = 'Sending…';
-
-                const redirectTo = window.location.origin + '/dashboard.html';
-                const { error } = await supabaseClient.auth.signInWithOtp({
-                    email,
-                    options: { emailRedirectTo: redirectTo }
-                });
-
-                btn.disabled = false; btn.textContent = prev;
-                if (error) { showError(error.message); return; }
-                showSuccess('Magic link sent. Check your inbox.');
-                return;
-            }
-
-            // SIGNUP magic link
-            if (e.target.closest('#signup-magic')) {
-                const email = (document.getElementById('signup-email')?.value || '').trim();
-                if (!email) { showError('Enter your email first.'); return; }
-
-                const btn = e.target.closest('#signup-magic');
-                btn.disabled = true; const prev = btn.textContent; btn.textContent = 'Sending…';
-
-                const redirectTo = window.location.origin + '/dashboard.html';
-                const { error } = await supabaseClient.auth.signInWithOtp({
-                    email,
-                    options: { emailRedirectTo: redirectTo }
-                });
-
-                btn.disabled = false; btn.textContent = prev;
-                if (error) { showError(error.message); return; }
-                showSuccess('Magic link sent. Check your inbox.');
-                return;
-            }
-
+        // Magic links (both login and signup)
+        if (e.target.closest('#login-magic, #signup-magic')) {
+            e.preventDefault();
+            hideMsg();
             
-        // ===== Form submits (delegated) =====
-        document.addEventListener('submit', async (e) => {
-            const form = e.target;
-            // Login form
-            if (form && form.id === 'panel-login') {
-                e.preventDefault(); hideMsg();
-                const email = ($('#login-email')?.value || '').trim();
-                const password = $('#login-password')?.value || '';
-                const { data, error } = await sb.auth.signInWithPassword({ email, password });
-                if (error) { showError(error.message); return; }
-                try { await sb.from('profiles').upsert({ id: data.user.id, email, role: 'supporter' }, { onConflict: 'id' }); } catch { }
-                window.location.href = '/dashboard.html';
-                return;
-            }
-            // Signup form
-            if (form && form.id === 'panel-signup') {
-                e.preventDefault(); hideMsg();
-                const email = ($('#signup-email')?.value || '').trim();
-                const password = $('#signup-password')?.value || '';
-                const emailRedirectTo = `${window.location.origin}/login.html`;
-                const { data, error } = await sb.auth.signUp({ email, password, options: { data: { role: 'supporter' }, emailRedirectTo } });
-                if (error) { showError(error.message); return; }
-                try { await sb.from('profiles').upsert({ id: data.user?.id, email, role: 'supporter' }) } catch { }
-                setTab('login'); showSuccess('Sign up successful. Confirm your email, then log in.');
-                return;
-            }
-        });
-
-        // put this once, above your document.addEventListener
-            if (!window.__magicLinkWired) {
-                window.__magicLinkWired = true;
-
-                document.addEventListener('click', async (e) => {
-                    // ... your existing handler code, including the MAGIC LINK block ...
-                });
+            const isLogin = e.target.closest('#login-magic');
+            const emailInputId = isLogin ? 'login-email' : 'signup-email';
+            const email = (document.getElementById(emailInputId)?.value || '').trim();
+            
+            if (!email) { 
+                showError('Enter your email first.'); 
+                return; 
             }
 
+            const btn = e.target.closest('button');
+            const prev = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
 
-         document.addEventListener('click', async (e) => {
-               // MAGIC LINK (login + signup) — replaces both old blocks
-             if (e.target.closest('#login-magic, #signup-magic')) {
-                 e.preventDefault();
-                 e.stopPropagation();
-                 hideMsg(); // clear any old banner
-
-                 const emailInputId = e.target.closest('#login-magic') ? 'login-email' : 'signup-email';
-                 const email = (document.getElementById(emailInputId)?.value || '').trim();
-                 if (!email) { showError('Enter your email first.'); return; }
-
-                 const btn = e.target.closest('#login-magic, #signup-magic');
-                 const prev = btn.textContent;
-                 btn.disabled = true;
-                 btn.textContent = 'Sending…';
-
-                 const redirectTo = window.location.origin + '/dashboard.html';
-                 const { error } = await supabaseClient.auth.signInWithOtp({
-                     email,
-                     options: { emailRedirectTo: redirectTo }
-                 });
-
-                 if (error) {
-                     // Handle Supabase rate limit (429) nicely
-                     if (error.status === 429 || /rate limit/i.test(error.message)) {
-                         showError('We just sent you a link. Please wait 60s before requesting another.');
-                         let s = 60;
-                         const timer = setInterval(() => {
-                             s--;
-                             btn.textContent = `Wait ${s}s`;
-                             if (s <= 0) {
-                                 clearInterval(timer);
-                                 btn.disabled = false;
-                                 btn.textContent = prev;
-                                 hideMsg();
-                             }
-                         }, 1000);
-                         return;
-                     }
-                     btn.disabled = false;
-                     btn.textContent = prev;
-                     showError(error.message || 'Could not send magic link.');
-                     return;
-                 }
-
-                 // Success
-                 btn.textContent = prev;
-                 showSuccess('Magic link sent. Check your inbox.');
-                 setTimeout(() => { btn.disabled = false; }, 3000);
-                 return;
-             }
-
-
+            const redirectTo = window.location.origin + '/dashboard.html';
+            const { error } = await sb.auth.signInWithOtp({
+                email,
+                options: { emailRedirectTo: redirectTo }
             });
 
+            if (error) {
+                if (error.status === 429 || /rate limit/i.test(error.message)) {
+                    showError('We just sent you a link. Please wait 60s before requesting another.');
+                    let s = 60;
+                    const timer = setInterval(() => {
+                        s--;
+                        btn.textContent = `Wait ${s}s`;
+                        if (s <= 0) {
+                            clearInterval(timer);
+                            btn.disabled = false;
+                            btn.textContent = prev;
+                            hideMsg();
+                        }
+                    }, 1000);
+                    return;
+                }
+                btn.disabled = false;
+                btn.textContent = prev;
+                showError(error.message || 'Could not send magic link.');
+                return;
+            }
 
-        // ===== On load =====
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => setTab('login'), { once: true });
-        } else {
-            setTab('login');
+            btn.textContent = prev;
+            showSuccess('Magic link sent. Check your inbox.');
+            setTimeout(() => { btn.disabled = false; }, 3000);
+            return;
         }
+    });
 
-        // Bounce if already logged in
-        (async () => {
-            const { data: { session } } = await sb.auth.getSession();
-            if (session) window.location.href = '/dashboard.html';
-        })();
+    // ===== Form submits =====
+    document.addEventListener('submit', async (e) => {
+        const form = e.target;
+        
+        // Login form
+        if (form && form.id === 'panel-login') {
+            e.preventDefault(); 
+            hideMsg();
+            const email = ($('#login-email')?.value || '').trim();
+            const password = $('#login-password')?.value || '';
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            if (error) { showError(error.message); return; }
+            try { 
+                await sb.from('profiles').upsert({ 
+                    id: data.user.id, 
+                    email, 
+                    role: 'supporter' 
+                }, { onConflict: 'id' }); 
+            } catch { }
+            window.location.href = '/dashboard.html';
+            return;
+        }
+        
+        // Signup form
+        if (form && form.id === 'panel-signup') {
+            e.preventDefault(); 
+            hideMsg();
+            const email = ($('#signup-email')?.value || '').trim();
+            const password = $('#signup-password')?.value || '';
+            const emailRedirectTo = `${window.location.origin}/login.html`;
+            const { data, error } = await sb.auth.signUp({ 
+                email, 
+                password, 
+                options: { 
+                    data: { role: 'supporter' }, 
+                    emailRedirectTo 
+                } 
+            });
+            if (error) { showError(error.message); return; }
+            try { 
+                await sb.from('profiles').upsert({ 
+                    id: data.user?.id, 
+                    email, 
+                    role: 'supporter' 
+                }) 
+            } catch { }
+            setTab('login'); 
+            showSuccess('Sign up successful. Confirm your email, then log in.');
+            return;
+        }
+    });
 
-        }); 
-           
-    </script>
+    // ===== On load =====
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => setTab('login'), { once: true });
+    } else {
+        setTab('login');
+    }
+
+    // Bounce if already logged in
+    (async () => {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) window.location.href = '/dashboard.html';
+    })();
+</script>
 
 </body>
 
