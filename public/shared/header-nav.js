@@ -54,4 +54,44 @@ function initializeHeader() {
 }
 
 // Immediately try to initialize, in case this script is loaded on a page without the include.js file.
+
+// Check auth state and update header
+async function updateAuthButton() {
+    if (!window.supabaseClient) return;
+    
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    
+    const authLink = document.getElementById('auth-link');
+    const mobileAuthLink = document.getElementById('mobile-auth-link');
+    
+    if (session) {
+        // User is logged in
+        if (authLink) {
+            authLink.href = '/dashboard.html';
+            authLink.textContent = 'Dashboard';
+        }
+        if (mobileAuthLink) {
+            mobileAuthLink.href = '/dashboard.html';
+            mobileAuthLink.textContent = 'Dashboard';
+        }
+    } else {
+        // User is logged out
+        if (authLink) {
+            authLink.href = '/login.html';
+            authLink.textContent = 'Login';
+        }
+        if (mobileAuthLink) {
+            mobileAuthLink.href = '/login.html';
+            mobileAuthLink.textContent = 'Login';
+        }
+    }
+}
+
+// Run when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateAuthButton);
+} else {
+    updateAuthButton();
+}
+
 initializeHeader();
