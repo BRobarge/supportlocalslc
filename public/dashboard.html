@@ -704,13 +704,23 @@
             elPlanMeta.innerHTML = renews ? `<span class="text-slate-600">Renews on <span class="font-medium text-slate-800">${renews}</span></span>` : "";
 
             document.getElementById("btn-manage-billing")?.addEventListener("click", async () => {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+
                 try {
-                    const { data, error } = await supabaseClient.functions.invoke('create-portal-session', { body: {} });
-                    if (error || data?.error) {
-                        alert(data?.error || error?.message || 'Could not open portal');
+                    const response = await fetch('/api/create-portal-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: user.id })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.error) {
+                        alert('Could not open portal: ' + data.error);
                         return;
                     }
-                    if (data?.url) location.href = data.url;
+
+                    if (data.url) location.href = data.url;
                 } catch (e) {
                     alert('Could not open portal');
                 }
