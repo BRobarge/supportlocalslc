@@ -818,11 +818,11 @@
                 editModal.classList.add('is-open'); // <-- THIS LINE IS CHANGED
             };
 
-        async function upgradeToEssentials() {
+        window.upgradeToEssentials = async function () {
                 await createCheckoutSession('price_1RyeF3LLX7qXMo92ukdJY0Rb');
             }
 
-            async function upgradeToPro() {
+            window.upgradeToPro = async function () {
                 await createCheckoutSession('price_1RyeG9LLX7qXMo92RNtgTF81');
             }
 
