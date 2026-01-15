@@ -142,6 +142,43 @@
                             Manage billing
                         </button>
                         <div id="downgrade-slot"></div>
+                <!-- Upgrade Options -->
+                <div id="upgrade-section" class="mt-6 border-t pt-6">
+                    <h3 class="text-lg font-semibold mb-4">Upgrade Your Plan</h3>
+                
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Essentials Plan -->
+                        <div class="border rounded-lg p-4 hover:border-blue-500 transition">
+                            <h4 class="font-bold text-xl mb-2">Essentials</h4>
+                            <p class="text-3xl font-bold mb-4">$49<span class="text-sm text-gray-600">/month</span></p>
+                            <ul class="text-sm mb-4 space-y-2">
+                                <li>✓ Basic business listing</li>
+                                <li>✓ Limited offers</li>
+                                <li>✓ Basic analytics</li>
+                            </ul>
+                            <button onclick="upgradeToEssentials()"
+                                class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                                Upgrade to Essentials
+                            </button>
+                        </div>
+                
+                        <!-- Pro Plan -->
+                        <div class="border-2 border-blue-500 rounded-lg p-4 relative">
+                            <span class="absolute top-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-bl">POPULAR</span>
+                            <h4 class="font-bold text-xl mb-2">Pro</h4>
+                            <p class="text-3xl font-bold mb-4">$99<span class="text-sm text-gray-600">/month</span></p>
+                            <ul class="text-sm mb-4 space-y-2">
+                                <li>✓ Premium business listing</li>
+                                <li>✓ Unlimited offers</li>
+                                <li>✓ Advanced analytics</li>
+                                <li>✓ Priority support</li>
+                            </ul>
+                            <button onclick="upgradeToPro()" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                                Upgrade to Pro
+                            </button>
+                        </div>
+                    </div>
+                </div>
                     </div>
                 </div>
             </div>
@@ -571,6 +608,48 @@
             }
         }
 
+        async function upgradeToEssentials() {
+                await createCheckoutSession('price_1RyeF3LLX7qXMo92ukdJY0Rb'); // Essentials monthly
+            }
+
+            async function upgradeToPro() {
+                await createCheckoutSession('price_1RyeG9LLX7qXMo92RNtgTF81'); // Pro monthly
+            }
+
+            async function createCheckoutSession(priceId) {
+                const { data: { user } } = await window.supabaseClient.auth.getUser();
+
+                if (!user) {
+                    alert('Please log in first');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/create-checkout-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            priceId: priceId,
+                            userId: user.id,
+                            email: user.email
+                        })
+                    });
+
+                    const { url, error } = await response.json();
+
+                    if (error) {
+                        alert('Error: ' + error);
+                        return;
+                    }
+
+                    // Redirect to Stripe Checkout
+                    window.location.href = url;
+                } catch (error) {
+                    console.error('Checkout error:', error);
+                    alert('Failed to start checkout');
+                }
+            }
+        
         async function claimWithCode() {
             const code = document.getElementById('claim-code-input').value.trim();
             if (!code) return alert('Please enter a claim code.');
