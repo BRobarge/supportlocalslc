@@ -608,47 +608,7 @@
             }
         }
 
-        async function upgradeToEssentials() {
-                await createCheckoutSession('price_1RyeF3LLX7qXMo92ukdJY0Rb'); // Essentials monthly
-            }
-
-            async function upgradeToPro() {
-                await createCheckoutSession('price_1RyeG9LLX7qXMo92RNtgTF81'); // Pro monthly
-            }
-
-            async function createCheckoutSession(priceId) {
-                const { data: { user } } = await window.supabaseClient.auth.getUser();
-
-                if (!user) {
-                    alert('Please log in first');
-                    return;
-                }
-
-                try {
-                    const response = await fetch('/api/create-checkout-session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            priceId: priceId,
-                            userId: user.id,
-                            email: user.email
-                        })
-                    });
-
-                    const { url, error } = await response.json();
-
-                    if (error) {
-                        alert('Error: ' + error);
-                        return;
-                    }
-
-                    // Redirect to Stripe Checkout
-                    window.location.href = url;
-                } catch (error) {
-                    console.error('Checkout error:', error);
-                    alert('Failed to start checkout');
-                }
-            }
+        
         
         async function claimWithCode() {
             const code = document.getElementById('claim-code-input').value.trim();
@@ -857,6 +817,48 @@
                 }
                 editModal.classList.add('is-open'); // <-- THIS LINE IS CHANGED
             };
+
+        async function upgradeToEssentials() {
+                await createCheckoutSession('price_1RyeF3LLX7qXMo92ukdJY0Rb');
+            }
+
+            async function upgradeToPro() {
+                await createCheckoutSession('price_1RyeG9LLX7qXMo92RNtgTF81');
+            }
+
+            async function createCheckoutSession(priceId) {
+                const { data: { user } } = await window.supabaseClient.auth.getUser();
+
+                if (!user) {
+                    alert('Please log in first');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/create-checkout-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            priceId: priceId,
+                            userId: user.id,
+                            email: user.email
+                        })
+                    });
+
+                    const { url, error } = await response.json();
+
+                    if (error) {
+                        alert('Error: ' + error);
+                        return;
+                    }
+
+                    window.location.href = url;
+                } catch (error) {
+                    console.error('Checkout error:', error);
+                    alert('Failed to start checkout');
+                }
+            }
+
         window.closeEditModal = () => editModal.classList.remove('is-open'); // <-- THIS LINE IS CHANGED
         window.saveEditModal = async () => { /* Logic to be implemented */ };
         window.deleteItem = async (tableName, id) => { /* Logic to be implemented */ };
@@ -864,6 +866,8 @@
          // Always start closed (some flows can leave it open)
             document.getElementById('admin-modal')?.classList.add('hidden');
             document.getElementById('admin-edit-modal')?.classList.add('hidden');
+
+
 
 </script>
 
