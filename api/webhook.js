@@ -67,6 +67,8 @@ export default async function handler(req, res) {
                     membership_level: membershipLevel,
                     stripe_customer_id: session.customer,
                     stripe_subscription_id: subscriptionId,
+                    plan_status: 'active',
+                    stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
                 })
                 .eq('id', userId);
 

@@ -694,11 +694,11 @@
                 elPlanHost.innerHTML = `<span class="text-sm text-red-600">Could not load plan.</span>`;
                 return;
             }
-            const level = profile?.membership_level || "free";
+            const level = (profile?.membership_level || "free").toLowerCase();
             const status = profile?.plan_status || "inactive";
             const renews = fmt(profile?.stripe_current_period_end);
-            const colorClasses = level === "Pro" ? "bg-purple-100 text-purple-800" : level === "essentials" ? "bg-blue-100 text-blue-800" : "bg-slate-100 text-slate-700";
-            const label = level === "Pro" ? "Pro" : level === "essentials" ? "Essentials" : "Free";
+            const colorClasses = level === "pro" ? "bg-purple-100 text-purple-800" : level === "essentials" ? "bg-blue-100 text-blue-800" : "bg-slate-100 text-slate-700";
+            const label = level === "pro" ? "Pro" : level === "essentials" ? "Essentials" : "Free";
 
             elPlanHost.innerHTML = `<span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${colorClasses}"><span class="h-2 w-2 rounded-full ${status === "active" ? "bg-green-500" : "bg-amber-500"}"></span>Current plan: ${label}${status === "active" ? "" : ` (${status})`}</span>`;
             elPlanMeta.innerHTML = renews ? `<span class="text-slate-600">Renews on <span class="font-medium text-slate-800">${renews}</span></span>` : "";
