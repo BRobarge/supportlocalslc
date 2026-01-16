@@ -148,7 +148,7 @@
                 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Essentials Plan -->
-                        <div class="border rounded-lg p-4 hover:border-blue-500 transition">
+                        <div class="essentials-card border rounded-lg p-4 hover:border-blue-500 transition">
                             <h4 class="font-bold text-xl mb-2">Essentials</h4>
                             <p class="text-3xl font-bold mb-4">$49<span class="text-sm text-gray-600">/month</span></p>
                             <ul class="text-sm mb-4 space-y-2">
@@ -163,7 +163,7 @@
                         </div>
                 
                         <!-- Pro Plan -->
-                        <div class="border-2 border-blue-500 rounded-lg p-4 relative">
+                        <div class="pro-card border-2 border-blue-500 rounded-lg p-4 relative">
                             <span class="absolute top-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-bl">POPULAR</span>
                             <h4 class="font-bold text-xl mb-2">Pro</h4>
                             <p class="text-3xl font-bold mb-4">$99<span class="text-sm text-gray-600">/month</span></p>
@@ -725,6 +725,25 @@
                     alert('Could not open portal');
                 }
             }, { once: true });
+
+        // Conditionally show/hide upgrade cards based on current plan
+            const upgradeSection = document.getElementById('upgrade-section');
+            const essentialsCard = document.querySelector('.essentials-card');
+            const proCard = document.querySelector('.pro-card');
+
+            if (level === 'essentials') {
+                // Hide Essentials, show Pro
+                essentialsCard?.classList.add('hidden');
+                proCard?.classList.remove('hidden');
+            } else if (level === 'pro') {
+                // Hide entire upgrade section
+                upgradeSection?.classList.add('hidden');
+            } else {
+                // Free user - show both
+                essentialsCard?.classList.remove('hidden');
+                proCard?.classList.remove('hidden');
+                upgradeSection?.classList.remove('hidden');
+            }
         }
 
         // --- ADMIN PANEL (MODAL) LOGIC ---
