@@ -63,8 +63,7 @@ async function updateAuthButton() {
     
     const authLink = document.getElementById('auth-link');
     const mobileAuthLink = document.getElementById('mobile-auth-link');
-    const mobileLogoutLink = document.getElementById('mobile-logout-link');
-
+    
     if (session) {
         // User is logged in
         if (authLink) {
@@ -74,14 +73,6 @@ async function updateAuthButton() {
         if (mobileAuthLink) {
             mobileAuthLink.href = '/dashboard.html';
             mobileAuthLink.textContent = 'Dashboard';
-        }
-        if (mobileLogoutLink) {
-            mobileLogoutLink.classList.remove('hidden');
-            mobileLogoutLink.addEventListener('click', async (e) => {
-                e.preventDefault();
-                await window.supabaseClient.auth.signOut();
-                window.location.href = '/';
-            }, { once: true });
         }
     } else {
         // User is logged out
@@ -93,10 +84,8 @@ async function updateAuthButton() {
             mobileAuthLink.href = '/login.html';
             mobileAuthLink.textContent = 'Login';
         }
-        if (mobileLogoutLink) {
-            mobileLogoutLink.classList.add('hidden');
-        }
     }
+}
 
 // Run when page loads
 if (document.readyState === 'loading') {
