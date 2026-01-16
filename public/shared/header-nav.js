@@ -95,3 +95,8 @@ if (document.readyState === 'loading') {
 }
 
 initializeHeader();
+
+// Force auth button update on load
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(updateAuthButton, 500);
+});
