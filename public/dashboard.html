@@ -285,7 +285,7 @@
             </div>
         </div>
 
-        <div id="admin-modal" class="fixed inset-0 bg-white z-50 hidden flex flex-col">
+        <div id="admin-modal" class="fixed inset-0 bg-white z-50 hidden flex-col">
             <div class="flex items-center justify-between p-4 border-b bg-gray-50">
                 <h2 id="admin-modal-title" class="text-2xl font-bold">Admin Tool</h2>
                 <button onclick="closeAdminModal()" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
@@ -821,6 +821,7 @@
             const title = document.getElementById('admin-modal-title');
             content.innerHTML = '<p class="text-center p-8">Loading...</p>';
             adminModal.classList.remove('hidden');
+            adminModal.style.display = 'flex';
 
             let headers, data, renderer, addButtonHtml = '', tableDataForFiltering = [];
             try {
@@ -871,7 +872,7 @@
                 content.innerHTML = `<p class="text-red-500">Error loading data: ${error.message}</p>`;
             }
         };
-        window.closeAdminModal = () => adminModal.classList.add('hidden');
+        window.closeAdminModal = () => { adminModal.classList.add('hidden'); adminModal.style.display = ''; };
         function renderBusinessRow(biz) {
             return `<tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${biz.name}</td>
@@ -957,9 +958,58 @@
                 }
             }
 
-        window.closeEditModal = () => editModal.classList.remove('is-open'); // <-- THIS LINE IS CHANGED
-        window.saveEditModal = async () => { /* Logic to be implemented */ };
-        window.deleteItem = async (tableName, id) => { /* Logic to be implemented */ };
+        window.closeEditModal = () => editModal.classList.remove('is-open');
+
+        window.saveEditModal = async () => {
+            const type = document.getElementById('edit-type').value;
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value.trim();
+            const groupId = document.getElementById('edit-group').value || null;
+
+            if (!name) return alert('Name is required.');
+
+            const isNew = !id;
+            let error;
+
+            if (type === 'tag_groups') {
+                if (isNew) {
+                    ({ error } = await supabaseClient.from('tag_groups').insert({ name }));
+                } else {
+                    ({ error } = await supabaseClient.from('tag_groups').update({ name }).eq('id', id));
+                }
+            } else if (type === 'tags') {
+                if (!groupId) return alert('Please select a group.');
+                if (isNew) {
+                    ({ error } = await supabaseClient.from('tags').insert({ name, group_id: groupId }));
+                } else {
+                    ({ error } = await supabaseClient.from('tags').update({ name, group_id: groupId }).eq('id', id));
+                }
+            }
+
+            if (error) {
+                alert('Error saving: ' + error.message);
+                return;
+            }
+
+            editModal.classList.remove('is-open');
+            // Refresh the admin modal to show updated data
+            const currentTitle = document.getElementById('admin-modal-title').textContent;
+            if (currentTitle.toLowerCase().includes('group')) openAdminModal('tag_groups');
+            else if (currentTitle.toLowerCase().includes('tag')) openAdminModal('tags');
+        };
+
+        window.deleteItem = async (tableName, id) => {
+            const label = tableName === 'tag_groups' ? 'tag group' : 'tag';
+            if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+
+            const { error } = await supabaseClient.from(tableName).delete().eq('id', id);
+            if (error) {
+                alert('Error deleting: ' + error.message);
+                return;
+            }
+            // Refresh
+            openAdminModal(tableName);
+        };
 
          // Always start closed (some flows can leave it open)
          // Add Business Modal Functions
