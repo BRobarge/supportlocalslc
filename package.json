@@ -1,7 +1,7 @@
 {
   "name": "supportlocalslc-mvp",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "tailwindcss --config tailwind.config.js -i ./public/shared/input.css -o ./public/shared/output.css --minify"
   },
