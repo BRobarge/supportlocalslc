@@ -562,9 +562,64 @@
             });
         }
 
-        function renderAdminView() {
+        async function renderAdminView() {
             const container = document.getElementById('dashboard-content');
+            
+            // Load pending businesses
+            const { data: pendingBusinesses, error: pendingError } = await supabaseClient
+                .from('businesses')
+                .select('*')
+                .or('status.eq.pending,claim_status.eq.pending,owner_id.is.null');
+            
+            const trulyPending = (pendingBusinesses || []).filter(b => 
+                b.status === 'pending' || 
+                b.claim_status === 'pending' || 
+                (b.owner_id === null && !b.claim_status)
+            );
+            
+            let pendingSection = '';
+            if (trulyPending.length > 0) {
+                pendingSection = `
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                        <h3 class="text-lg font-bold text-amber-700 mb-2">
+                            <i class="fas fa-clock mr-2"></i>Pending Approvals (${trulyPending.length})
+                        </h3>
+                        <p class="text-amber-600 text-sm mb-3">Businesses awaiting approval from self-submitted listings</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg">
+                                <thead>
+                                    <tr class="bg-amber-100">
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Name</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">City</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Submitted</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${trulyPending.map(biz => {
+                                        const city = biz.address ? biz.address.split(',').pop()?.trim() || 'N/A' : 'N/A';
+                                        const date = biz.created_at ? new Date(biz.created_at).toLocaleDateString() : 'N/A';
+                                        return `
+                                            <tr class="border-t border-amber-100">
+                                                <td class="px-4 py-2 font-medium">${biz.name || 'No Name'}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-600">${city}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-600">${date}</td>
+                                                <td class="px-4 py-2">
+                                                    <button onclick="approveBusinessFromDashboard('${biz.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 mr-1">Approve</button>
+                                                    <button onclick="editBusinessFromDashboard('${biz.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">Review</button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+            
             container.innerHTML = `
+                ${pendingSection}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white p-6 rounded-lg shadow-lg text-center flex flex-col justify-center">
                         <h3 class="text-xl font-bold mb-4">Manage Businesses</h3>
@@ -582,6 +637,24 @@
                         <button onclick="openAdminModal('tags')" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg mt-auto">Manage</button>
                     </div>
                 </div>`;
+        }
+        
+        async function approveBusinessFromDashboard(id) {
+            const { error } = await supabaseClient.from('businesses').update({ 
+                status: 'approved',
+                claim_status: 'approved'
+            }).eq('id', id);
+            if (error) {
+                alert('Error approving: ' + error.message);
+            } else {
+                alert('Business approved!');
+                renderAdminView(); // Reload the view
+            }
+        }
+        
+        async function editBusinessFromDashboard(id) {
+            // Open the admin modal for editing
+            openAdminModal('businesses', id);
         }
 
         function renderBusinessCards(businesses, containerId) {
