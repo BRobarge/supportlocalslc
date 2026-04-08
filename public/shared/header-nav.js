@@ -1,7 +1,7 @@
-// /shared/header-nav.js
+// --- SupportLocalSLC: Header Navigation ---
+// Handles UI behaviors (dropdowns, mobile menu) and auth state synchronization.
 
 function initializeHeader() {
-    // Prevent this from running more than once
     if (window.__sl_header_initialized) return;
     window.__sl_header_initialized = true;
 
@@ -15,7 +15,6 @@ function initializeHeader() {
     }
 
     document.addEventListener('click', (e) => {
-        // 1) Mobile hamburger
         const hamb = e.target.closest('#mobile-menu-btn');
         if (hamb) {
             const mm = document.getElementById('mobile-menu');
@@ -23,93 +22,35 @@ function initializeHeader() {
             return;
         }
 
-        // 2) Clicks inside an open dropdown menu should behave normally
         if (e.target.closest('.dropdown-menu')) return;
 
-        // 3) Only handle clicks that happen INSIDE a .dropdown container
         const container = e.target.closest('.dropdown');
         if (!container) {
-            // Clicked elsewhere → close everything
             closeAllExcept(null);
             return;
         }
 
-        // Find this dropdown's menu
         const menu = container.querySelector('.dropdown-menu');
         if (!menu) return;
 
-        // Prevent navigation on the label
         const labelLink = e.target.closest('a[href], button');
         if (labelLink) e.preventDefault();
 
-        // Toggle this menu, close others
         const wasOpen = !menu.classList.contains('hidden');
         closeAllExcept(menu);
         menu.classList.toggle('hidden', wasOpen);
 
-        // ARIA on a designated toggle if present
         const toggle = container.querySelector('[data-toggle="dropdown"], .dropdown-toggle');
         if (toggle) toggle.setAttribute('aria-expanded', (!wasOpen).toString());
     });
 }
 
-// Immediately try to initialize, in case this script is loaded on a page without the include.js file.
+// REMOVED: updateAuthButton function from here. 
+// All auth logic is now consolidated in auth-nav.js to prevent "Zombie" buttons and race conditions.
 
-// Check auth state and update header
-async function updateAuthButton() {
-    if (!window.supabaseClient) return;
-    
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
-    
-    const authLink = document.getElementById('auth-link');
-    const mobileAuthLink = document.getElementById('mobile-auth-link');
-    
-    const mobileLogoutLink = document.getElementById('mobile-logout-link');
-
-    if (session) {
-        // User is logged in
-        if (authLink) {
-            authLink.href = '/dashboard.html';
-            authLink.textContent = 'Dashboard';
-        }
-        if (mobileAuthLink) {
-            mobileAuthLink.href = '/dashboard.html';
-            mobileAuthLink.textContent = 'Dashboard';
-        }
-        if (mobileLogoutLink) {
-            mobileLogoutLink.classList.remove('hidden');
-            mobileLogoutLink.addEventListener('click', async (e) => {
-                e.preventDefault();
-                await window.supabaseClient.auth.signOut();
-                window.location.href = '/';
-            }, { once: true });
-        }
-    } else {
-        // User is logged out
-        if (authLink) {
-            authLink.href = '/login.html';
-            authLink.textContent = 'Login';
-        }
-        if (mobileAuthLink) {
-            mobileAuthLink.href = '/login.html';
-            mobileAuthLink.textContent = 'Login';
-        }
-        if (mobileLogoutLink) {
-            mobileLogoutLink.classList.add('hidden');
-        }
-    }
-}
-
-// Run when page loads
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateAuthButton);
+    document.addEventListener('DOMContentLoaded', initializeHeader);
 } else {
-    updateAuthButton();
+    initializeHeader();
 }
 
-initializeHeader();
-
-// Force auth button update on load
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(updateAuthButton, 500);
-});
