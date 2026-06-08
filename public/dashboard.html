@@ -772,12 +772,16 @@
             elPlanMeta.innerHTML = renews ? `<span class="text-slate-600">Renews on <span class="font-medium text-slate-800">${renews}</span></span>` : "";
 
             document.getElementById("btn-manage-billing")?.addEventListener("click", async () => {
-                const { data: { user } } = await supabaseClient.auth.getUser();
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                const user = session?.user;
 
                 try {
                     const response = await fetch('/api/create-portal-session', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
                         body: JSON.stringify({ userId: user.id })
                     });
 
@@ -925,7 +929,8 @@
             }
 
             async function createCheckoutSession(priceId) {
-                const { data: { user } } = await window.supabaseClient.auth.getUser();
+                const { data: { session } } = await window.supabaseClient.auth.getSession();
+                const user = session?.user;
 
                 if (!user) {
                     alert('Please log in first');
@@ -935,7 +940,10 @@
                 try {
                     const response = await fetch('/api/create-checkout-session', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
                         body: JSON.stringify({
                             priceId: priceId,
                             userId: user.id,
