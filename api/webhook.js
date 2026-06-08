@@ -1,5 +1,7 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { createClient } = require('@supabase/supabase-js');
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -43,7 +45,7 @@ export default async function handler(req, res) {
 
     // Handle the event
     switch (event.type) {
-        case 'checkout.session.completed':
+        case 'checkout.session.completed': {
             const session = event.data.object;
             const userId = session.metadata.userId;
             const subscriptionId = session.subscription;
@@ -73,18 +75,45 @@ export default async function handler(req, res) {
                 .eq('id', userId);
 
             break;
+        }
 
-        case 'customer.subscription.deleted':
+        case 'customer.subscription.updated': {
+            // Handle plan changes, renewals, and payment failures
+            const subscription = event.data.object;
+            const priceId = subscription.items.data[0].price.id;
+
+            let membershipLevel = 'free';
+            if (priceId === 'price_1RyeG9LLX7qXMo92RNtgTF81' || priceId === 'price_1RyeG9LLX7qXMo92z7XuFggu') {
+                membershipLevel = 'pro';
+            } else if (priceId === 'price_1RyeF3LLX7qXMo92ukdJY0Rb' || priceId === 'price_1RyeF3LLX7qXMo92PeSXddUV') {
+                membershipLevel = 'essentials';
+            }
+
+            await supabase
+                .from('profiles')
+                .update({
+                    membership_level: membershipLevel,
+                    plan_status: subscription.status,
+                    stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
+                })
+                .eq('stripe_subscription_id', subscription.id);
+
+            break;
+        }
+
+        case 'customer.subscription.deleted': {
             // Downgrade user to free
             const deletedSub = event.data.object;
             await supabase
                 .from('profiles')
                 .update({
                     membership_level: 'free',
+                    plan_status: 'inactive',
                     stripe_subscription_id: null,
                 })
                 .eq('stripe_subscription_id', deletedSub.id);
             break;
+        }
     }
 
     res.json({ received: true });

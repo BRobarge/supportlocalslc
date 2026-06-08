@@ -4,7 +4,28 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>For Business Owners • SupportLocalSLC</title>
+    <title>List Your Business | Support Local SLC</title>
+
+    <!-- SEO Meta -->
+    <meta name="description" content="Get your Sandy, Utah business discovered by your community. Free listing, plus Pro and Essentials plans with exclusive deals, featured placement, and more.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.supportlocalslc.com/owners.html">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.supportlocalslc.com/owners.html">
+    <meta property="og:title" content="List Your Business | Support Local SLC">
+    <meta property="og:description" content="Get your business discovered by your local community. Free to list — upgrade for featured placement and exclusive deal posting.">
+    <meta property="og:image" content="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/portrait-of-male-and-female-coffee-shop-owners-sta-2024-10-22-05-35-40-utc.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="List Your Business | Support Local SLC">
+    <meta name="twitter:description" content="Get your business discovered by your local community. Free to list — upgrade for featured placement.">
+    <meta name="twitter:image" content="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/portrait-of-male-and-female-coffee-shop-owners-sta-2024-10-22-05-35-40-utc.jpg">
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
     <!-- Tailwind output -->
     <link rel="stylesheet" href="/shared/output.css" />
@@ -17,7 +38,15 @@
     <script type="module" src="/shared/auth-nav.js"></script>
     <script src="/shared/header-nav.js"></script>
 
-    
+
+    <!-- Google Analytics GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-K8G0S3F790"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "G-K8G0S3F790");
+    </script>
 </head>
 
 <body class="bg-slate-50 min-h-screen flex flex-col">
@@ -39,7 +68,7 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Plans -->
         <section id="plans" class="max-w-6xl mx-auto px-4 py-12">
             <div class="text-center">
@@ -47,7 +76,7 @@
                 <p class="text-slate-600 mt-2 max-w-2xl mx-auto">Start for free to tell your story. Upgrade when you're ready to
                     turn our audience into your customers.</p>
             </div>
-        
+
             <div class="mt-10 flex items-center justify-center space-x-4">
                 <span class="font-semibold text-slate-800">Monthly</span>
                 <label for="billing-toggle" class="relative inline-flex cursor-pointer items-center">
@@ -58,9 +87,9 @@
                 </label>
                 <span class="font-semibold text-slate-500">Annual <span class="text-green-600">(2 Months Free)</span></span>
             </div>
-        
+
             <div class="mt-8 grid gap-8 sm:grid-cols-1 lg:grid-cols-3 items-start">
-        
+
                 <div class="rounded-2xl border border-slate-300 bg-white p-8 shadow-sm h-full flex flex-col">
                     <h3 class="text-2xl font-semibold text-slate-900">Free</h3>
                     <p class="text-slate-600 mt-1">Get your story on the platform.</p>
@@ -84,7 +113,7 @@
                             Tags</li>
                     </ul>
                 </div>
-        
+
                 <div class="relative rounded-2xl border-2 border-blue-600 bg-white p-8 shadow-xl h-full flex flex-col">
                     <div class="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
                         <span
@@ -118,7 +147,7 @@
                             Tags</li>
                     </ul>
                 </div>
-        
+
                 <div
                     class="rounded-2xl border border-transparent bg-slate-800 p-8 shadow-sm h-full flex flex-col ring-2 ring-yellow-400">
                     <h3 class="text-2xl font-semibold text-white">Pro</h3>
@@ -151,7 +180,7 @@
             </div>
         </section>
 
-    ]</main>
+    </main>
 
     <footer class="bg-blue-900 text-yellow-300">
         <div data-include="footer"></div>
@@ -174,7 +203,7 @@
             // Bail early to avoid undefined errors
         }
 
-        // Create a local client for this page (don’t rely on window.supabase)
+        // Create a local client for this page (don't rely on window.supabase)
         const sb = (SUPABASE_URL && SUPABASE_ANON_KEY)
             ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
             : undefined;
@@ -212,21 +241,29 @@
                 return;
             }
 
-            // Call your Edge Function
+            // Map plan name to price ID
+            const priceMap = {
+                'essentials-monthly': 'price_1RyeF3LLX7qXMo92ukdJY0Rb',
+                'essentials-annual':  'price_1RyeF3LLX7qXMo92PeSXddUV',
+                'pro-monthly':        'price_1RyeG9LLX7qXMo92RNtgTF81',
+                'pro-annual':         'price_1RyeG9LLX7qXMo92z7XuFggu',
+            };
+            const priceId = priceMap[plan];
+            if (!priceId) return alert("Unknown plan selected.");
+
             try {
-                const url = `${SUPABASE_URL}/functions/v1/create-checkout`;
-                const res = await fetch(url, {
+                const res = await fetch('/api/create-checkout-session', {
                     method: "POST",
-                    headers: {
-                        "content-type": "application/json",
-                        "apikey": SUPABASE_ANON_KEY,
-                        "authorization": `Bearer ${session.access_token}`,
-                    },
-                    body: JSON.stringify({ plan }) // 'essentials-monthly' | 'essentials-annual' | 'pro-monthly' | 'pro-annual'
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                        priceId,
+                        userId: session.user.id,
+                        email: session.user.email,
+                    }),
                 });
                 const json = await res.json();
                 if (json?.url) {
-                    window.location.href = json.url; // Stripe Checkout
+                    window.location.href = json.url;
                 } else {
                     console.error(json);
                     alert(json?.error || "Checkout error. Please try again.");
@@ -339,14 +376,10 @@
             // Manage billing → Stripe portal
             document.getElementById("btn-manage-billing")?.addEventListener("click", async () => {
                 try {
-                    const url = `${SUPABASE_URL}/functions/v1/create-portal-session`;
-                    const res = await fetch(url, {
+                    const res = await fetch('/api/create-portal-session', {
                         method: "POST",
-                        headers: {
-                            "content-type": "application/json",
-                            "apikey": SUPABASE_ANON_KEY,
-                            "authorization": `Bearer ${session.access_token}`,
-                        },
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ userId: session.user.id }),
                     });
                     const json = await res.json();
                     if (json.url) location.href = json.url;
@@ -359,25 +392,18 @@
             // Downgrade (Pro → Essentials) with proration
             document.getElementById("btn-downgrade")?.addEventListener("click", async () => {
                 if (!confirm("Downgrade to Essentials now? Proration will apply.")) return;
+                // Redirect to Stripe portal — easiest way to handle downgrades safely
                 try {
-                    const url = `${SUPABASE_URL}/functions/v1/downgrade-subscription`;
-                    const res = await fetch(url, {
+                    const res = await fetch('/api/create-portal-session', {
                         method: "POST",
-                        headers: {
-                            "content-type": "application/json",
-                            "apikey": SUPABASE_ANON_KEY,
-                            "authorization": `Bearer ${session.access_token}`,
-                        },
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ userId: session.user.id }),
                     });
                     const json = await res.json();
-                    if (json.ok) {
-                        alert("Downgrade requested. We’ll refresh your plan once Stripe confirms.");
-                        setTimeout(render, 1500); // webhook will also update
-                    } else {
-                        alert(json.error || "Could not downgrade");
-                    }
+                    if (json.url) location.href = json.url;
+                    else alert(json.error || "Could not open portal");
                 } catch (e) {
-                    console.error(e); alert("Could not downgrade");
+                    console.error(e); alert("Could not open portal");
                 }
             });
         }

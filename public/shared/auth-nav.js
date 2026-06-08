@@ -1,90 +1,142 @@
 // --- SupportLocalSLC: Auth Nav (desktop + mobile) ---
+// This file handles auth state across all pages consistently
 
 const SUPABASE_URL = 'https://kozlfywdsqjndcsibgtw.supabase.co';
 const SUPABASE_ANON =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
 
-const client = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-window.supabaseClient = client; // let other scripts reuse it
+// Initialize client - reuse existing or create new
+let client = window.supabaseClient;
+if (!client && typeof supabase !== 'undefined') {
+    client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    window.supabaseClient = client;
+}
 
-function setAuthLinks(loggedIn) {
-    const desktop = document.getElementById('auth-link');
-    const mobile = document.getElementById('mobile-auth-link');
-    if (desktop) {
-        desktop.href = loggedIn ? '/dashboard.html' : '/login.html';
-        desktop.textContent = loggedIn ? 'Dashboard' : 'Login';
-    }
-    if (mobile) {
-        mobile.href = loggedIn ? '/dashboard.html' : '/login.html';
-        mobile.textContent = loggedIn ? 'Dashboard' : 'Login';
+// Helper to safely update element text and href
+function updateAuthElement(elementId, loggedIn) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    if (loggedIn) {
+        el.href = '/dashboard.html';
+        el.textContent = elementId.includes('mobile') ? 'Dashboard' : 'Dashboard';
+        // Add logout functionality if not already added
+        if (!el.dataset.authListener) {
+            el.dataset.authListener = 'true';
+            // For desktop, we want to show both Dashboard link AND Logout button
+            if (elementId === 'auth-link') {
+                ensureLogoutButton();
+            }
+            if (elementId === 'mobile-auth-link') {
+                el.href = '/dashboard.html';
+            }
+        }
+    } else {
+        el.href = '/login.html';
+        el.textContent = 'Login';
+        // Remove logout button if present
+        if (elementId === 'auth-link') {
+            removeLogoutButton();
+        }
     }
 }
 
-function ensureLogoutButtons(loggedIn) {
-    const desktopAfter = document.getElementById('auth-link');
-    const mobileAfter = document.getElementById('mobile-auth-link');
-
-    // Desktop logout button
-    let d = document.getElementById('logout-btn');
-    if (loggedIn && desktopAfter && !d) {
-        d = document.createElement('button');
-        d.id = 'logout-btn';
-        d.className = 'ml-3 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100';
-        d.textContent = 'Logout';
-        desktopAfter.parentNode.insertBefore(d, desktopAfter.nextSibling);
-        d.addEventListener('click', onLogout);
-    } else if (!loggedIn && d) {
-        d.remove();
-    }
-
-    // Mobile logout button
-    let m = document.getElementById('mobile-logout-btn');
-    if (loggedIn && mobileAfter && !m) {
-        m = document.createElement('button');
-        m.id = 'mobile-logout-btn';
-        m.className = 'block py-2 text-gray-700 font-semibold w-full text-right';
-        m.textContent = 'Logout';
-        mobileAfter.parentNode.insertBefore(m, mobileAfter.nextSibling);
-        m.addEventListener('click', onLogout);
-    } else if (!loggedIn && m) {
-        m.remove();
+function ensureLogoutButton() {
+    let logoutBtn = document.getElementById('logout-btn');
+    const authLink = document.getElementById('auth-link');
+    
+    // Only add logout button if we're on desktop nav and button doesn't exist
+    if (!logoutBtn && authLink) {
+        logoutBtn = document.createElement('a');
+        logoutBtn.id = 'logout-btn';
+        logoutBtn.href = '#';
+        logoutBtn.className = 'ml-3 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold';
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (client) {
+                await client.auth.signOut();
+                window.location.href = '/';
+            }
+        });
+        authLink.parentNode.insertBefore(logoutBtn, authLink.nextSibling);
     }
 }
 
-async function onLogout() {
-    const btns = [
-        document.getElementById('logout-btn'),
-        document.getElementById('mobile-logout-btn')
-    ].filter(Boolean);
-    btns.forEach(b => { b.disabled = true; b.textContent = 'Logging out…'; });
+function removeLogoutButton() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.remove();
+    }
+}
+
+function updateMobileLogoutButton(loggedIn) {
+    const mobileLogoutLink = document.getElementById('mobile-logout-link');
+    const mobileAuthLink = document.getElementById('mobile-auth-link');
+    
+    if (!mobileLogoutLink) return;
+    
+    if (loggedIn) {
+        mobileLogoutLink.classList.remove('hidden');
+        // Remove any existing listeners to avoid duplicates
+        const newLink = mobileLogoutLink.cloneNode(true);
+        mobileLogoutLink.parentNode.replaceChild(newLink, mobileLogoutLink);
+        newLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (client) {
+                await client.auth.signOut();
+                window.location.href = '/';
+            }
+        });
+    } else {
+        mobileLogoutLink.classList.add('hidden');
+    }
+}
+
+async function applyAuthState() {
+    if (!client) {
+        console.warn('Supabase client not available');
+        return;
+    }
+    
     try {
-        await client.auth.signOut();
-    } finally {
-        window.location.replace('/login.html');
+        const { data: { session } } = await client.auth.getSession();
+        const loggedIn = !!session?.user;
+        
+        updateAuthElement('auth-link', loggedIn);
+        updateAuthElement('mobile-auth-link', loggedIn);
+        updateMobileLogoutButton(loggedIn);
+    } catch (err) {
+        console.error('Error checking auth state:', err);
     }
 }
 
-async function apply() {
-    const { data: { session } } = await client.auth.getSession();
-    const loggedIn = !!session?.user;
-    setAuthLinks(loggedIn);
-    ensureLogoutButtons(loggedIn);
+// Initialize on DOM ready
+function init() {
+    applyAuthState();
+    
+    // Listen for auth state changes
+    if (client) {
+        client.auth.onAuthStateChange((_evt, session) => {
+            const loggedIn = !!session?.user;
+            updateAuthElement('auth-link', loggedIn);
+            updateAuthElement('mobile-auth-link', loggedIn);
+            updateMobileLogoutButton(loggedIn);
+            
+            // Redirect if logged out on dashboard
+            if (!loggedIn && window.location.pathname === '/dashboard.html') {
+                window.location.replace('/login.html');
+            }
+        });
+    }
 }
 
 // Expose so include.js can re-run auth update after it injects the header HTML
-window.applyAuthNav = apply;
+window.applyAuthNav = applyAuthState;
 
+// Run initialization
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', apply, { once: true });
+    document.addEventListener('DOMContentLoaded', init, { once: true });
 } else {
-    apply();
+    init();
 }
-
-client.auth.onAuthStateChange((_evt, session) => {
-    const loggedIn = !!session?.user;
-    setAuthLinks(loggedIn);
-    ensureLogoutButtons(loggedIn);
-    if (!loggedIn && window.location.pathname === '/dashboard.html') {
-        window.location.replace('/login.html');
-    }
-});

@@ -64,6 +64,14 @@
         }
         
     </style>
+    <!-- Google Analytics GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-K8G0S3F790"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "G-K8G0S3F790");
+    </script>
 </head>
 
 <body class="bg-gray-100 font-sans">
@@ -285,7 +293,7 @@
             </div>
         </div>
 
-        <div id="admin-modal" class="fixed inset-0 bg-white z-50 hidden flex flex-col">
+        <div id="admin-modal" class="fixed inset-0 bg-white z-50 hidden flex-col">
             <div class="flex items-center justify-between p-4 border-b bg-gray-50">
                 <h2 id="admin-modal-title" class="text-2xl font-bold">Admin Tool</h2>
                 <button onclick="closeAdminModal()" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
@@ -554,9 +562,64 @@
             });
         }
 
-        function renderAdminView() {
+        async function renderAdminView() {
             const container = document.getElementById('dashboard-content');
+            
+            // Load pending businesses
+            const { data: pendingBusinesses, error: pendingError } = await supabaseClient
+                .from('businesses')
+                .select('*')
+                .or('status.eq.pending,claim_status.eq.pending,owner_id.is.null');
+            
+            const trulyPending = (pendingBusinesses || []).filter(b => 
+                b.status === 'pending' || 
+                b.claim_status === 'pending' || 
+                (b.owner_id === null && !b.claim_status)
+            );
+            
+            let pendingSection = '';
+            if (trulyPending.length > 0) {
+                pendingSection = `
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                        <h3 class="text-lg font-bold text-amber-700 mb-2">
+                            <i class="fas fa-clock mr-2"></i>Pending Approvals (${trulyPending.length})
+                        </h3>
+                        <p class="text-amber-600 text-sm mb-3">Businesses awaiting approval from self-submitted listings</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg">
+                                <thead>
+                                    <tr class="bg-amber-100">
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Name</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">City</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Submitted</th>
+                                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${trulyPending.map(biz => {
+                                        const city = biz.address ? biz.address.split(',').pop()?.trim() || 'N/A' : 'N/A';
+                                        const date = biz.created_at ? new Date(biz.created_at).toLocaleDateString() : 'N/A';
+                                        return `
+                                            <tr class="border-t border-amber-100">
+                                                <td class="px-4 py-2 font-medium">${biz.name || 'No Name'}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-600">${city}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-600">${date}</td>
+                                                <td class="px-4 py-2">
+                                                    <button onclick="approveBusinessFromDashboard('${biz.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 mr-1">Approve</button>
+                                                    <button onclick="editBusinessFromDashboard('${biz.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">Review</button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+            
             container.innerHTML = `
+                ${pendingSection}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white p-6 rounded-lg shadow-lg text-center flex flex-col justify-center">
                         <h3 class="text-xl font-bold mb-4">Manage Businesses</h3>
@@ -574,6 +637,24 @@
                         <button onclick="openAdminModal('tags')" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg mt-auto">Manage</button>
                     </div>
                 </div>`;
+        }
+        
+        async function approveBusinessFromDashboard(id) {
+            const { error } = await supabaseClient.from('businesses').update({ 
+                status: 'approved',
+                claim_status: 'approved'
+            }).eq('id', id);
+            if (error) {
+                alert('Error approving: ' + error.message);
+            } else {
+                alert('Business approved!');
+                renderAdminView(); // Reload the view
+            }
+        }
+        
+        async function editBusinessFromDashboard(id) {
+            // Open the admin modal for editing
+            openAdminModal('businesses', id);
         }
 
         function renderBusinessCards(businesses, containerId) {
@@ -825,6 +906,7 @@
             const title = document.getElementById('admin-modal-title');
             content.innerHTML = '<p class="text-center p-8">Loading...</p>';
             adminModal.classList.remove('hidden');
+            adminModal.style.display = 'flex';
 
             let headers, data, renderer, addButtonHtml = '', tableDataForFiltering = [];
             try {
@@ -875,12 +957,16 @@
                 content.innerHTML = `<p class="text-red-500">Error loading data: ${error.message}</p>`;
             }
         };
-        window.closeAdminModal = () => adminModal.classList.add('hidden');
+        window.closeAdminModal = () => { adminModal.classList.add('hidden'); adminModal.style.display = ''; };
         function renderBusinessRow(biz) {
-            return `<tr>
+            const isPending = biz.claim_status === 'pending' || biz.claim_status === 'unclaimed';
+            return `<tr class="${isPending ? 'bg-amber-50' : ''}">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${biz.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${biz.claim_status}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"><a href="/edit-business.html?id=${biz.id}" target="_blank" class="text-blue-600 hover:text-blue-900">Edit Full Listing &rarr;</a></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    ${isPending ? `<button onclick="approveBusinessFromDashboard('${biz.id}')" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600 mr-2">Approve</button>` : ''}
+                    <a href="/edit-business.html?id=${biz.id}" target="_blank" class="text-blue-600 hover:text-blue-900">Edit Full Listing &rarr;</a>
+                </td>
             </tr>`;
         }
         function renderGroupRow(group) {
@@ -965,9 +1051,58 @@
                 }
             }
 
-        window.closeEditModal = () => editModal.classList.remove('is-open'); // <-- THIS LINE IS CHANGED
-        window.saveEditModal = async () => { /* Logic to be implemented */ };
-        window.deleteItem = async (tableName, id) => { /* Logic to be implemented */ };
+        window.closeEditModal = () => editModal.classList.remove('is-open');
+
+        window.saveEditModal = async () => {
+            const type = document.getElementById('edit-type').value;
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value.trim();
+            const groupId = document.getElementById('edit-group').value || null;
+
+            if (!name) return alert('Name is required.');
+
+            const isNew = !id;
+            let error;
+
+            if (type === 'tag_groups') {
+                if (isNew) {
+                    ({ error } = await supabaseClient.from('tag_groups').insert({ name }));
+                } else {
+                    ({ error } = await supabaseClient.from('tag_groups').update({ name }).eq('id', id));
+                }
+            } else if (type === 'tags') {
+                if (!groupId) return alert('Please select a group.');
+                if (isNew) {
+                    ({ error } = await supabaseClient.from('tags').insert({ name, group_id: groupId }));
+                } else {
+                    ({ error } = await supabaseClient.from('tags').update({ name, group_id: groupId }).eq('id', id));
+                }
+            }
+
+            if (error) {
+                alert('Error saving: ' + error.message);
+                return;
+            }
+
+            editModal.classList.remove('is-open');
+            // Refresh the admin modal to show updated data
+            const currentTitle = document.getElementById('admin-modal-title').textContent;
+            if (currentTitle.toLowerCase().includes('group')) openAdminModal('tag_groups');
+            else if (currentTitle.toLowerCase().includes('tag')) openAdminModal('tags');
+        };
+
+        window.deleteItem = async (tableName, id) => {
+            const label = tableName === 'tag_groups' ? 'tag group' : 'tag';
+            if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+
+            const { error } = await supabaseClient.from(tableName).delete().eq('id', id);
+            if (error) {
+                alert('Error deleting: ' + error.message);
+                return;
+            }
+            // Refresh
+            openAdminModal(tableName);
+        };
 
          // Always start closed (some flows can leave it open)
          // Add Business Modal Functions
@@ -1050,4 +1185,4 @@
 
 </body>
 
-</html>
+</html>// deploy trigger Mon Mar 30 11:39:34 MDT 2026

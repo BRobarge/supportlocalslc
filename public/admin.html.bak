@@ -9,9 +9,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/shared/supabase-init.js"></script>
-    <script defer src="/shared/include.js"></script>
-    <script type="module" src="/shared/auth-nav.js"></script>
     <!-- Google Analytics GA4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-K8G0S3F790"></script>
     <script>
@@ -23,15 +20,86 @@
 </head>
 
 <body class="bg-gray-100 font-sans">
-    <!-- Header will be injected by include.js -->
-    <div data-include="header"></div>
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center">
+                <!-- Logo -->
+                <a href="/" class="flex-shrink-0">
+                    <img class="h-12 w-auto"
+                        src="https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-logos/Site%20Assets/Top%20Logo.png"
+                        alt="SupportLocalSLC Logo">
+                </a>
     
+                <!-- Desktop Nav (right-aligned) -->
+                <nav id="desktop-nav" class="hidden lg:flex items-center space-x-8 ml-auto">
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">
+                            Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
+                        </a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-48 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy</a>
+                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
+                        </div>
+                    </div>
+    
+                    <div class="relative dropdown">
+                        <a href="#" class="dropdown-toggle text-gray-600 hover:text-blue-600 font-semibold"
+                            data-toggle="dropdown">
+                            Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
+                        </a>
+                        <div class="dropdown-menu hidden absolute mt-2 w-56 bg-white rounded-lg shadow-xl py-2">
+                            <a href="/sandy/index.html?filter=offers"
+                                class="block px-4 py-2 text-gray-700 hover:bg-blue-50">Sandy Offers</a>
+                            <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Draper Offers (Soon)</span>
+                        </div>
+                    </div>
+    
+                    <a href="/#for-business" class="text-gray-600 hover:text-blue-600 font-semibold">For Business Owners</a>
+    
+                    <!-- Login/Dashboard -->
+                    <a id="auth-link" href="/login.html"
+                        class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Login</a>
+                </nav>
+    
+                <!-- Mobile hamburger -->
+                <button id="mobile-menu-btn" class="lg:hidden ml-auto text-gray-600 hover:text-gray-800 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+    
+            <!-- Mobile Menu -->
+            <nav id="mobile-menu" class="lg:hidden hidden mt-4 w-64 ml-auto text-right">
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
+                        Directory <i class="fas fa-chevron-down text-xs ml-1"></i>
+                    </a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html" class="block py-2 text-gray-600">Sandy</a>
+                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle block py-2 text-gray-700 font-semibold" data-toggle="dropdown">
+                        Offers <i class="fas fa-chevron-down text-xs ml-1"></i>
+                    </a>
+                    <div class="dropdown-menu hidden pl-4">
+                        <a href="/sandy/index.html?filter=offers" class="block py-2 text-gray-600">Sandy Offers</a>
+                        <span class="block py-2 text-gray-400 cursor-not-allowed">Draper (Soon)</span>
+                    </div>
+                </div>
+                <a href="/#for-business" class="block py-2 text-gray-700 font-semibold">For Business Owners</a>
+                <hr class="my-2" />
+                <a id="mobile-auth-link" href="/login.html" class="block py-2 text-gray-700 font-semibold">Login</a>
+            </nav>
+        </div>
+    </header>
     <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
         <a href="index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
             <i class="fas fa-home text-2xl"></i>
             <span class="text-sm font-semibold">Home</span>
         </a>
-        <a href="login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
+        <a id="auth-link" href="login.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
             <i class="fas fa-sign-in-alt text-2xl"></i>
             <span class="text-sm font-semibold">Login</span>
         </a>
@@ -42,30 +110,6 @@
     </nav>
     <main class="container mx-auto p-4" id="admin-content">
         <h2 class="text-xl font-semibold mb-4">Admin Dashboard</h2>
-        
-        <!-- Pending Approvals Section -->
-        <div id="pending-section" class="mb-8">
-            <h3 class="text-lg font-bold mb-2 text-amber-600">
-                <i class="fas fa-clock mr-2"></i>Pending Approvals
-            </h3>
-            <p class="text-gray-600 text-sm mb-3">Businesses awaiting approval from self-submitted listings</p>
-            <div id="pending-table" class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-300 table-auto text-left">
-                    <thead>
-                        <tr class="bg-amber-50">
-                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[200px]">Name</th>
-                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[150px]">City</th>
-                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[150px]">Submitted</th>
-                            <th class="px-6 py-3 border text-sm font-semibold text-gray-600 min-w-[250px]">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pending-body" class="text-gray-700 text-sm">
-                        <tr><td colspan="4" class="text-center py-4">Loading pending businesses...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
         <div id="business-section" class="mb-8">
             <h3 class="text-lg font-bold mb-2">All Businesses</h3>
             <div id="business-table" class="overflow-x-auto">
@@ -189,9 +233,6 @@
         </div>
     </main>
 
-    <!-- Footer will be injected by include.js -->
-    <div data-include="footer"></div>
-
     <script>
         const supabaseUrl = 'https://kozlfywdsqjndcsibgtw.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemxmeXdkc3FqbmRjc2liZ3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNTk0NzEsImV4cCI6MjA2NzgzNTQ3MX0.Xb0nRQIVhpW_7uBcwfIuvGZmyPMGzJq6k-6fdgfF3kw';
@@ -204,6 +245,30 @@
             'Pro': { subs: 3, tags: 5 }
         };
 
+        async function updateNavAuth() {
+                const storedSession = sessionStorage.getItem('supabase_session');
+                const authLink = document.getElementById('auth-link');
+                if (!authLink) return;
+                const iconElement = authLink.querySelector('svg, i');
+                const textSpan = authLink.querySelector('span');
+                if (storedSession) {
+                    authLink.href = '#';
+                    authLink.onclick = async (e) => {
+                        e.preventDefault();
+                        await supabaseClient.auth.signOut();
+                        sessionStorage.removeItem('supabase_session');
+                        window.location.href = 'login.html';
+                    };
+                    if (iconElement) iconElement.classList.replace('fa-sign-in-alt', 'fa-sign-out-alt');
+                    if (textSpan) textSpan.textContent = 'Logout';
+                } else {
+                    authLink.href = 'login.html';
+                    authLink.onclick = null;
+                    if (iconElement) iconElement.classList.replace('fa-sign-out-alt', 'fa-sign-in-alt');
+                    if (textSpan) textSpan.textContent = 'Login';
+                }
+            }
+        
         async function initAdmin() {
             const storedSession = sessionStorage.getItem('supabase_session');
             if (storedSession) {
@@ -221,76 +286,8 @@
                 window.location.href = 'dashboard.html';
                 return;
             }
-
-            // Load pending businesses (status = 'pending' or claim_status = 'unclaimed' with owner_id)
-            await loadPendingBusinesses();
-
-            // Load all businesses table
-            await loadAllBusinesses();
-
-            // Load users table
-            await loadUsers();
-
-            // Load categories table
-            await loadCategories();
-        }
-
-        async function loadPendingBusinesses() {
-            // Get businesses that are pending approval (status = 'pending' OR claim_status = 'pending' OR self-submitted without owner)
-            const { data: pendingBusinesses, error: pendingError } = await supabaseClient
-                .from('businesses')
-                .select('*')
-                .or('status.eq.pending,claim_status.eq.pending,owner_id.is.null');
-            
-            const pendingBody = document.getElementById('pending-body');
-            
-            if (pendingError) {
-                console.error('Error loading pending businesses:', pendingError);
-                pendingBody.innerHTML = '<tr><td colspan="4" class="text-center text-red-500">Error loading pending businesses</td></tr>';
-                return;
-            }
-
-            // Filter to show only truly pending (new submissions or explicitly marked pending)
-            const trulyPending = (pendingBusinesses || []).filter(b => 
-                b.status === 'pending' || 
-                b.claim_status === 'pending' || 
-                (b.owner_id === null && !b.claim_status)
-            );
-
-            if (trulyPending.length === 0) {
-                pendingBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No pending businesses awaiting approval</td></tr>';
-                return;
-            }
-
-            pendingBody.innerHTML = '';
-            trulyPending.forEach(biz => {
-                const city = biz.address ? biz.address.split(',').pop()?.trim() || 'No City' : 'No City';
-                const submittedDate = biz.created_at ? new Date(biz.created_at).toLocaleDateString() : 'Unknown';
-                const row = document.createElement('tr');
-                row.className = 'bg-amber-50';
-                row.innerHTML = `
-                    <td class="px-4 py-2 border font-medium">${biz.name || 'No Name'}</td>
-                    <td class="px-4 py-2 border">${city}</td>
-                    <td class="px-4 py-2 border">${submittedDate}</td>
-                    <td class="px-4 py-2 border">
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="approveBusiness('${biz.id}')" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
-                                <i class="fas fa-check mr-1"></i>Approve
-                            </button>
-                            <button onclick="reviewBusiness('${biz.id}')" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                <i class="fas fa-eye mr-1"></i>Review
-                            </button>
-                            <button onclick="rejectBusiness('${biz.id}')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
-                                <i class="fas fa-times mr-1"></i>Reject
-                            </button>
-                        </div>
-                    </td>
-                `;
-                pendingBody.appendChild(row);
-            });
-        }
-
-        async function loadAllBusinesses() {
+            updateNavAuth(); // Reuse from dashboard
+            // Load businesses table
             const { data: businesses, error: bizError } = await supabaseClient.from('businesses').select('*, profiles!businesses_owner_id_fkey(membership_level)');
             console.log('Businesses data:', businesses, 'Error:', bizError);
             if (bizError) {
@@ -308,22 +305,16 @@
                 businesses.forEach(biz => {
                     const city = biz.address ? biz.address.split(',').pop()?.trim() || 'No City' : 'No City';
                     const tier = biz.profiles ? biz.profiles.membership_level : 'free';
-                    const status = biz.status || biz.claim_status || 'unclaimed';
-                    const statusColor = status === 'approved' ? 'text-green-600' : 
-                                       status === 'pending' ? 'text-amber-600' : 
-                                       status === 'rejected' ? 'text-red-600' : 'text-gray-600';
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td class="px-4 py-2 border">${biz.name || 'No Name'}</td>
                         <td class="px-4 py-2 border">${tier}</td>
                         <td class="px-4 py-2 border">${city}</td>
-                        <td class="px-4 py-2 border ${statusColor} font-medium">${status}</td>
+                        <td class="px-4 py-2 border">${biz.claim_status || 'unclaimed'}</td>
                         <td class="px-4 py-2 border">
                             <div class="flex flex-wrap gap-2">
-                                ${status === 'pending' || status === 'unclaimed' ? `
-                                    <button onclick="approveBusiness('${biz.id}')" class="bg-green-500 text-white px-2 py-1 rounded">Approve</button>
-                                    <button onclick="rejectBusiness('${biz.id}')" class="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
-                                ` : ''}
+                                <button onclick="approveBusiness('${biz.id}')" class="bg-green-500 text-white px-2 py-1 rounded">Approve</button>
+                                <button onclick="rejectBusiness('${biz.id}')" class="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
                                 <button onclick="editBusiness('${biz.id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
                             </div>
                         </td>
@@ -331,9 +322,8 @@
                     body.appendChild(row);
                 });
             }
-        }
 
-        async function loadUsers() {
+            // Load users table
             const { data: users, error: userError } = await supabaseClient.from('profiles').select('*');
             console.log('Users data:', users, 'Error:', userError);
             if (userError) {
@@ -358,9 +348,8 @@
                     userBody.appendChild(row);
                 });
             }
-        }
 
-        async function loadCategories() {
+            // Load categories table
             const { data: categories, error: catError } = await supabaseClient.from('categories').select('*');
             console.log('Categories data:', categories, 'Error:', catError);
             allCategories = categories || []; // Global for modal
@@ -390,32 +379,21 @@
         }
 
         async function approveBusiness(id) {
-            const { error } = await supabaseClient.from('businesses').update({ 
-                status: 'approved',
-                claim_status: 'approved'
-            }).eq('id', id);
+            const { error } = await supabaseClient.from('businesses').update({ claim_status: 'approved' }).eq('id', id);
             if (error) alert('Error approving: ' + error.message);
             else {
                 alert('Business approved');
-                initAdmin(); // Reload all tables
+                initAdmin(); // Reload table
             }
         }
 
         async function rejectBusiness(id) {
-            const { error } = await supabaseClient.from('businesses').update({ 
-                status: 'rejected',
-                claim_status: 'rejected', 
-                owner_id: null 
-            }).eq('id', id);
+            const { error } = await supabaseClient.from('businesses').update({ claim_status: 'rejected', owner_id: null }).eq('id', id);
             if (error) alert('Error rejecting: ' + error.message);
             else {
                 alert('Business rejected');
-                initAdmin(); // Reload all tables
+                initAdmin(); // Reload table
             }
-        }
-
-        async function reviewBusiness(id) {
-            editBusiness(id);
         }
 
         function editUser(id) {
