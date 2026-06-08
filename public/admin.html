@@ -10,6 +10,7 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/shared/supabase-init.js"></script>
+    <script src="/shared/header-nav.js"></script>
     <script defer src="/shared/include.js"></script>
     <script type="module" src="/shared/auth-nav.js"></script>
     <!-- Google Analytics GA4 -->
@@ -23,8 +24,9 @@
 </head>
 
 <body class="bg-gray-100 font-sans">
-    <!-- Header will be injected by include.js -->
-    <div data-include="header"></div>
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div data-include="header"></div>
+    </header>
     
     <nav class="fixed bottom-0 left-0 w-full bg-blue-800 shadow-md flex justify-around items-center py-2 z-50">
         <a href="index.html" class="text-yellow-300 hover:text-white flex flex-col items-center">
