@@ -346,10 +346,7 @@
 
 
 
-        // Add this new function inside your <script type="module">
-            // Replace your existing setupDynamicHero function with this one
-                // A smarter hero function that requests optimized images
-                    function setupDynamicHero() {
+                function setupDynamicHero() {
                         const heroImages = [
                             'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/portrait-of-one-happy-young-hispanic-waiter-standi-2025-04-06-11-04-22-utc.jpg',
                             'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/a-female-hairdresser-portrait-looking-confidence-2025-01-08-09-13-45-utc.jpg',
@@ -386,8 +383,7 @@
 
 
 
-        // Replace your entire loadFeaturedListings function with this one.
-            async function loadFeaturedListings() {
+        async function loadFeaturedListings() {
                 const container = document.getElementById('featured-listings-container');
                 container.innerHTML = '<p class="text-gray-400">Loading featured businesses...</p>';
                 const { data, error } = await supabaseClient.rpc('get_random_pro_businesses', { limit_count: 15 });
@@ -396,12 +392,10 @@
                     return;
                 }
 
-                // --- THIS IS THE CORRECTED LINE ---
                 container.innerHTML = data.map(biz =>
                     `<div class="swiper-slide">
                         <a href="/${biz.territory}/business.html?id=${biz.id}" class="block bg-white rounded-xl shadow-md overflow-hidden group border border-gray-200 hover:shadow-lg hover:border-blue-500 transition-all duration-300">
                             <div class="h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
-                                <!-- FIX: Changed object-cover to object-contain and added p-2 -->
                                 <img src="${biz.logo_url || 'https://placehold.co/400x300/EEE/31343C?text=Logo'}" 
                                     alt="${biz.name} Logo" 
                                     class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300">
@@ -414,7 +408,6 @@
                         </a>
                     </div>`
                 ).join('');
-                // --- END OF CORRECTION ---
 
                 const featuredSwiper = initSwiper('#featured-listings-swiper');
                 enableAutoplayWhenVisible(featuredSwiper, '#featured-listings-swiper');
@@ -425,7 +418,6 @@
         async function loadLatestOffers() {
             const container = document.getElementById('latest-offers-container');
             container.innerHTML = '<p class="text-gray-400">Loading latest offers...</p>';
-            // FIX: Using the new random offers function
             const { data, error } = await supabaseClient.rpc('get_random_offers', { limit_count: 10 });
             if (error || !data || data.length === 0) { container.innerHTML = '<p class="text-gray-400 col-span-full">No special offers available right now.</p>'; return; }
             container.innerHTML = data.map(offer => `<div class="swiper-slide h-auto"><a href="/${offer.business_territory}/business.html?id=${offer.business_id}" class="block bg-white rounded-xl shadow-md h-full group border border-gray-700 hover:shadow-lg hover:border-blue-500 transition-all duration-300 p-4 flex flex-col"><div class="flex items-center mb-4"><img src="${offer.business_logo_url || 'https://placehold.co/100/EEE/31343C?text=Logo'}" alt="${offer.business_name} Logo" class="w-12 h-12 rounded-full object-cover mr-4 border-2 border-white flex-shrink-0"><p class="font-semibold text-gray-800 flex-grow truncate">${offer.business_name}</p></div><div class="flex-grow flex flex-col"><h3 class="font-bold text-lg text-gray-900 group-hover:text-blue-800 transition-colors">${offer.title}</h3><p class="text-sm text-gray-600 mt-2 line-clamp-3">${offer.description}</p></div></a></div>`).join('');
@@ -439,8 +431,12 @@
 
 
 
+        // Hero section is static HTML — set background immediately rather than waiting
+        // for DOMContentLoaded, which fires after the initial paint on mobile and causes
+        // iOS Safari's compositing layer to cache the element without a background image.
+        setupDynamicHero();
+
         document.addEventListener('DOMContentLoaded', () => {
-            setupDynamicHero();
             loadFeaturedListings();
             loadLatestOffers();
         });
