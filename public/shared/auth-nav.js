@@ -71,6 +71,9 @@ async function apply() {
     ensureLogoutButtons(loggedIn);
 }
 
+// Expose so include.js can re-run auth update after it injects the header HTML
+window.applyAuthNav = apply;
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', apply, { once: true });
 } else {

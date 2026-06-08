@@ -8,10 +8,13 @@
         const res = await fetch(`/shared/${name}.html`, { cache: 'no-store' });
         slot.innerHTML = await res.text();
 
-        // --- THIS IS THE FIX ---
-        // If we just loaded the header, call its initialization script.
-        if (name === 'header' && typeof initializeHeader === 'function') {
-            initializeHeader();
+        if (name === 'header') {
+            // Wire up dropdown/hamburger behaviour (defined in header-nav.js)
+            if (typeof initializeHeader === 'function') initializeHeader();
+            // Update auth buttons now that the header elements are in the DOM.
+            // apply() is module-scoped in auth-nav.js; it exposes itself as
+            // window.applyAuthNav so we can call it from this non-module script.
+            if (typeof window.applyAuthNav === 'function') window.applyAuthNav();
         }
     }
 
