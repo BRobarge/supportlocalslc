@@ -105,7 +105,7 @@
 
     <main>
         <!-- Hero Section -->
-        <section id="hero-section" class="relative text-white bg-cover bg-[center_30%] bg-scroll lg:bg-fixed">
+        <section id="hero-section" class="hero-bg relative text-white bg-cover bg-[center_30%] bg-scroll lg:bg-fixed">
         
             <!-- The gradient overlay is a simple, single div -->
             <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-blue-900/60 to-blue-900/30"></div>
@@ -359,8 +359,14 @@
                             'https://kozlfywdsqjndcsibgtw.supabase.co/storage/v1/object/public/business-photos/main-hero-images/young-pretty-dark-haired-asian-woman-owning-cafete-2024-10-17-16-30-29-utc.jpg',
                         ];
 
-                        const randomIndex = Math.floor(Math.random() * heroImages.length);
-                        const originalUrl = heroImages[randomIndex];
+                        // Sequential rotation: advance one image per page load so every image
+                        // shows before any repeats, eliminating the random-repeat inconsistency.
+                        const storageKey = 'heroImageIndex';
+                        let idx = parseInt(localStorage.getItem(storageKey) || '0', 10);
+                        if (isNaN(idx) || idx < 0 || idx >= heroImages.length) idx = 0;
+                        localStorage.setItem(storageKey, (idx + 1) % heroImages.length);
+
+                        const originalUrl = heroImages[idx];
 
                         // Determine the best image width based on screen size
                         const isMobile = window.innerWidth < 768;

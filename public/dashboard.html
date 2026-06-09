@@ -569,11 +569,11 @@
             const { data: pendingBusinesses, error: pendingError } = await supabaseClient
                 .from('businesses')
                 .select('*')
-                .or('status.eq.pending,claim_status.eq.pending,owner_id.is.null');
+                .or('state.eq.pending,claim_status.eq.pending,owner_id.is.null');
             
-            const trulyPending = (pendingBusinesses || []).filter(b => 
-                b.status === 'pending' || 
-                b.claim_status === 'pending' || 
+            const trulyPending = (pendingBusinesses || []).filter(b =>
+                b.state === 'pending' ||
+                b.claim_status === 'pending' ||
                 (b.owner_id === null && !b.claim_status)
             );
             
@@ -640,8 +640,8 @@
         }
         
         async function approveBusinessFromDashboard(id) {
-            const { error } = await supabaseClient.from('businesses').update({ 
-                status: 'approved',
+            const { error } = await supabaseClient.from('businesses').update({
+                state: 'approved',
                 claim_status: 'approved'
             }).eq('id', id);
             if (error) {

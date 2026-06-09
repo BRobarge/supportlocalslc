@@ -217,8 +217,8 @@
                 window.location.href = 'login.html';
                 return;
             }
-            const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.user.id).single();
-            if (!profile || profile.role !== 'admin') {
+            const { data: profile } = await supabaseClient.from('profiles').select('roles').eq('id', user.user.id).single();
+            if (!profile || !profile.roles?.includes('admin')) {
                 alert('Access denied - admins only');
                 window.location.href = 'dashboard.html';
                 return;
@@ -242,8 +242,8 @@
             const { data: pendingBusinesses, error: pendingError } = await supabaseClient
                 .from('businesses')
                 .select('*')
-                .or('status.eq.pending,claim_status.eq.pending,owner_id.is.null');
-            
+                .or('state.eq.pending,claim_status.eq.pending,owner_id.is.null');
+
             const pendingBody = document.getElementById('pending-body');
             
             if (pendingError) {
@@ -253,9 +253,9 @@
             }
 
             // Filter to show only truly pending (new submissions or explicitly marked pending)
-            const trulyPending = (pendingBusinesses || []).filter(b => 
-                b.status === 'pending' || 
-                b.claim_status === 'pending' || 
+            const trulyPending = (pendingBusinesses || []).filter(b =>
+                b.state === 'pending' ||
+                b.claim_status === 'pending' ||
                 (b.owner_id === null && !b.claim_status)
             );
 
@@ -309,7 +309,7 @@
                 businesses.forEach(biz => {
                     const city = biz.address ? biz.address.split(',').pop()?.trim() || 'No City' : 'No City';
                     const tier = biz.profiles ? biz.profiles.membership_level : 'free';
-                    const status = biz.status || biz.claim_status || 'unclaimed';
+                    const status = biz.state || biz.claim_status || 'unclaimed';
                     const statusColor = status === 'approved' ? 'text-green-600' : 
                                        status === 'pending' ? 'text-amber-600' : 
                                        status === 'rejected' ? 'text-red-600' : 'text-gray-600';
@@ -321,10 +321,8 @@
                         <td class="px-4 py-2 border ${statusColor} font-medium">${status}</td>
                         <td class="px-4 py-2 border">
                             <div class="flex flex-wrap gap-2">
-                                ${status === 'pending' || status === 'unclaimed' ? `
-                                    <button onclick="approveBusiness('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Approve</button>
-                                    <button onclick="rejectBusiness('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Reject</button>
-                                ` : ''}
+                                ${status !== 'approved' ? `<button onclick="approveBusiness('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Approve</button>` : ''}
+                                ${status !== 'rejected' ? `<button onclick="rejectBusiness('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Reject</button>` : ''}
                                 <button onclick="editBusiness('${biz.id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
                             </div>
                         </td>
@@ -410,15 +408,19 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Approving...';
 
-            const { error } = await supabaseClient.from('businesses').update({
-                status: 'approved',
+            const { data, error } = await supabaseClient.from('businesses').update({
+                state: 'approved',
                 claim_status: 'approved'
-            }).eq('id', id);
+            }).eq('id', id).select('id');
 
             if (error) {
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;
                 showToast('Error approving business: ' + error.message, 'error');
+            } else if (!data || data.length === 0) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showToast('Permission denied — your account lacks an admin UPDATE policy in Supabase RLS. Run the SQL fix in the Supabase dashboard.', 'error');
             } else {
                 showToast('Business approved — now visible in the directory');
                 await Promise.all([loadPendingBusinesses(), loadAllBusinesses()]);
@@ -432,16 +434,20 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Rejecting...';
 
-            const { error } = await supabaseClient.from('businesses').update({
-                status: 'rejected',
+            const { data, error } = await supabaseClient.from('businesses').update({
+                state: 'rejected',
                 claim_status: 'rejected',
                 owner_id: null
-            }).eq('id', id);
+            }).eq('id', id).select('id');
 
             if (error) {
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;
                 showToast('Error rejecting business: ' + error.message, 'error');
+            } else if (!data || data.length === 0) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showToast('Permission denied — your account lacks an admin UPDATE policy in Supabase RLS. Run the SQL fix in the Supabase dashboard.', 'error');
             } else {
                 showToast('Business rejected — hidden from directory');
                 await Promise.all([loadPendingBusinesses(), loadAllBusinesses()]);
