@@ -639,7 +639,7 @@
                 </div>`;
         }
         
-        function showDashboardToast(message, type = 'success') {
+        window.showDashboardToast = function showDashboardToast(message, type = 'success') {
             const existing = document.getElementById('dashboard-toast');
             if (existing) existing.remove();
             const toast = document.createElement('div');
@@ -656,7 +656,7 @@
             }, 3000);
         }
 
-        async function approveBusinessFromDashboard(id, btn) {
+        window.approveBusinessFromDashboard = async function approveBusinessFromDashboard(id, btn) {
             const originalHTML = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Approving...';
@@ -680,10 +680,9 @@
             }
         }
         
-        async function editBusinessFromDashboard(id) {
-            // Open the admin modal for editing
+        window.editBusinessFromDashboard = async function editBusinessFromDashboard(id) {
             openAdminModal('businesses', id);
-        }
+        };
 
         function renderBusinessCards(businesses, containerId) {
             const listDiv = document.getElementById(containerId);
