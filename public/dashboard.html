@@ -605,7 +605,7 @@
                                                 <td class="px-4 py-2 text-sm text-gray-600">${city}</td>
                                                 <td class="px-4 py-2 text-sm text-gray-600">${date}</td>
                                                 <td class="px-4 py-2">
-                                                    <button onclick="approveBusinessFromDashboard('${biz.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 mr-1">Approve</button>
+                                                    <button onclick="approveBusinessFromDashboard('${biz.id}', this)" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 mr-1">Approve</button>
                                                     <button onclick="editBusinessFromDashboard('${biz.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">Review</button>
                                                 </td>
                                             </tr>
@@ -639,16 +639,44 @@
                 </div>`;
         }
         
-        async function approveBusinessFromDashboard(id) {
-            const { error } = await supabaseClient.from('businesses').update({
+        function showDashboardToast(message, type = 'success') {
+            const existing = document.getElementById('dashboard-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'dashboard-toast';
+            const bg = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            toast.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm ${bg}`;
+            toast.innerHTML = `<div class="flex items-center gap-2"><i class="fas ${icon}"></i><span>${message}</span></div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.5s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        async function approveBusinessFromDashboard(id, btn) {
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Approving...';
+
+            const { data, error } = await supabaseClient.from('businesses').update({
                 state: 'approved',
                 claim_status: 'approved'
-            }).eq('id', id);
+            }).eq('id', id).select('id');
+
             if (error) {
-                alert('Error approving: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showDashboardToast('Error approving business: ' + error.message, 'error');
+            } else if (!data || data.length === 0) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showDashboardToast('Permission denied — admin RLS policy missing in Supabase.', 'error');
             } else {
-                alert('Business approved!');
-                renderAdminView(); // Reload the view
+                showDashboardToast('Business approved — now visible in the directory');
+                renderAdminView();
             }
         }
         
@@ -964,7 +992,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${biz.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${biz.claim_status}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    ${isPending ? `<button onclick="approveBusinessFromDashboard('${biz.id}')" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600 mr-2">Approve</button>` : ''}
+                    ${isPending ? `<button onclick="approveBusinessFromDashboard('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600 mr-2">Approve</button>` : ''}
                     <a href="/edit-business.html?id=${biz.id}" target="_blank" class="text-blue-600 hover:text-blue-900">Edit Full Listing &rarr;</a>
                 </td>
             </tr>`;
