@@ -422,8 +422,14 @@
                 btn.innerHTML = originalHTML;
                 showToast('Permission denied — your account lacks an admin UPDATE policy in Supabase RLS. Run the SQL fix in the Supabase dashboard.', 'error');
             } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check mr-1"></i>Approved ✓';
                 showToast('Business approved — now visible in the directory');
-                await Promise.all([loadPendingBusinesses(), loadAllBusinesses()]);
+                try {
+                    await Promise.all([loadPendingBusinesses(), loadAllBusinesses()]);
+                } catch (_) {
+                    btn.innerHTML = originalHTML;
+                }
             }
         }
 
