@@ -303,7 +303,7 @@
         function populateHeader(business) {
             document.getElementById('editing-header').textContent = `Editing: ${business.name}`;
             const livePageBtn = document.getElementById('view-live-page-btn');
-            livePageBtn.href = `/${business.territory}/business.html?id=${business.id}`;
+            livePageBtn.href = `/${business.territory || 'sandy'}/business.html?id=${business.id}`;
             livePageBtn.classList.remove('hidden');
         }
 
