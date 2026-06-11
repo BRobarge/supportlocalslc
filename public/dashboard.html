@@ -571,10 +571,10 @@
             const { data: pendingBusinesses, error: pendingError } = await supabaseClient
                 .from('businesses')
                 .select('*')
-                .or('state.eq.pending,claim_status.eq.pending,owner_id.is.null');
+                .or('approval_status.eq.pending,claim_status.eq.pending,owner_id.is.null');
             
             const trulyPending = (pendingBusinesses || []).filter(b =>
-                b.state === 'pending' ||
+                b.approval_status === 'pending' ||
                 b.claim_status === 'pending' ||
                 (b.owner_id === null && !b.claim_status)
             );
@@ -664,7 +664,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Approving...';
 
             const { data, error } = await supabaseClient.from('businesses').update({
-                state: 'approved',
+                approval_status: 'approved',
                 claim_status: 'approved'
             }).eq('id', id).select('id');
 
@@ -1336,6 +1336,7 @@
                     website: place.website || null,
                     latitude: place.geometry?.location?.lat || null,
                     longitude: place.geometry?.location?.lng || null,
+                    approval_status: 'approved',
                     claim_status: 'unclaimed',
                     source: 'google_places',
                 });
