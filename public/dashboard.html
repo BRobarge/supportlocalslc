@@ -1333,7 +1333,7 @@
                     website: place.website || null,
                     latitude: place.geometry?.location?.lat || null,
                     longitude: place.geometry?.location?.lng || null,
-                    state: 'approved',
+                    state: place.state_abbr || null,
                     claim_status: 'unclaimed',
                     source: 'google_places',
                 });

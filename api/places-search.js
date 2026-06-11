@@ -37,13 +37,16 @@ export default async function handler(req, res) {
         // Enrich each result with phone + website (not returned by Text Search)
         const enriched = await Promise.all(results.map(async (place) => {
             try {
-                const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,website&key=${apiKey}`;
+                const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,website,address_components&key=${apiKey}`;
                 const detailsRes = await fetch(detailsUrl);
                 const detailsData = await detailsRes.json();
+                const components = detailsData.result?.address_components || [];
+                const stateComponent = components.find(c => c.types.includes('administrative_area_level_1'));
                 return {
                     ...place,
                     formatted_phone_number: detailsData.result?.formatted_phone_number || null,
                     website: detailsData.result?.website || null,
+                    state_abbr: stateComponent?.short_name || null,
                 };
             } catch {
                 return { ...place, formatted_phone_number: null, website: null };
