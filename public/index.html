@@ -368,19 +368,9 @@
 
                         const originalUrl = heroImages[idx];
 
-                        // Determine the best image width based on screen size
-                        const isMobile = window.innerWidth < 768;
-                        const width = isMobile ? 800 : 1920;
-
-                        // Change the URL from a direct object link to a render link for transformation
-                        const renderUrl = originalUrl.replace('/object/', '/render/image/');
-
-                        // Add the width and quality parameters to the URL
-                        const selectedImage = `${renderUrl}?width=${width}&quality=80`;
-
                         const heroSection = document.getElementById('hero-section');
                         if (heroSection) {
-                            heroSection.style.backgroundImage = `url('${selectedImage}')`;
+                            heroSection.style.backgroundImage = `url('${originalUrl}')`;
                         }
                     }
 
