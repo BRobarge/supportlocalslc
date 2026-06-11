@@ -561,7 +561,7 @@
                                     </div>
                                     <div>
                                         <label for="address-state" class="block text-sm font-medium text-gray-700">State</label>
-                                        <input type="text" id="address-state" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.state || ''}">
+                                        <input type="text" id="address-state" class="mt-1 block w-full p-3 border border-gray-300 rounded-md" value="${currentBusinessData.state_abbr || ''}">
                                     </div>
                                     <div>
                                         <label for="address-zip" class="block text-sm font-medium text-gray-700">Zip Code</label>
@@ -632,9 +632,9 @@
                 hoursData[day] = { isOpen, is24Hours, from, to };
             });
             const updatedData = {
-                address: street, city: city, state: state, zip_code: zip, hours_data: hoursData,
+                address: street, city: city, state_abbr: state, zip_code: zip, hours_data: hoursData,
             };
-            if (fullAddress && fullAddress !== [currentBusinessData.address, currentBusinessData.city, currentBusinessData.state, currentBusinessData.zip_code].filter(Boolean).join(', ')) {
+            if (fullAddress && fullAddress !== [currentBusinessData.address, currentBusinessData.city, currentBusinessData.state_abbr, currentBusinessData.zip_code].filter(Boolean).join(', ')) {
                 try {
                     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`;
                     const res = await fetch(geocodeUrl);
