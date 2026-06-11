@@ -1336,6 +1336,7 @@
                     website: place.website || null,
                     latitude: place.geometry?.location?.lat || null,
                     longitude: place.geometry?.location?.lng || null,
+                    territory: (document.getElementById('prospect-city')?.value.trim().split(/[\s,]+/)[0] || '').toLowerCase() || null,
                     approval_status: 'approved',
                     claim_status: 'unclaimed',
                     source: 'google_places',

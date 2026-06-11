@@ -191,7 +191,7 @@
             offers(*), 
             business_categories(categories(id, name, parent_id)), 
             business_tags(tags(id, name))
-        `).eq('territory', 'sandy').eq('claim_status', 'approved'),
+        `).eq('territory', 'sandy').eq('approval_status', 'approved'),
                     supabaseClient.from('categories').select('id, name, parent_id').order('name'),
                     supabaseClient.from('tags').select('id, name').order('name')
                 ]);
