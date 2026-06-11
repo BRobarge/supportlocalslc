@@ -1328,12 +1328,14 @@
             try {
                 const { error } = await supabaseClient.from('businesses').insert({
                     name: place.name,
-                    address: place.formatted_address || null,
+                    address: place.street_address || null,
+                    city: place.city || null,
+                    state: place.state_abbr || null,
+                    zip_code: place.zip_code || null,
                     phone: place.formatted_phone_number || null,
                     website: place.website || null,
                     latitude: place.geometry?.location?.lat || null,
                     longitude: place.geometry?.location?.lng || null,
-                    state: place.state_abbr || null,
                     claim_status: 'unclaimed',
                     source: 'google_places',
                 });

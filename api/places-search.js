@@ -41,12 +41,18 @@ export default async function handler(req, res) {
                 const detailsRes = await fetch(detailsUrl);
                 const detailsData = await detailsRes.json();
                 const components = detailsData.result?.address_components || [];
-                const stateComponent = components.find(c => c.types.includes('administrative_area_level_1'));
+                const get = (type) => components.find(c => c.types.includes(type));
+                const streetNumber = get('street_number')?.long_name || '';
+                const route = get('route')?.long_name || '';
+                const streetAddress = [streetNumber, route].filter(Boolean).join(' ') || null;
                 return {
                     ...place,
                     formatted_phone_number: detailsData.result?.formatted_phone_number || null,
                     website: detailsData.result?.website || null,
-                    state_abbr: stateComponent?.short_name || null,
+                    street_address: streetAddress,
+                    city: get('locality')?.long_name || null,
+                    state_abbr: get('administrative_area_level_1')?.short_name || null,
+                    zip_code: get('postal_code')?.long_name || null,
                 };
             } catch {
                 return { ...place, formatted_phone_number: null, website: null };
