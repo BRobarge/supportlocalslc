@@ -241,7 +241,7 @@
 
                 const contactAndHoursHtml = `
                     <div class="mt-4 text-sm text-gray-600 space-y-3">
-                        <div class="flex items-start"><i class="fas fa-map-marker-alt w-4 mt-1 mr-3 text-gray-400"></i><span>${[business.address, business.city, business.state_abbr, business.zip_code].filter(Boolean).join(', ')}</span></div>
+                        <div class="flex items-start"><i class="fas fa-map-marker-alt w-4 mt-1 mr-3 text-gray-400"></i><span>${business.address || ''}</span></div>
                         ${business.phone ? `<div class="flex items-center"><i class="fas fa-phone w-4 mr-3 text-gray-400"></i><a href="tel:${business.phone}" class="hover:underline">${business.phone}</a></div>` : ''}
                         ${business.email ? `<div class="flex items-center"><i class="fas fa-envelope w-4 mr-3 text-gray-400"></i><a href="mailto:${business.email}" class="hover:underline">${business.email}</a></div>` : ''}
                     </div>
