@@ -468,10 +468,12 @@
                 supporter: { label: 'Supporter', renderFunc: renderSupporterView },
                 business: { label: 'My Businesses', renderFunc: renderBusinessView },
                 admin: { label: 'Admin Panel', renderFunc: renderAdminView },
+                prospect: { label: 'Prospect', renderFunc: renderProspectView, requiredRole: 'admin' },
             };
-            const displayOrder = ['supporter', 'business', 'admin'];
+            const displayOrder = ['supporter', 'business', 'admin', 'prospect'];
             displayOrder.forEach((roleKey) => {
-                if (roles && roles.includes(roleKey)) {
+                const cfg = tabConfig[roleKey];
+                if (roles && roles.includes(cfg.requiredRole || roleKey)) {
                     const tab = document.createElement('button');
                     tab.className = 'tab-button';
                     tab.textContent = tabConfig[roleKey].label;
@@ -1201,6 +1203,152 @@
             });  
          document.getElementById('admin-modal')?.classList.add('hidden');
             document.getElementById('admin-edit-modal')?.classList.add('hidden');
+
+        // --- PROSPECT TAB ---
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderProspectView() {
+            const container = document.getElementById('dashboard-content');
+            container.innerHTML = `
+                <div class="max-w-5xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-6">Prospect New Businesses</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <input type="text" id="prospect-type" placeholder="Business type (e.g. pizza restaurant)"
+                                   class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                            <input type="text" id="prospect-city" value="Sandy, UT"
+                                   class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                            <button onclick="runProspectSearch()"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg whitespace-nowrap">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                    <div id="prospect-results"></div>
+                </div>
+            `;
+            document.getElementById('prospect-type').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') runProspectSearch();
+            });
+            document.getElementById('prospect-city').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') runProspectSearch();
+            });
+        }
+
+        let _prospectPlaces = {};
+
+        window.runProspectSearch = async function () {
+            const typeEl = document.getElementById('prospect-type');
+            const cityEl = document.getElementById('prospect-city');
+            const resultsDiv = document.getElementById('prospect-results');
+            const type = typeEl ? typeEl.value.trim() : '';
+            const city = cityEl ? cityEl.value.trim() : '';
+
+            if (!type || !city) {
+                alert('Please enter both a business type and city.');
+                return;
+            }
+
+            resultsDiv.innerHTML = '<p class="text-gray-500 text-center py-12"><i class="fas fa-spinner fa-spin mr-2"></i>Searching…</p>';
+
+            try {
+                const query = `${type} in ${city}`;
+                const res = await fetch(`/api/places-search?query=${encodeURIComponent(query)}`);
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || `HTTP ${res.status}`);
+                }
+                const data = await res.json();
+
+                if (!data.results || data.results.length === 0) {
+                    resultsDiv.innerHTML = '<p class="text-gray-500 text-center py-12">No results found.</p>';
+                    return;
+                }
+
+                _prospectPlaces = {};
+                data.results.forEach(p => { _prospectPlaces[p.place_id] = p; });
+
+                const cards = data.results.map(place => {
+                    const stars = place.rating
+                        ? `<span class="text-yellow-500 text-sm"><i class="fas fa-star mr-1"></i>${place.rating}${place.user_ratings_total ? ` <span class="text-gray-400">(${place.user_ratings_total})</span>` : ''}</span>`
+                        : '';
+                    const phone = place.formatted_phone_number
+                        ? `<p class="text-gray-600 text-sm mt-1"><i class="fas fa-phone mr-1 text-gray-400"></i>${escapeHtml(place.formatted_phone_number)}</p>`
+                        : '';
+                    const websiteHost = place.website
+                        ? escapeHtml(place.website.replace(/^https?:\/\//, '').split('/')[0])
+                        : '';
+                    const website = place.website
+                        ? `<p class="text-gray-600 text-sm mt-1"><i class="fas fa-globe mr-1 text-gray-400"></i><a href="${escapeHtml(place.website)}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">${websiteHost}</a></p>`
+                        : '';
+                    return `
+                        <div class="bg-white p-5 rounded-lg shadow border border-gray-100 flex flex-col">
+                            <div class="flex items-start justify-between gap-2 mb-1">
+                                <h3 class="font-bold text-gray-800">${escapeHtml(place.name)}</h3>
+                                ${stars}
+                            </div>
+                            <p class="text-gray-600 text-sm"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>${escapeHtml(place.formatted_address || '')}</p>
+                            ${phone}
+                            ${website}
+                            <button
+                                id="import-btn-${place.place_id}"
+                                onclick="importPlaceBusiness(this, '${place.place_id}')"
+                                class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                                Import to Directory
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+                resultsDiv.innerHTML = `
+                    <p class="text-sm text-gray-500 mb-4">${data.results.length} result${data.results.length === 1 ? '' : 's'} found</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${cards}</div>
+                `;
+            } catch (err) {
+                resultsDiv.innerHTML = `<p class="text-red-500 text-center py-12">Error: ${escapeHtml(err.message)}</p>`;
+            }
+        };
+
+        window.importPlaceBusiness = async function (btn, placeId) {
+            const place = _prospectPlaces[placeId];
+            if (!place) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Importing…';
+
+            try {
+                const { error } = await supabaseClient.from('businesses').insert({
+                    name: place.name,
+                    address: place.formatted_address || null,
+                    phone: place.formatted_phone_number || null,
+                    website: place.website || null,
+                    lat: place.geometry?.location?.lat || null,
+                    lng: place.geometry?.location?.lng || null,
+                    state: 'approved',
+                    claim_status: 'unclaimed',
+                    source: 'google_places',
+                });
+
+                if (error) throw new Error(error.message);
+
+                btn.textContent = 'Imported ✓';
+                btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = 'Import to Directory';
+                showDashboardToast('Import failed: ' + err.message, 'error');
+            }
+        };
 
 
 
