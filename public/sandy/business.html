@@ -405,13 +405,18 @@
                 // Which offers has the current user already claimed?
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 let userClaimedOfferIds = new Set();
+                let claimedBusinessIds = new Set();
                 if (user) {
                     const { data: claimed } = await supabaseClient
                         .from('claimed_offers')
-                        .select('offer_id')
+                        .select('offer_id, offers(business_id)')
                         .eq('user_id', user.id);
-                    if (claimed) userClaimedOfferIds = new Set(claimed.map(c => c.offer_id));
+                    if (claimed) {
+                        userClaimedOfferIds = new Set(claimed.map(c => c.offer_id));
+                        claimedBusinessIds = new Set(claimed.map(c => c.offers?.business_id).filter(Boolean));
+                    }
                 }
+                const currentBusinessId = offers[0]?.business_id;
 
                 // Build the grid (1 column on mobile, 2 on desktop)
                 let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
@@ -421,12 +426,15 @@
                     const hasClaimsLeft = !offer.claim_limit || claimedCount < offer.claim_limit;
                     const isExpired = offer.expires_at && new Date(offer.expires_at) < new Date();
                     const isAlreadyClaimed = userClaimedOfferIds.has(offer.id);
-                    const canClaim = !isExpired && hasClaimsLeft && !isAlreadyClaimed;
+                    const isFirstTimeBlocked = offer.is_first_time_only && claimedBusinessIds.has(currentBusinessId);
+                    const canClaim = !isExpired && hasClaimsLeft && !isAlreadyClaimed && !isFirstTimeBlocked;
 
                     // status text (left side under content)
                     let status = '';
                     if (isAlreadyClaimed) {
                         status = 'You have already claimed this offer!';
+                    } else if (isFirstTimeBlocked) {
+                        status = 'This offer is for first-time customers only.';
                     } else if (isExpired) {
                         status = `Expired on ${new Date(offer.expires_at).toLocaleDateString()}`;
                     } else if (!hasClaimsLeft) {
@@ -544,7 +552,30 @@
                         button.disabled = true;
                     }
 
-                    // 2. Prepare the data for the new 'claimed_offers' row
+                    // 2. Fetch the offer to check is_first_time_only
+                    const { data: offerRow } = await supabaseClient
+                        .from('offers')
+                        .select('is_first_time_only, business_id')
+                        .eq('id', offerId)
+                        .single();
+
+                    if (offerRow?.is_first_time_only) {
+                        const { data: priorClaims } = await supabaseClient
+                            .from('claimed_offers')
+                            .select('id, offers!inner(business_id)')
+                            .eq('user_id', user.id)
+                            .eq('offers.business_id', offerRow.business_id);
+                        if (priorClaims && priorClaims.length > 0) {
+                            alert('This offer is for first-time customers only.');
+                            if (button) {
+                                button.textContent = 'Claim Offer';
+                                button.disabled = false;
+                            }
+                            return;
+                        }
+                    }
+
+                    // 3. Prepare the data for the new 'claimed_offers' row
                     const sevenDaysFromNow = new Date();
                     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 

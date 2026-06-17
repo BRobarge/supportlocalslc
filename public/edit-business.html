@@ -1017,17 +1017,22 @@
                     .eq('id', offerId);
                 error = updateError;
             } else {
-                // Guard: re-check limit just before inserting (normalized)
-                const { data: profileRow } = await supabaseClient
-                    .from('profiles')
-                    .select('membership_level')
-                    .eq('id', currentBusinessData.owner_id)
-                    .single();
-
+                // Guard: re-check limit just before inserting
                 const OFFER_LIMITS = { free: 0, essentials: 1, pro: 3 };
-                const membershipRaw = profileRow?.membership_level || 'free';
-                const membership = membershipRaw.toString().trim().toLowerCase();
-                const offerLimit = currentBusinessData.beta_offers_bypass ? 999 : (OFFER_LIMITS[membership] ?? 0);
+                let offerLimit;
+                if (currentBusinessData.beta_offers_bypass) {
+                    offerLimit = 999;
+                } else if (!currentBusinessData.owner_id) {
+                    offerLimit = 0;
+                } else {
+                    const { data: profileRow } = await supabaseClient
+                        .from('profiles')
+                        .select('membership_level')
+                        .eq('id', currentBusinessData.owner_id)
+                        .single();
+                    const membership = (profileRow?.membership_level || 'free').toString().trim().toLowerCase();
+                    offerLimit = OFFER_LIMITS[membership] ?? 0;
+                }
 
                 const { count, error: countErr } = await supabaseClient
                     .from('offers')
