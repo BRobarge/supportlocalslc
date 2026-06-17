@@ -315,16 +315,21 @@
                                        status === 'rejected' ? 'text-red-600' : 'text-gray-600';
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td class="px-4 py-2 border">${biz.name || 'No Name'}</td>
+                        <td class="px-4 py-2 border ${biz.is_deleted ? 'text-gray-400' : ''}">
+                            ${biz.name || 'No Name'}
+                            ${biz.is_deleted ? '<span class="ml-1 text-xs bg-gray-200 text-gray-500 px-1 py-0.5 rounded">DELETED</span>' : ''}
+                        </td>
                         <td class="px-4 py-2 border">${tier}</td>
                         <td class="px-4 py-2 border">${city}</td>
                         <td class="px-4 py-2 border ${statusColor} font-medium">${status}</td>
                         <td class="px-4 py-2 border">
                             <div class="flex flex-wrap gap-2">
-                                ${status !== 'approved' ? `<button onclick="approveBusiness('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Approve</button>` : ''}
-                                ${status !== 'rejected' ? `<button onclick="rejectBusiness('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Reject</button>` : ''}
-                                <button onclick="editBusiness('${biz.id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
-                                <button onclick="deleteBusiness('${biz.id}', this)" class="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-900">Delete</button>
+                                ${!biz.is_deleted && status !== 'approved' ? `<button onclick="approveBusiness('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Approve</button>` : ''}
+                                ${!biz.is_deleted && status !== 'rejected' ? `<button onclick="rejectBusiness('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Reject</button>` : ''}
+                                ${!biz.is_deleted ? `<button onclick="editBusiness('${biz.id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>` : ''}
+                                ${biz.is_deleted
+                                    ? `<button onclick="restoreBusiness('${biz.id}', this)" class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">Restore</button>`
+                                    : `<button onclick="deleteBusiness('${biz.id}', this)" class="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-900">Delete</button>`}
                             </div>
                         </td>
                     `;
@@ -474,6 +479,23 @@
                 showToast('Error deleting business: ' + (error?.message || 'Permission denied'), 'error');
             } else {
                 showToast('Business deleted — hidden from directory');
+                await loadAllBusinesses();
+            }
+        }
+
+        async function restoreBusiness(id, btn) {
+            if (!confirm('Restore this business? It will become visible in the directory again.')) return;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = 'Restoring...';
+            const { data, error } = await supabaseClient.from('businesses')
+                .update({ is_deleted: false }).eq('id', id).select('id');
+            if (error || !data?.length) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showToast('Error restoring business: ' + (error?.message || 'Permission denied'), 'error');
+            } else {
+                showToast('Business restored — now visible in directory');
                 await loadAllBusinesses();
             }
         }
