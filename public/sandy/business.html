@@ -135,6 +135,7 @@
                 return;
             }
 
+            business.offers = (business.offers || []).filter(o => o.is_active !== false);
             currentPhotos = business.photos || [];
             renderBusinessProfile(business);
         }

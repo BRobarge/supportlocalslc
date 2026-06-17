@@ -324,6 +324,7 @@
                                 ${status !== 'approved' ? `<button onclick="approveBusiness('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Approve</button>` : ''}
                                 ${status !== 'rejected' ? `<button onclick="rejectBusiness('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Reject</button>` : ''}
                                 <button onclick="editBusiness('${biz.id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                                <button onclick="deleteBusiness('${biz.id}', this)" class="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-900">Delete</button>
                             </div>
                         </td>
                     `;
@@ -457,6 +458,23 @@
             } else {
                 showToast('Business rejected — hidden from directory');
                 await Promise.all([loadPendingBusinesses(), loadAllBusinesses()]);
+            }
+        }
+
+        async function deleteBusiness(id, btn) {
+            if (!confirm('Permanently delete this business? It will be hidden from the directory.')) return;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = 'Deleting...';
+            const { data, error } = await supabaseClient.from('businesses')
+                .update({ is_deleted: true }).eq('id', id).select('id');
+            if (error || !data?.length) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showToast('Error deleting business: ' + (error?.message || 'Permission denied'), 'error');
+            } else {
+                showToast('Business deleted — hidden from directory');
+                await loadAllBusinesses();
             }
         }
 

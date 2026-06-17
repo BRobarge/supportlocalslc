@@ -191,7 +191,7 @@
             offers(*), 
             business_categories(categories(id, name, parent_id)), 
             business_tags(tags(id, name))
-        `).eq('territory', 'sandy').eq('approval_status', 'approved'),
+        `).eq('territory', 'sandy').eq('approval_status', 'approved').eq('is_deleted', false),
                     supabaseClient.from('categories').select('id, name, parent_id').order('name'),
                     supabaseClient.from('tags').select('id, name').order('name')
                 ]);
@@ -220,7 +220,11 @@
                 const categories = biz.business_categories.map(bc => bc.categories);
                 const tags = biz.business_tags.map(bt => bt.tags);
                 // Add a simple flag for offers to make filtering easier
-                const has_offers = biz.offers && biz.offers.length > 0;
+                const now = new Date();
+                const activeOffers = (biz.offers || []).filter(o =>
+                    o.is_active !== false && (!o.expires_at || new Date(o.expires_at) > now)
+                );
+                const has_offers = activeOffers.length > 0;
                 return { ...biz, categories, tags, has_offers };
             });
         }

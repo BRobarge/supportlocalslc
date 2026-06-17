@@ -766,6 +766,7 @@
                     .from('offers')
                     .select('*')
                     .eq('business_id', currentBusinessData.id)
+                    .eq('is_active', true)
                     .order('created_at', { ascending: false });
 
                 if (error) {
@@ -780,10 +781,12 @@
                     .select('membership_level')
                     .eq('id', currentBusinessData.owner_id)
                     .single();
-                const OFFER_LIMITS = { free: 0, essentials: 3, pro: 999 };
+                const OFFER_LIMITS = { free: 0, essentials: 1, pro: 3 };
                 const membership = (profileRow?.membership_level || 'free').toString().trim().toLowerCase();
                 const offerLimit = OFFER_LIMITS[membership] ?? 0;
-                window.__offerLimitReached = (offers?.length || 0) >= offerLimit;
+                const now = new Date();
+                const activeCount = (offers || []).filter(o => !o.expires_at || new Date(o.expires_at) > now).length;
+                window.__offerLimitReached = activeCount >= offerLimit;
 
                 // 3) Wire the "Add New Offer" button (and reflect limit)
                 const addOfferBtn = document.getElementById('add-offer-btn');
@@ -876,17 +879,17 @@
                     // --- DELETE BUTTON LOGIC ---
                     if (e.target.classList.contains('delete-offer-btn')) {
                         const offerId = e.target.dataset.offerId;
-                        if (confirm('Are you sure you want to delete this offer? This cannot be undone.')) {
+                        if (confirm('Are you sure you want to deactivate this offer?')) {
                             const { error: deleteError } = await supabaseClient
                                 .from('offers')
-                                .delete()
+                                .update({ is_active: false })
                                 .eq('id', offerId);
 
                             if (deleteError) {
-                                alert('Error: Could not delete the offer. Please try again.');
-                                console.error('Delete error:', deleteError);
+                                alert('Error: Could not deactivate the offer. Please try again.');
+                                console.error('Deactivate error:', deleteError);
                             } else {
-                                alert('Offer deleted successfully.');
+                                alert('Offer deactivated successfully.');
                                 renderOffersSection(); // Re-render the list to show the change
                             }
                         }
@@ -1007,7 +1010,7 @@
                     .eq('id', currentBusinessData.owner_id)
                     .single();
 
-                const OFFER_LIMITS = { free: 0, essentials: 3, pro: 999 };
+                const OFFER_LIMITS = { free: 0, essentials: 1, pro: 3 };
                 const membershipRaw = profileRow?.membership_level || 'free';
                 const membership = membershipRaw.toString().trim().toLowerCase();
                 const offerLimit = OFFER_LIMITS[membership] ?? 0;
@@ -1015,7 +1018,9 @@
                 const { count, error: countErr } = await supabaseClient
                     .from('offers')
                     .select('id', { count: 'exact', head: true })
-                    .eq('business_id', currentBusinessData.id);
+                    .eq('business_id', currentBusinessData.id)
+                    .eq('is_active', true)
+                    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
                 if (!countErr && (count ?? 0) >= offerLimit) {
                     alert(`Offer limit reached for your plan (${offerLimit}). Delete an offer or upgrade.`);
