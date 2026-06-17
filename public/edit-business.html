@@ -315,6 +315,37 @@
             livePageBtn.classList.remove('hidden');
         }
 
+        // --- AUTOSAVE ---
+        let _currentSection = null;
+        let _autosaveTimer = null;
+
+        function showAutosaveIndicator() {
+            const el = document.getElementById('autosave-indicator');
+            if (!el) return;
+            el.textContent = 'Saved ✓';
+            el.style.opacity = '1';
+            clearTimeout(el._fadeTimer);
+            el._fadeTimer = setTimeout(() => { el.style.opacity = '0'; }, 2000);
+        }
+
+        function scheduleAutosave() {
+            clearTimeout(_autosaveTimer);
+            _autosaveTimer = setTimeout(async () => {
+                if (_currentSection === 'story') await saveStorySection({ silent: true });
+                else if (_currentSection === 'location') await saveLocationSection({ silent: true });
+                else if (_currentSection === 'contact') await saveContactSection({ silent: true });
+            }, 400);
+        }
+
+        function attachAutosaveListeners() {
+            const container = document.getElementById('edit-content');
+            if (!container) return;
+            container.querySelectorAll('input:not([type="file"]), textarea, select').forEach(el => {
+                el.removeEventListener('blur', scheduleAutosave);
+                el.addEventListener('blur', scheduleAutosave);
+            });
+        }
+
         // --- STORY SECTION ---
         function renderStorySection() {
                        const container = document.getElementById('edit-content');
@@ -382,32 +413,36 @@
 
             document.getElementById('save-story-btn').addEventListener('click', saveStorySection);
 
+            _currentSection = 'story';
+            attachAutosaveListeners();
+            quill.on('selection-change', (range) => { if (range === null) scheduleAutosave(); });
+
             FontAwesome.dom.i2svg(); // Manually render icons
 
         }
-        async function saveStorySection() {
-                       const saveBtn = document.getElementById('save-story-btn');
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
+        async function saveStorySection({ silent = false } = {}) {
+            const saveBtn = document.getElementById('save-story-btn');
+            if (!silent) { saveBtn.textContent = 'Saving...'; saveBtn.disabled = true; }
             const updatedData = {
                 name: document.getElementById('business-name').value,
                 tagline: document.getElementById('business-tagline').value,
-                // Get the HTML content from the Quill editor
                 description: document.querySelector('#quill-editor .ql-editor').innerHTML,
-
             };
             const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
             if (error) {
-                console.error('Error updating story section:', error);
-                alert('Error: Could not save changes.');
+                console.error('Autosave error (story):', error);
+                if (!silent) alert('Error: Could not save changes.');
             } else {
                 currentBusinessData = data;
                 document.getElementById('editing-header').textContent = `Editing: ${updatedData.name}`;
-                saveBtn.textContent = 'Saved!';
-                setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+                if (!silent) {
+                    saveBtn.textContent = 'Saved!';
+                    setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+                } else {
+                    showAutosaveIndicator();
+                }
             }
-            saveBtn.disabled = false;
-
+            if (!silent) saveBtn.disabled = false;
         }
 
         // --- PHOTOS & LOGO SECTION ---
@@ -618,13 +653,15 @@
             });
             document.getElementById('save-location-btn').addEventListener('click', saveLocationSection);
 
+            _currentSection = 'location';
+            attachAutosaveListeners();
+
             FontAwesome.dom.i2svg(); // Manually render icons
 
         }
-        async function saveLocationSection() {
+        async function saveLocationSection({ silent = false } = {}) {
             const saveBtn = document.getElementById('save-location-btn');
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
+            if (!silent) { saveBtn.textContent = 'Saving...'; saveBtn.disabled = true; }
             const street = document.getElementById('address-street').value.trim();
             const city = document.getElementById('address-city').value.trim();
             const state = document.getElementById('address-state').value.trim();
@@ -642,16 +679,17 @@
             const updatedData = {
                 address: street, city: city, state_abbr: state, zip_code: zip, hours_data: hoursData,
             };
-            if (fullAddress && fullAddress !== [currentBusinessData.address, currentBusinessData.city, currentBusinessData.state_abbr, currentBusinessData.zip_code].filter(Boolean).join(', ')) {
+            const addressChanged = fullAddress && fullAddress !== [currentBusinessData.address, currentBusinessData.city, currentBusinessData.state_abbr, currentBusinessData.zip_code].filter(Boolean).join(', ');
+            if (!silent && addressChanged) {
                 try {
                     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=AIzaSyCs_qWUlsuNcc_5FPd41AhjwD4NyLz-I4k`;
                     const res = await fetch(geocodeUrl);
-                    const data = await res.json();
-                    if (data.status === 'OK' && data.results.length > 0) {
-                        updatedData.latitude = data.results[0].geometry.location.lat;
-                        updatedData.longitude = data.results[0].geometry.location.lng;
+                    const geoData = await res.json();
+                    if (geoData.status === 'OK' && geoData.results.length > 0) {
+                        updatedData.latitude = geoData.results[0].geometry.location.lat;
+                        updatedData.longitude = geoData.results[0].geometry.location.lng;
                     } else {
-                        alert(`Could not find that address on the map. Error: ${data.status}`);
+                        alert(`Could not find that address on the map. Error: ${geoData.status}`);
                         saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false; return;
                     }
                 } catch (err) {
@@ -661,15 +699,18 @@
             }
             const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
             if (error) {
-                console.error('Error updating location section:', error);
-                alert('Error: Could not save changes.');
+                console.error('Autosave error (location):', error);
+                if (!silent) alert('Error: Could not save changes.');
             } else {
                 currentBusinessData = data;
-                saveBtn.textContent = 'Saved!';
-                setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+                if (!silent) {
+                    saveBtn.textContent = 'Saved!';
+                    setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+                } else {
+                    showAutosaveIndicator();
+                }
             }
-            saveBtn.disabled = false;
-
+            if (!silent) saveBtn.disabled = false;
         }
 
         // --- CONTACT SECTION ---
@@ -719,37 +760,42 @@
             });
             document.getElementById('save-contact-btn').addEventListener('click', saveContactSection);
 
+            _currentSection = 'contact';
+            attachAutosaveListeners();
+
             FontAwesome.dom.i2svg(); // Manually render icons
 
         }
-        async function saveContactSection() {
-                const saveBtn = document.getElementById('save-contact-btn');
-                saveBtn.textContent = 'Saving...';
-                saveBtn.disabled = true;
-                const socialLinks = {};
-                document.querySelectorAll('.social-link-input').forEach(input => {
-                    const key = input.dataset.key;
-                    const url = input.value.trim();
-                    if (url) socialLinks[key] = url;
-                });
-                const updatedData = {
-                    phone: document.getElementById('contact-phone').value.trim(),
-                    email: document.getElementById('contact-email').value.trim(),
-                    website: document.getElementById('contact-website').value.trim(),
-                    social_links: socialLinks,
-                };
-                const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
-                if (error) {
-                    console.error('Error updating contact section:', error);
-                    alert('Error: Could not save changes.');
-                } else {
-                    currentBusinessData = data;
+        async function saveContactSection({ silent = false } = {}) {
+            const saveBtn = document.getElementById('save-contact-btn');
+            if (!silent) { saveBtn.textContent = 'Saving...'; saveBtn.disabled = true; }
+            const socialLinks = {};
+            document.querySelectorAll('.social-link-input').forEach(input => {
+                const key = input.dataset.key;
+                const url = input.value.trim();
+                if (url) socialLinks[key] = url;
+            });
+            const updatedData = {
+                phone: document.getElementById('contact-phone').value.trim(),
+                email: document.getElementById('contact-email').value.trim(),
+                website: document.getElementById('contact-website').value.trim(),
+                social_links: socialLinks,
+            };
+            const { data, error } = await supabaseClient.from('businesses').update(updatedData).eq('id', currentBusinessData.id).select().single();
+            if (error) {
+                console.error('Autosave error (contact):', error);
+                if (!silent) alert('Error: Could not save changes.');
+            } else {
+                currentBusinessData = data;
+                if (!silent) {
                     saveBtn.textContent = 'Saved!';
                     setTimeout(() => { saveBtn.textContent = 'Save Changes'; }, 2000);
+                } else {
+                    showAutosaveIndicator();
                 }
-                saveBtn.disabled = false;
-
             }
+            if (!silent) saveBtn.disabled = false;
+        }
 
         // --- OFFERS SECTION ---
         async function renderOffersSection() {
@@ -1272,6 +1318,7 @@
 
     </script>
 
+<div id="autosave-indicator" class="fixed bottom-6 right-6 bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-lg z-50 pointer-events-none" style="opacity:0;transition:opacity 0.4s ease"></div>
 
 </body>
 
