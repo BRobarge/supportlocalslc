@@ -783,7 +783,7 @@
                     .single();
                 const OFFER_LIMITS = { free: 0, essentials: 1, pro: 3 };
                 const membership = (profileRow?.membership_level || 'free').toString().trim().toLowerCase();
-                const offerLimit = OFFER_LIMITS[membership] ?? 0;
+                const offerLimit = currentBusinessData.beta_offers_bypass ? 999 : (OFFER_LIMITS[membership] ?? 0);
                 const now = new Date();
                 const activeCount = (offers || []).filter(o => !o.expires_at || new Date(o.expires_at) > now).length;
                 window.__offerLimitReached = activeCount >= offerLimit;
@@ -1013,7 +1013,7 @@
                 const OFFER_LIMITS = { free: 0, essentials: 1, pro: 3 };
                 const membershipRaw = profileRow?.membership_level || 'free';
                 const membership = membershipRaw.toString().trim().toLowerCase();
-                const offerLimit = OFFER_LIMITS[membership] ?? 0;
+                const offerLimit = currentBusinessData.beta_offers_bypass ? 999 : (OFFER_LIMITS[membership] ?? 0);
 
                 const { count, error: countErr } = await supabaseClient
                     .from('offers')
