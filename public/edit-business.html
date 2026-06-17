@@ -110,6 +110,14 @@
                     <div>
                         <label for="offer-description" class="block text-sm font-medium text-gray-700">Description &
                             Terms</label>
+                        <div class="flex flex-wrap gap-1 mt-1 mb-1">
+                            <button type="button" onclick="appendOfferTemplate('Valid for dine-in only.')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-full border border-gray-300">Dine-in only</button>
+                            <button type="button" onclick="appendOfferTemplate('One per customer per visit.')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-full border border-gray-300">One per visit</button>
+                            <button type="button" onclick="appendOfferTemplate('Must show offer at time of purchase.')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-full border border-gray-300">Must show offer</button>
+                            <button type="button" onclick="appendOfferTemplate('Not valid with other discounts.')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-full border border-gray-300">No stacking</button>
+                            <button type="button" onclick="appendOfferTemplate('No cash value.')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-full border border-gray-300">No cash value</button>
+                            <button type="button" onclick="appendOfferTemplate('First-time customers only.')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-full border border-gray-300">First-time only</button>
+                        </div>
                         <textarea id="offer-description" rows="4"
                             placeholder="e.g., Valid for first-time customers. Not valid with other discounts."
                             class="mt-1 block w-full p-3 border border-gray-300 rounded-md"></textarea>
@@ -897,6 +905,12 @@
                 });
             }
 
+
+        function appendOfferTemplate(text) {
+            const ta = document.getElementById('offer-description');
+            if (!ta) return;
+            ta.value = ta.value ? ta.value + ' ' + text : text;
+        }
 
         function setupOfferModal() {
                 const modal = document.getElementById('offer-modal');
