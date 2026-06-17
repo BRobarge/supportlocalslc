@@ -682,6 +682,48 @@
             }
         }
         
+        window.rejectBusinessFromDashboard = async function rejectBusinessFromDashboard(id, btn) {
+            if (!confirm('Reject this business? It will be hidden from the directory.')) return;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Rejecting...';
+            const { data, error } = await supabaseClient.from('businesses').update({
+                approval_status: 'rejected',
+                claim_status: 'rejected',
+                owner_id: null
+            }).eq('id', id).select('id');
+            if (error) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showDashboardToast('Error rejecting business: ' + error.message, 'error');
+            } else if (!data || data.length === 0) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showDashboardToast('Permission denied — admin RLS policy missing in Supabase.', 'error');
+            } else {
+                showDashboardToast('Business rejected — hidden from directory');
+                renderAdminView();
+                openAdminModal('businesses');
+            }
+        };
+
+        window.deleteBusinessFromDashboard = async function deleteBusinessFromDashboard(id, btn) {
+            if (!confirm('Permanently delete this business? It will be hidden from the directory.')) return;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = 'Deleting...';
+            const { data, error } = await supabaseClient.from('businesses')
+                .update({ is_deleted: true }).eq('id', id).select('id');
+            if (error || !data?.length) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showDashboardToast('Error deleting business: ' + (error?.message || 'Permission denied'), 'error');
+            } else {
+                showDashboardToast('Business deleted — hidden from directory');
+                openAdminModal('businesses');
+            }
+        };
+
         window.editBusinessFromDashboard = async function editBusinessFromDashboard(id) {
             openAdminModal('businesses', id);
         };
@@ -943,7 +985,7 @@
                     title.textContent = 'Manage Businesses';
                     headers = ['Name', 'Status', 'Actions'];
                     addButtonHtml = `<button onclick="showAddBusinessModal()" class="bg-green-500 text-white px-4 py-2 rounded mb-4 text-sm hover:bg-green-600">+ Add New Business</button>`;
-                    const { data: bizData, error } = await supabaseClient.from('businesses').select('id, name, claim_status').order('name');
+                    const { data: bizData, error } = await supabaseClient.from('businesses').select('id, name, claim_status, approval_status, is_deleted').order('name');
                     if (error) throw error;
                     data = tableDataForFiltering = bizData;
                     renderer = renderBusinessRow;
@@ -989,12 +1031,15 @@
         window.closeAdminModal = () => { adminModal.classList.add('hidden'); adminModal.style.display = ''; };
         function renderBusinessRow(biz) {
             const isPending = biz.claim_status === 'pending' || biz.claim_status === 'unclaimed';
+            const isRejected = biz.approval_status === 'rejected';
             return `<tr class="${isPending ? 'bg-amber-50' : ''}">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${biz.name}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${biz.claim_status}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    ${isPending ? `<button onclick="approveBusinessFromDashboard('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600 mr-2">Approve</button>` : ''}
-                    <a href="/edit-business.html?id=${biz.id}" target="_blank" class="text-blue-600 hover:text-blue-900">Edit Full Listing &rarr;</a>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex flex-wrap gap-2">
+                    ${isPending ? `<button onclick="approveBusinessFromDashboard('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">Approve</button>` : ''}
+                    ${!isRejected ? `<button onclick="rejectBusinessFromDashboard('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Reject</button>` : ''}
+                    <button onclick="deleteBusinessFromDashboard('${biz.id}', this)" class="bg-gray-700 text-white px-2 py-1 rounded text-xs hover:bg-gray-900">Delete</button>
+                    <a href="/edit-business.html?id=${biz.id}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs">Edit &rarr;</a>
                 </td>
             </tr>`;
         }
