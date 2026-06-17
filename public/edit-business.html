@@ -906,11 +906,11 @@
             }
 
 
-        function appendOfferTemplate(text) {
+        window.appendOfferTemplate = function(text) {
             const ta = document.getElementById('offer-description');
             if (!ta) return;
             ta.value = ta.value ? ta.value + ' ' + text : text;
-        }
+        };
 
         function setupOfferModal() {
                 const modal = document.getElementById('offer-modal');
