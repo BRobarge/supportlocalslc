@@ -421,6 +421,7 @@
 
         }
         async function saveStorySection({ silent = false } = {}) {
+            if (silent && !document.getElementById('business-name')) return;
             const saveBtn = document.getElementById('save-story-btn');
             if (!silent) { saveBtn.textContent = 'Saving...'; saveBtn.disabled = true; }
             const updatedData = {
@@ -660,6 +661,7 @@
 
         }
         async function saveLocationSection({ silent = false } = {}) {
+            if (silent && !document.getElementById('address-street')) return;
             const saveBtn = document.getElementById('save-location-btn');
             if (!silent) { saveBtn.textContent = 'Saving...'; saveBtn.disabled = true; }
             const street = document.getElementById('address-street').value.trim();
@@ -767,6 +769,7 @@
 
         }
         async function saveContactSection({ silent = false } = {}) {
+            if (silent && !document.getElementById('contact-phone')) return;
             const saveBtn = document.getElementById('save-contact-btn');
             if (!silent) { saveBtn.textContent = 'Saving...'; saveBtn.disabled = true; }
             const socialLinks = {};
@@ -1149,16 +1152,20 @@
                 `;
 
                 // The rest of the function that fetches and renders the data remains the same...
-                const [catRes, tagRes, groupRes, profileRes] = await Promise.all([
+                const [catRes, tagRes, groupRes, profileRes, bizCatRes, bizTagRes] = await Promise.all([
                     supabaseClient.from('categories').select('*').order('name'),
                     supabaseClient.from('tags').select('*').order('name'),
                     supabaseClient.from('tag_groups').select('*').order('name'),
-                    supabaseClient.from('profiles').select('membership_level').eq('id', currentBusinessData.owner_id).single()
+                    supabaseClient.from('profiles').select('membership_level').eq('id', currentBusinessData.owner_id).single(),
+                    supabaseClient.from('business_categories').select('category_id').eq('business_id', currentBusinessData.id),
+                    supabaseClient.from('business_tags').select('tag_id').eq('business_id', currentBusinessData.id),
                 ]);
 
                 const allCategories = catRes.data || [];
                 const allTags = tagRes.data || [];
                 const allGroups = groupRes.data || [];
+                const businessCategories = bizCatRes.data || [];
+                const businessTags = bizTagRes.data || [];
                 const membership = profileRes.data?.membership_level || 'free';
 
                 const tierLimits = {
@@ -1177,7 +1184,7 @@
                     let html = `<div class="font-semibold text-gray-900">${mainCat.name}</div><div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 pl-4">`;
                     const subCats = allCategories.filter(c => String(c.parent_id) === String(mainCat.id));
                     subCats.forEach(subCat => {
-                        const isChecked = currentBusinessData.business_categories.some(bc => String(bc.category_id) === String(subCat.id));
+                        const isChecked = businessCategories.some(bc => String(bc.category_id) === String(subCat.id));
                         html += `<label class="flex items-center font-normal text-gray-700"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 category-checkbox" value="${subCat.id}" data-parent-id="${mainCat.id}" ${isChecked ? 'checked' : ''}><span class="ml-2">${subCat.name}</span></label>`;
                     });
                     html += `</div>`;
@@ -1191,7 +1198,7 @@
                     let html = `<div class="font-semibold text-gray-900">${group.name}</div><div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 pl-4">`;
                     const tagsInGroup = allTags.filter(t => t.group_id === group.id);
                     tagsInGroup.forEach(tag => {
-                        const isChecked = currentBusinessData.business_tags.some(bt => bt.tag_id === tag.id);
+                        const isChecked = businessTags.some(bt => bt.tag_id === tag.id);
                         html += `<label class="flex items-center font-normal text-gray-700"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 tag-checkbox" value="${tag.id}" ${isChecked ? 'checked' : ''}><span class="ml-2">${tag.name}</span></label>`;
                     });
                     html += `</div>`;
