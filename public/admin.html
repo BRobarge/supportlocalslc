@@ -327,6 +327,7 @@
                                 ${!biz.is_deleted && status !== 'approved' ? `<button onclick="approveBusiness('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Approve</button>` : ''}
                                 ${!biz.is_deleted && status !== 'rejected' ? `<button onclick="rejectBusiness('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Reject</button>` : ''}
                                 ${!biz.is_deleted ? `<button onclick="editBusiness('${biz.id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>` : ''}
+                                ${!biz.is_deleted ? `<button onclick="featureBusiness('${biz.id}', ${biz.is_featured}, this)" class="${biz.is_featured ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300'} px-2 py-1 rounded">${biz.is_featured ? '★ Featured' : '☆ Feature'}</button>` : ''}
                                 ${biz.is_deleted
                                     ? `<button onclick="restoreBusiness('${biz.id}', this)" class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">Restore</button>`
                                     : `<button onclick="deleteBusiness('${biz.id}', this)" class="bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-900">Delete</button>`}
@@ -496,6 +497,23 @@
                 showToast('Error restoring business: ' + (error?.message || 'Permission denied'), 'error');
             } else {
                 showToast('Business restored — now visible in directory');
+                await loadAllBusinesses();
+            }
+        }
+
+        async function featureBusiness(id, currentState, btn) {
+            const newState = !currentState;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = newState ? 'Featuring...' : 'Unfeaturing...';
+            const { data, error } = await supabaseClient.from('businesses')
+                .update({ is_featured: newState }).eq('id', id).select('id');
+            if (error || !data?.length) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showToast('Error updating featured status: ' + (error?.message || 'Permission denied'), 'error');
+            } else {
+                showToast(newState ? 'Business featured on homepage' : 'Business removed from featured');
                 await loadAllBusinesses();
             }
         }

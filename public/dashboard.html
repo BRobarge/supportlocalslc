@@ -735,6 +735,23 @@
             }
         };
 
+        window.featureBusinessFromDashboard = async function featureBusinessFromDashboard(id, currentState, btn) {
+            const newState = !currentState;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = newState ? 'Featuring...' : 'Unfeaturing...';
+            const { data, error } = await supabaseClient.from('businesses')
+                .update({ is_featured: newState }).eq('id', id).select('id');
+            if (error || !data?.length) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                showDashboardToast('Error updating featured status: ' + (error?.message || 'Permission denied'), 'error');
+            } else {
+                showDashboardToast(newState ? 'Business featured on homepage' : 'Business removed from featured');
+                openAdminModal('businesses');
+            }
+        };
+
         window.editBusinessFromDashboard = async function editBusinessFromDashboard(id) {
             openAdminModal('businesses', id);
         };
@@ -996,7 +1013,7 @@
                     title.textContent = 'Manage Businesses';
                     headers = ['Name', 'Status', 'Actions'];
                     addButtonHtml = `<button onclick="showAddBusinessModal()" class="bg-green-500 text-white px-4 py-2 rounded mb-4 text-sm hover:bg-green-600">+ Add New Business</button>`;
-                    const { data: bizData, error } = await supabaseClient.from('businesses').select('id, name, claim_status, approval_status, is_deleted').order('name');
+                    const { data: bizData, error } = await supabaseClient.from('businesses').select('id, name, claim_status, approval_status, is_deleted, is_featured').order('name');
                     if (error) throw error;
                     data = tableDataForFiltering = bizData;
                     renderer = renderBusinessRow;
@@ -1053,6 +1070,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex flex-wrap gap-2">
                     ${!isDeleted && isPending ? `<button onclick="approveBusinessFromDashboard('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">Approve</button>` : ''}
                     ${!isDeleted && !isRejected ? `<button onclick="rejectBusinessFromDashboard('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Reject</button>` : ''}
+                    ${!isDeleted ? `<button onclick="featureBusinessFromDashboard('${biz.id}', ${biz.is_featured}, this)" class="${biz.is_featured ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300'} px-2 py-1 rounded text-xs">${biz.is_featured ? '★ Featured' : '☆ Feature'}</button>` : ''}
                     ${isDeleted
                         ? `<button onclick="restoreBusinessFromDashboard('${biz.id}', this)" class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700">Restore</button>`
                         : `<button onclick="deleteBusinessFromDashboard('${biz.id}', this)" class="bg-gray-700 text-white px-2 py-1 rounded text-xs hover:bg-gray-900">Delete</button>`}
