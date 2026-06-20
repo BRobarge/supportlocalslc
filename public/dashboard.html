@@ -427,12 +427,6 @@
             }
 
           currentUser = user;
-            // Remove any existing handlers and use only the header-nav.js
-            const hamburger = document.getElementById('mobile-menu-btn');
-            // Clone the button to remove all event listeners
-            const newHamburger = hamburger.cloneNode(true);
-            hamburger.parentNode.replaceChild(newHamburger, hamburger);
-            // Let header-nav.js handle it
             initializeHeader();
 
 
