@@ -131,62 +131,55 @@
             <p>Loading dashboard...</p>
         </div>
 
-        <section id="account-panel" class="hidden">
-            <div class="bg-white rounded-2xl shadow-lg ring-1 ring-slate-200 overflow-hidden mt-6">
-                <div
-                    class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <section id="account-panel" class="hidden mt-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Header -->
+                <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900">Your Subscription</h2>
-                        <p class="text-sm text-slate-500">Manage your plan and billing.</p>
+                        <h2 class="text-base font-semibold text-slate-900">Your Plan</h2>
+                        <div id="plan-meta" class="text-sm text-slate-500 mt-0.5"></div>
                     </div>
-                    <div id="plan-badge-host"></div>
-                </div>
-
-                <div class="px-6 py-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                    <div id="plan-meta" class="text-sm text-slate-600"></div>
-                    <div class="flex flex-wrap gap-2">
-                        <button id="btn-manage-billing"
-                            class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <div id="plan-badge-host"></div>
+                        <button id="btn-manage-billing" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
                             Manage billing
                         </button>
                         <div id="downgrade-slot"></div>
-                <!-- Upgrade Options -->
-                <div id="upgrade-section" class="mt-6 border-t pt-6">
-                    <h3 class="text-lg font-semibold mb-4">Upgrade Your Plan</h3>
-                
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Essentials Plan -->
-                        <div class="essentials-card border rounded-lg p-4 hover:border-blue-500 transition">
-                            <h4 class="font-bold text-xl mb-2">Essentials</h4>
-                            <p class="text-3xl font-bold mb-4">$49<span class="text-sm text-gray-600">/month</span></p>
-                            <ul class="text-sm mb-4 space-y-2">
-                                <li>✓ Basic business listing</li>
-                                <li>✓ Limited offers</li>
-                                <li>✓ Basic analytics</li>
-                            </ul>
-                            <button onclick="upgradeToEssentials()"
-                                class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-                                Upgrade to Essentials
-                            </button>
-                        </div>
-                
-                        <!-- Pro Plan -->
-                        <div class="pro-card border-2 border-blue-500 rounded-lg p-4 relative">
-                            <span class="absolute top-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-bl">POPULAR</span>
-                            <h4 class="font-bold text-xl mb-2">Pro</h4>
-                            <p class="text-3xl font-bold mb-4">$99<span class="text-sm text-gray-600">/month</span></p>
-                            <ul class="text-sm mb-4 space-y-2">
-                                <li>✓ Premium business listing</li>
-                                <li>✓ Unlimited offers</li>
-                                <li>✓ Advanced analytics</li>
-                                <li>✓ Priority support</li>
-                            </ul>
-                            <button onclick="upgradeToPro()" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-                                Upgrade to Pro
-                            </button>
-                        </div>
                     </div>
                 </div>
+                <!-- Upgrade cards -->
+                <div id="upgrade-section" class="p-6">
+                    <p class="text-sm font-semibold text-slate-700 mb-4">Upgrade your plan</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Essentials -->
+                        <div class="essentials-card border border-slate-200 rounded-xl p-5 hover:border-blue-400 transition-colors">
+                            <span class="text-sm font-bold text-slate-800 uppercase tracking-wide">Essentials</span>
+                            <p class="text-2xl font-bold text-slate-900 mt-2 mb-1">$49<span class="text-sm font-normal text-slate-500">/mo</span></p>
+                            <ul class="text-sm text-slate-600 space-y-1.5 my-4">
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-green-500 w-4"></i>1 active offer</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-green-500 w-4"></i>15 photos · 3 categories</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-green-500 w-4"></i>Enhanced search placement</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-green-500 w-4"></i>Reply to reviews</li>
+                            </ul>
+                            <button onclick="upgradeToEssentials()" class="w-full py-2.5 rounded-lg bg-slate-800 text-white text-sm font-semibold hover:bg-slate-700 transition-colors">
+                                Get Essentials
+                            </button>
+                        </div>
+                        <!-- Pro -->
+                        <div class="pro-card border-2 border-indigo-500 rounded-xl p-5 bg-indigo-50 relative">
+                            <span class="absolute -top-px right-4 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-b-lg">Most Popular</span>
+                            <span class="text-sm font-bold text-indigo-800 uppercase tracking-wide">Pro</span>
+                            <p class="text-2xl font-bold text-slate-900 mt-2 mb-1">$99<span class="text-sm font-normal text-slate-500">/mo</span></p>
+                            <ul class="text-sm text-slate-600 space-y-1.5 my-4">
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-indigo-500 w-4"></i>3 active offers</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-indigo-500 w-4"></i>Unlimited photos · 7 categories</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-indigo-500 w-4"></i>Top-tier search placement</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-indigo-500 w-4"></i>Homepage featured slot</li>
+                            </ul>
+                            <button onclick="upgradeToPro()" class="w-full py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                                Get Pro
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -455,6 +448,21 @@
             setupClaimModal();
             mountAccountPanel();
             supabaseClient.auth.onAuthStateChange(() => mountAccountPanel());
+
+            const claimTarget = new URLSearchParams(window.location.search).get('claimBusiness');
+            if (claimTarget) {
+                document.getElementById('claim-modal').classList.add('is-open');
+                const searchInput = document.getElementById('search-business-input');
+                if (searchInput) {
+                    supabaseClient.from('businesses').select('name').eq('id', claimTarget).single()
+                        .then(({ data }) => {
+                            if (data?.name) {
+                                searchInput.value = data.name;
+                                searchInput.dispatchEvent(new Event('input'));
+                            }
+                        });
+                }
+            }
         });
 
         // --- UI SETUP FUNCTIONS ---
@@ -488,6 +496,7 @@
                         availableTabs.forEach(t => t.classList.remove('active-tab'));
                         tab.classList.add('active-tab');
                         tabConfig[tab.dataset.view].renderFunc();
+                        document.getElementById('account-panel')?.classList.toggle('hidden', tab.dataset.view !== 'business');
                     });
                 });
                 availableTabs[availableTabs.length - 1].click();
@@ -663,8 +672,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Approving...';
 
             const { data, error } = await supabaseClient.from('businesses').update({
-                approval_status: 'approved',
-                claim_status: 'approved'
+                approval_status: 'approved'
             }).eq('id', id).select('id');
 
             if (error) {
@@ -927,7 +935,8 @@
             const signin = document.getElementById('signin-prompt');
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                panel?.classList.remove('hidden');
+                const businessTabActive = document.querySelector('.tab-button.active-tab[data-view="business"]');
+                if (businessTabActive) panel?.classList.remove('hidden');
                 signin?.classList.add('hidden');
                 await renderPlanBadge(session);
             } else {

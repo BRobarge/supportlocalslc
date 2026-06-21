@@ -416,8 +416,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Approving...';
 
             const { data, error } = await supabaseClient.from('businesses').update({
-                approval_status: 'approved',
-                claim_status: 'approved'
+                approval_status: 'approved'
             }).eq('id', id).select('id');
 
             if (error) {

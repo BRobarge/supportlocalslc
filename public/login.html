@@ -167,6 +167,9 @@
     const sb = window.supabaseClient || supabase.createClient(supabaseUrl, supabaseAnonKey);
     window.supabaseClient = sb;
 
+    // ===== Redirect target (supports ?redirect= param from claim flow) =====
+    const redirectAfterAuth = new URLSearchParams(window.location.search).get('redirect') || '/dashboard.html';
+
     // ===== Helpers =====
     const $ = (sel, root = document) => root.querySelector(sel);
     const successBox = $('#success-message');
@@ -318,10 +321,10 @@
                     role: 'supporter' 
                 }, { onConflict: 'id' }); 
             } catch { }
-            window.location.href = '/dashboard.html';
+            window.location.href = redirectAfterAuth;
             return;
         }
-        
+
         // Signup form
         if (form && form.id === 'panel-signup') {
             e.preventDefault(); 
@@ -361,7 +364,7 @@
     // Bounce if already logged in
     (async () => {
         const { data: { session } } = await sb.auth.getSession();
-        if (session) window.location.href = '/dashboard.html';
+        if (session) window.location.href = redirectAfterAuth;
     })();
 </script>
 
