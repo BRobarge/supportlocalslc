@@ -406,12 +406,17 @@
             return isNaN(dt) ? '' : dt.toLocaleDateString();
         }
 
-        async function sendGHLNotification(eventType, details) {
+        async function sendGHLNotification(eventType, payload) {
             try {
-                await fetch('https://services.leadconnectorhq.com/hooks/miD90jDw7w2L2p1FaEpg/webhook-trigger/7b238155-630a-4776-9f3d-45a2757e8644', {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) return;
+                await fetch('/api/ghl-notify', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event: eventType, email: currentUser.email, details, type: 'business' })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({ event: eventType, payload })
                 });
             } catch (err) {
                 console.error('GHL notify error:', err);
@@ -880,7 +885,7 @@
                 await supabaseClient.from('profiles').update({ roles: [...profile.roles, 'business'] }).eq('id', currentUser.id);
             }
             alert('Claim requested! You can now start editing your business listing.');
-            sendGHLNotification('claim_request', `New pending claim for business ID ${businessId}`);
+            sendGHLNotification('claim_request', { email: currentUser.email, business_id: businessId });
             window.location.reload();
         }
 
@@ -1406,7 +1411,7 @@
             btn.textContent = 'Importing…';
 
             try {
-                const { error } = await supabaseClient.from('businesses').insert({
+                const { data: importedBiz, error } = await supabaseClient.from('businesses').insert({
                     name: place.name,
                     address: place.street_address || null,
                     city: place.city || null,
@@ -1420,13 +1425,25 @@
                     approval_status: 'approved',
                     claim_status: 'unclaimed',
                     source: 'google_places',
-                });
+                }).select('id').single();
 
                 if (error) throw new Error(error.message);
 
                 btn.textContent = 'Imported ✓';
                 btn.classList.remove('bg-green-600', 'hover:bg-green-700');
                 btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+
+                if (place.formatted_phone_number || place.email) {
+                    sendGHLNotification('business_imported', {
+                        name: place.name,
+                        email: place.email || null,
+                        phone: place.formatted_phone_number || null,
+                        website: place.website || null,
+                        address: place.street_address || null,
+                        city: place.city || null,
+                        business_id: importedBiz.id,
+                    });
+                }
             } catch (err) {
                 btn.disabled = false;
                 btn.textContent = 'Import to Directory';
