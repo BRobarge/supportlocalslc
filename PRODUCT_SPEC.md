@@ -201,16 +201,8 @@
 
 ---
 
-## BACKLOG (build later, not now)
-- Follow button functionality (Essentials feature)
-- Reviews tab implementation
-- Reject button in dashboard admin panel
-- User management in dashboard admin panel
-- Color-coded status in business table
-- Category management in dashboard
-- Mobile app (Capacitor or similar — high priority for Phase 2)
-- "Report closed business" button
-- Inline business edit in admin modal
+## BACKLOG
+See BACKLOG.md for the current build-later list.
 
 ---
 
