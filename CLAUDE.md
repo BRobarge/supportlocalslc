@@ -43,4 +43,5 @@ For listings created from public data that aren't claimed yet:
 - Always read relevant files fresh before editing — never edit from memory
 - Use plan mode for any non-trivial change
 - Mobile-first: test every UI change at phone width. No horizontal scrolling on mobile, ever. Data-heavy views = stacked cards on mobile, not wide tables
+- Tailwind + JS-injected HTML: arbitrary bracket-value classes (e.g. `min-w-[140px]`, `top-[9px]`, arbitrary colors) are unreliable in template-literal / JS-injected HTML — the Tailwind scanner can miss them and they compile to nothing with no error. Prefer standard utility classes in dynamically-rendered markup; if an arbitrary value is truly needed, add it to the safelist in `tailwind.config.js` and re-run `npm run build`.
 - Never expose secrets: service-role keys and API keys live in Vercel env vars, never in client code (a service-role key was exposed once — never again)

@@ -1111,6 +1111,25 @@
 
         // --- ADMIN PANEL (MODAL) LOGIC ---
         const adminModal = document.getElementById('admin-modal');
+
+        let bizAllData = [];
+        let bizActiveFilter = 'all';
+        let bizSearchTerm = '';
+        let bizSortOrder = 'newest';
+
+        function isArchived(b) { return b.is_deleted || b.approval_status === 'rejected'; }
+        function normalizeApproval(val) {
+            if (val === 'approved' || val === 'rejected') return val;
+            return 'pending';
+        }
+        const segPredicates = {
+            'all':          b => !isArchived(b),
+            'needs-review': b => !isArchived(b) && normalizeApproval(b.approval_status) === 'pending',
+            'unclaimed':    b => !isArchived(b) && b.claim_status === 'unclaimed',
+            'featured':     b => !isArchived(b) && b.is_featured,
+            'archived':     b => isArchived(b),
+        };
+
         window.openAdminModal = async (dataType) => {
             const content = document.getElementById('admin-modal-content');
             const title = document.getElementById('admin-modal-title');
@@ -1122,12 +1141,78 @@
             try {
                 if (dataType === 'businesses') {
                     title.textContent = 'Manage Businesses';
-                    headers = ['Name', 'Status', 'Actions'];
-                    addButtonHtml = `<button onclick="showAddBusinessModal()" class="bg-green-500 text-white px-4 py-2 rounded mb-4 text-sm hover:bg-green-600">+ Add New Business</button>`;
-                    const { data: bizData, error } = await supabaseClient.from('businesses').select('id, name, claim_status, approval_status, is_deleted, is_featured').order('name');
+                    const { data: bizData, error } = await supabaseClient
+                        .from('businesses')
+                        .select('id, name, claim_status, approval_status, is_deleted, is_featured, territory, created_at')
+                        .order('created_at', { ascending: false });
                     if (error) throw error;
-                    data = tableDataForFiltering = bizData;
-                    renderer = renderBusinessRow;
+                    bizAllData = bizData || [];
+
+                    const segDefs = [
+                        { key: 'all',          label: 'All' },
+                        { key: 'needs-review', label: 'Needs Review' },
+                        { key: 'unclaimed',    label: 'Unclaimed' },
+                        { key: 'featured',     label: 'Featured' },
+                        { key: 'archived',     label: 'Archived' },
+                    ];
+                    const counts = {};
+                    segDefs.forEach(({ key }) => { counts[key] = bizAllData.filter(segPredicates[key]).length; });
+
+                    const segBar = segDefs.map(({ key, label }) => {
+                        const active = key === bizActiveFilter;
+                        const cls = active
+                            ? 'px-3 py-1.5 text-xs font-semibold rounded-full bg-indigo-600 text-white transition-colors'
+                            : 'px-3 py-1.5 text-xs font-semibold rounded-full bg-white border border-slate-200 text-slate-600 hover:border-indigo-400 transition-colors';
+                        return `<button data-seg="${key}" class="${cls}">${label} <span class="opacity-70">${counts[key]}</span></button>`;
+                    }).join('');
+
+                    content.innerHTML = `
+                        <div class="mb-4 space-y-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <button onclick="showAddBusinessModal()" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600">+ Add New Business</button>
+                                <select id="biz-sort" class="p-2 border border-slate-200 rounded-lg text-sm text-slate-700 bg-white">
+                                    <option value="newest" ${bizSortOrder === 'newest' ? 'selected' : ''}>Newest first</option>
+                                    <option value="az" ${bizSortOrder === 'az' ? 'selected' : ''}>A–Z</option>
+                                </select>
+                            </div>
+                            <input type="search" id="biz-search" value="${bizSearchTerm.replace(/"/g, '&quot;')}" placeholder="Search by name…" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">${segBar}</div>
+                        <details class="mb-4 text-xs text-slate-600 border border-slate-200 rounded-xl p-3">
+                            <summary class="cursor-pointer font-semibold text-slate-700 select-none">What the badges mean</summary>
+                            <ul class="mt-2 space-y-1 pl-4 list-disc">
+                                <li><strong>Approval</strong> — admin gate: approved (public), pending (hidden), rejected (archived)</li>
+                                <li><strong>Claim</strong> — owner status: unclaimed (no owner), pending (requested), claimed (verified)</li>
+                                <li><strong>★ Featured</strong> — pinned to featured slots on the homepage</li>
+                                <li><strong>Deleted</strong> — soft-deleted; hidden from directory, restorable</li>
+                            </ul>
+                        </details>
+                        <div id="biz-card-list"></div>`;
+
+                    const modalEl = document.getElementById('admin-modal');
+                    const contentEl = document.getElementById('admin-modal-content');
+                    modalEl.removeEventListener('click', bizKebabHandler);
+                    modalEl.addEventListener('click', bizKebabHandler);
+                    contentEl.removeEventListener('scroll', bizScrollHandler);
+                    contentEl.addEventListener('scroll', bizScrollHandler, { passive: true });
+
+                    document.getElementById('biz-search').addEventListener('input', e => {
+                        bizSearchTerm = e.target.value;
+                        applyBizFilters();
+                    });
+                    document.getElementById('biz-sort').addEventListener('change', e => {
+                        bizSortOrder = e.target.value;
+                        applyBizFilters();
+                    });
+                    document.querySelectorAll('[data-seg]').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            bizActiveFilter = btn.dataset.seg;
+                            applyBizFilters();
+                        });
+                    });
+
+                    applyBizFilters();
+                    return;
                 } else if (dataType === 'tag_groups') {
                     title.textContent = 'Manage Tag Groups';
                     headers = ['Group Name', 'Actions'];
@@ -1168,27 +1253,125 @@
             }
         };
         window.closeAdminModal = () => { adminModal.classList.add('hidden'); adminModal.style.display = ''; };
-        function renderBusinessRow(biz) {
-            const isPending = biz.claim_status === 'pending' || biz.claim_status === 'unclaimed';
-            const isRejected = biz.approval_status === 'rejected';
+        function renderBusinessCard(biz) {
             const isDeleted = biz.is_deleted === true;
-            return `<tr class="${isPending && !isDeleted ? 'bg-amber-50' : ''}${isDeleted ? ' opacity-60' : ''}">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${isDeleted ? 'text-gray-400' : 'text-gray-900'}">
-                    ${biz.name}
-                    ${isDeleted ? '<span class="ml-1 text-xs bg-gray-200 text-gray-500 px-1 py-0.5 rounded">DELETED</span>' : ''}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${biz.claim_status}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex flex-wrap gap-2">
-                    ${!isDeleted && isPending ? `<button onclick="approveBusinessFromDashboard('${biz.id}', this)" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">Approve</button>` : ''}
-                    ${!isDeleted && !isRejected ? `<button onclick="rejectBusinessFromDashboard('${biz.id}', this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Reject</button>` : ''}
-                    ${!isDeleted ? `<button onclick="featureBusinessFromDashboard('${biz.id}', ${biz.is_featured}, this)" class="${biz.is_featured ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300'} px-2 py-1 rounded text-xs">${biz.is_featured ? '★ Featured' : '☆ Feature'}</button>` : ''}
-                    ${isDeleted
-                        ? `<button onclick="restoreBusinessFromDashboard('${biz.id}', this)" class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700">Restore</button>`
-                        : `<button onclick="deleteBusinessFromDashboard('${biz.id}', this)" class="bg-gray-700 text-white px-2 py-1 rounded text-xs hover:bg-gray-900">Delete</button>`}
-                    <a href="/edit-business.html?id=${biz.id}" target="_blank" class="text-blue-600 hover:text-blue-900 text-xs">Edit &rarr;</a>
-                </td>
-            </tr>`;
+            const approval = normalizeApproval(biz.approval_status);
+            const claim = biz.claim_status || 'unclaimed';
+
+            const approvalColor = approval === 'approved' ? 'bg-green-100 text-green-800'
+                : approval === 'rejected' ? 'bg-red-100 text-red-700'
+                : 'bg-amber-100 text-amber-700';
+            const claimColor = claim === 'approved' ? 'bg-green-100 text-green-800'
+                : claim === 'pending' ? 'bg-amber-100 text-amber-700'
+                : 'bg-slate-100 text-slate-600';
+            const claimLabel = claim === 'approved' ? 'claimed' : claim;
+
+            let menuItems = '';
+            if (isDeleted) {
+                menuItems = `
+                    <button onclick="restoreBusinessFromDashboard('${biz.id}', this)" class="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50">Restore</button>
+                    <a href="/edit-business.html?id=${biz.id}" target="_blank" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">Edit →</a>`;
+            } else {
+                if (approval !== 'approved') menuItems += `<button onclick="approveBusinessFromDashboard('${biz.id}', this)" class="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50">Approve</button>`;
+                if (approval !== 'rejected') menuItems += `<button onclick="rejectBusinessFromDashboard('${biz.id}', this)" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Reject</button>`;
+                menuItems += `
+                    <button onclick="featureBusinessFromDashboard('${biz.id}', ${biz.is_featured}, this)" class="block w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50">${biz.is_featured ? 'Unfeature' : '★ Feature'}</button>
+                    <button onclick="deleteBusinessFromDashboard('${biz.id}', this)" class="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Delete</button>
+                    <a href="/edit-business.html?id=${biz.id}" target="_blank" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">Edit →</a>`;
+            }
+
+            const cardClass = isDeleted
+                ? 'bg-white rounded-2xl border border-dashed border-slate-300 shadow-sm p-4 mb-3 opacity-60'
+                : 'bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-3';
+
+            return `
+                <div class="${cardClass}">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-semibold ${isDeleted ? 'line-through text-slate-400' : 'text-slate-900'} truncate">${biz.name || 'Unnamed'}</p>
+                            <p class="text-xs text-slate-500 mt-0.5">${biz.territory || '—'}</p>
+                            <div class="flex flex-wrap gap-1.5 mt-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${approvalColor}">Approval: ${approval}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${claimColor}">Claim: ${claimLabel}</span>
+                                ${biz.is_featured ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">★ Featured</span>' : ''}
+                                ${isDeleted ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-500">Deleted</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="relative flex-shrink-0">
+                            <button data-kebab="${biz.id}" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 text-xl leading-none select-none" aria-label="Actions">⋮</button>
+                            <div id="kebab-${biz.id}" class="hidden w-44 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+                                ${menuItems}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
         }
+
+        function applyBizFilters() {
+            const pred = segPredicates[bizActiveFilter] || segPredicates['all'];
+            let items = bizAllData.filter(pred);
+
+            if (bizSearchTerm) {
+                const t = bizSearchTerm.toLowerCase();
+                items = items.filter(b =>
+                    (b.name || '').toLowerCase().includes(t) ||
+                    (b.territory || '').toLowerCase().includes(t)
+                );
+            }
+
+            if (bizSortOrder === 'newest') {
+                items = [...items].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            } else {
+                items = [...items].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            }
+
+            const list = document.getElementById('biz-card-list');
+            if (!list) return;
+            list.innerHTML = items.length
+                ? items.map(renderBusinessCard).join('')
+                : '<p class="text-center text-slate-500 py-8">No businesses match this filter.</p>';
+
+            document.querySelectorAll('[data-seg]').forEach(btn => {
+                const active = btn.dataset.seg === bizActiveFilter;
+                btn.className = active
+                    ? 'px-3 py-1.5 text-xs font-semibold rounded-full bg-indigo-600 text-white transition-colors'
+                    : 'px-3 py-1.5 text-xs font-semibold rounded-full bg-white border border-slate-200 text-slate-600 hover:border-indigo-400 transition-colors';
+            });
+        }
+
+        function bizKebabHandler(e) {
+            const btn = e.target.closest('[data-kebab]');
+            document.querySelectorAll('[id^="kebab-"]').forEach(m => {
+                m.classList.add('hidden');
+                m.style.cssText = '';
+            });
+            if (btn) {
+                e.stopPropagation();
+                const menu = document.getElementById('kebab-' + btn.dataset.kebab);
+                if (!menu) return;
+                const rect = btn.getBoundingClientRect();
+                menu.style.position = 'fixed';
+                menu.style.top = (rect.bottom + 4) + 'px';
+                menu.style.bottom = 'auto';
+                menu.style.right = (window.innerWidth - rect.right) + 'px';
+                menu.style.left = 'auto';
+                menu.style.zIndex = '200';
+                menu.classList.remove('hidden');
+                const mRect = menu.getBoundingClientRect();
+                if (mRect.bottom > window.innerHeight - 8) {
+                    menu.style.top = 'auto';
+                    menu.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+                }
+            }
+        }
+
+        function bizScrollHandler() {
+            document.querySelectorAll('[id^="kebab-"]').forEach(m => {
+                m.classList.add('hidden');
+                m.style.cssText = '';
+            });
+        }
+
         function renderGroupRow(group) {
             return `<tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${group.name}</td>
